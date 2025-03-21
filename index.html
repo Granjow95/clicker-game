@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jeu Clicker</title>
+    <title>Skibidi Clicker</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
-      <h1>Jeu Clicker</h1>
+      <h1>Skibidi Clicker</h1>
       <p>Score : <span id="score">0</span></p>
+      <div id="cps">0 clic/s</div>
       <button id="clickButton">Clique-moi !</button>
     </div>
 
@@ -34,14 +35,16 @@
       "
     >
       <h2>🔐 Trouve le code à 4 chiffres</h2>
+      <p><span style="color:yellow">Jaune</span> = Bon chiffre mauvaise place / <span style="color:red">Rouge</span> = Bon chiffre bonne place</p>
       <div id="code-inputs" style="margin: 20px"></div>
       <input
         type="text"
         id="code-attempt"
         maxlength="4"
-        placeholder="Ex: 1234"
+        placeholder="Ex:1234"
         inputmode="numeric"
-        style="font-size: 24px; padding: 10px; width: 120px"
+        pattern="[0-9]*"
+        style="font-size: 24px; padding: 10px; width: 150px"
       />
       <button
         onclick="submitCodeAttempt()"

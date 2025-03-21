@@ -1,10 +1,10 @@
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f0f0f0;
     margin-top: 30vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:#dbeafe;
+    text-align: center;
   }
-
+  
   #bg-video {
     position: fixed;
     height: 100%;
@@ -19,26 +19,54 @@ body {
   
   .container {
     background: white;
-    padding: 30px;
-    border-radius: 10px;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     display: inline-block;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+
+  .container:hover {
+    transform: scale(1.01);
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    color: #1f2937;
+  }
+  
+  #score {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2563eb;
+  }
+  
+  #cps {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    color: #111827;
+    font-weight: 500;
   }
   
   button {
-    padding: 15px 30px;
-    font-size: 18px;
-    margin-top: 20px;
-    cursor: pointer;
-    border-radius: 5px;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    margin-top: 25px;
+    border-radius: 8px;
     border: none;
-    background-color: #4CAF50;
+    background: #2563eb;
     color: white;
-    transition: 0.2s;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
   }
   
   button:hover {
-    background-color: #45a049;
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+  }
+  
+  button:active {
+    transform: translateY(1px);
   }
   
   .confetti {
@@ -111,18 +139,27 @@ body {
   }
   
   #code-game button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 18px;
     border-radius: 6px;
-    background-color: #4CAF50;
+    background-color: #16a34a;
     border: none;
     color: white;
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 15px;
   }
   
   #code-game button:hover {
-    background-color: #45a049;
+    background-color: #15803d;
   }
   
-    
+  @media (max-width: 600px) {
+    .container {
+      width: 90%;
+      padding: 20px;
+    }
+  
+    .dancer {
+      width: 150px;
+    }
+  }
