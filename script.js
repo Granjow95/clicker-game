@@ -14,6 +14,22 @@ const milestones = [50, 100, 500, 1000, 2000, 5000];
 const unlockedMilestones = [];
 const clickTimes = [];
 
+const successContainer = document.createElement("div");
+successContainer.id = "success-container";
+document.body.appendChild(successContainer);
+
+function showSuccess(message, emoji = "✅") {
+  const success = document.createElement("div");
+  success.className = "success-message";
+  success.innerHTML = `<span>${emoji}</span> ${message}`;
+  successContainer.appendChild(success);
+
+  setTimeout(() => {
+    success.remove();
+  }, 3000);
+}
+
+
 clickButton.addEventListener("click", () => {
   if (codeGameActive) return;
   score += clickValue;
@@ -45,49 +61,50 @@ function checkMilestones() {
 }
 
 function activateBonus(milestone) {
-  if (milestone >= 500) {
-    setInterval(() => {
-      if (!codeGameActive) {
-        score += 10;
-        updateScore();
-        checkMilestones();
-      }
-    }, 1000);
-  }
-
-  switch (milestone) {
-    case 50:
-      alert("⚡️ Bonus débloqué : +5 clics toutes les secondes !");
-      break;
-    case 100:
+    if (milestone >= 500) {
       setInterval(() => {
         if (!codeGameActive) {
-          document.body.style.backgroundColor = getRandomColor();
+          score += 10;
+          updateScore();
+          checkMilestones();
         }
-      }, 100);
-      alert("🌈 Bonus débloqué : Couleur de fond changeante !");
-      break;
-    case 500:
-      if (youtubeReady) {
-        playCustomBackgroundVideo();
-        alert("🍜 Bonus : ASMR en fond !");
-      } else {
-        alert("⏳ ASMR en chargement...");
-      }
-      break;
-    case 1000:
-      playFartCompilation();
-      alert("💨 Bonus débloqué : bruits de prout !");
-      break;
-    case 2000:
-      alert("🧠 Mini-jeu : Trouve le code !");
-      launchCodeGame();
-      break;
-    case 5000:
-      triggerMacronExplosion();
-      break;
+      }, 1000);
+    }
+  
+    switch (milestone) {
+      case 50:
+        showSuccess("Bonus débloqué : +5 clics toutes les secondes ! ⚡");
+        break;
+      case 100:
+        setInterval(() => {
+          if (!codeGameActive) {
+            document.body.style.backgroundColor = getRandomColor();
+          }
+        }, 100);
+        showSuccess("Bonus débloqué : Couleur de fond changeante ! 🌈");
+        break;
+      case 500:
+        if (youtubeReady) {
+          playCustomBackgroundVideo();
+          showSuccess("Bonus : ASMR en fond ! 🍜");
+        } else {
+          showSuccess("⏳ ASMR en chargement...");
+        }
+        break;
+      case 1000:
+        playFartCompilation();
+        showSuccess("Bonus débloqué : bruits de prout ! 💨");
+        break;
+      case 2000:
+        showSuccess("Mini-jeu : Trouve le code ! 🧠");
+        launchCodeGame();
+        break;
+      case 5000:
+        triggerMacronExplosion();
+        break;
+    }
   }
-}
+  
 
 function getRandomColor() {
   const letters = "0123456789ABCDEF";
