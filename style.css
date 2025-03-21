@@ -1,0 +1,128 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f0f0f0;
+    margin-top: 30vh;
+  }
+
+  #bg-video {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    opacity: 50%;
+    pointer-events: none;
+
+  }
+  
+  .container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  button {
+    padding: 15px 30px;
+    font-size: 18px;
+    margin-top: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    transition: 0.2s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  .confetti {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: explode 1s ease-out forwards;
+    z-index: 1000;
+  }
+  
+  @keyframes explode {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--x), var(--y)) scale(0.5);
+      opacity: 0;
+    }
+  }
+  
+  
+  .dancer {
+    position: fixed;
+    bottom: 200px;
+    width: 400px;
+    height: 300px;
+    z-index: 1000;
+  }
+  
+  .dancer.left {
+    left: 60px;
+  }
+  
+  .dancer.right {
+    right: 60px;
+  }
+  
+  #code-game {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 999;
+    color: white;
+    text-align: center;
+    padding-top: 10vh;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  #code-attempt {
+    font-size: 32px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid white;
+    background: black;
+    color: white;
+    text-align: center;
+    letter-spacing: 10px;
+    margin-bottom: 20px;
+  }
+  
+  #code-feedback {
+    font-size: 28px;
+    margin-top: 20px;
+    letter-spacing: 12px;
+  }
+  
+  #code-game button {
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 6px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  #code-game button:hover {
+    background-color: #45a049;
+  }
+  
+    

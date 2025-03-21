@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jeu Clicker</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Jeu Clicker</h1>
+      <p>Score : <span id="score">0</span></p>
+      <button id="clickButton">Clique-moi !</button>
+    </div>
+
+    <!-- Conteneur de la vidéo YouTube -->
+    <div id="bg-video"></div>
+
+    <!-- Conteneur du code a 4 chiffres -->
+    <div
+      id="code-game"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 999;
+        color: white;
+        text-align: center;
+        padding-top: 10vh;
+      "
+    >
+      <h2>🔐 Trouve le code à 4 chiffres</h2>
+      <div id="code-inputs" style="margin: 20px"></div>
+      <input
+        type="text"
+        id="code-attempt"
+        maxlength="4"
+        placeholder="Ex: 1234"
+        inputmode="numeric"
+        style="font-size: 24px; padding: 10px; width: 120px"
+      />
+      <button
+        onclick="submitCodeAttempt()"
+        style="font-size: 18px; padding: 10px 20px"
+      >
+        Valider
+      </button>
+      <div id="code-feedback" style="margin-top: 20px; font-size: 24px"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
