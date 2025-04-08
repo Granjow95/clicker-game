@@ -1,0 +1,46 @@
+
+/* === main-menu.css === */
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #dbeafe;
+    text-align: center;
+  }
+  
+  #menu {
+    text-align: center;
+    padding: 50px;
+    margin-top: 5%;
+  }
+  
+  .game-selection {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .game-card {
+    width: 250px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-align: center;
+  }
+  
+  .game-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .game-card img {
+    width: 100%;
+    border-radius: 10px;
+  }
+  
+  .game-card h2 {
+    margin-top: 10px;
+    color: #2563eb;
+  }
+  

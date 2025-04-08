@@ -1,7 +1,8 @@
+
+/* === clicker.css === */
 body {
-    margin-top: 30vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background:#dbeafe;
+    background: #dbeafe;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
   }
   
@@ -14,24 +15,24 @@ body {
     z-index: -1;
     opacity: 50%;
     pointer-events: none;
-
   }
   
   .container {
     background: white;
     padding: 40px 30px;
+    margin-top: 10%;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     display: inline-block;
     transition: transform 0.2s ease;
   }
-
+  
   .container:hover {
     transform: scale(1.01);
   }
-
+  
   h1 {
-    margin-bottom: 20px;
+    margin-bottom: 50px;
     color: #1f2937;
   }
   
@@ -69,47 +70,39 @@ body {
     transform: translateY(1px);
   }
   
-  .confetti {
-    position: fixed;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    animation: explode 1s ease-out forwards;
-    z-index: 1000;
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition:
+      background 0.2s,
+      color 0.2s;
   }
   
-  @keyframes explode {
-    0% {
-      transform: translate(0, 0) scale(1);
-      opacity: 1;
+  .back-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000;
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      width: 90%;
+      padding: 20px;
     }
-    100% {
-      transform: translate(var(--x), var(--y)) scale(0.5);
-      opacity: 0;
-    }
-  }
-  
-  
-  .dancer {
-    position: fixed;
-    bottom: 200px;
-    width: 400px;
-    height: 300px;
-    z-index: 1000;
-  }
-  
-  .dancer.left {
-    left: 60px;
-  }
-  
-  .dancer.right {
-    right: 60px;
   }
   
   #code-game {
-    display: none;
     position: fixed;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.9);
@@ -117,7 +110,7 @@ body {
     color: white;
     text-align: center;
     padding-top: 10vh;
-    font-family: 'Arial', sans-serif;
+    font-family: "Arial", sans-serif;
   }
   
   #code-attempt {
@@ -153,54 +146,3 @@ body {
     background-color: #15803d;
   }
   
-
-  #success-container {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    z-index: 9999;
-  }
-  
-  .success-message {
-    background: #4CAF50;
-    color: white;
-    font-size: 1rem;
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-top: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    opacity: 0;
-    transform: translateX(50px);
-    animation: slideIn 0.4s forwards, fadeOut 0.5s 2.5s forwards;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .success-message span {
-    font-size: 1.5rem;
-  }
-  
-  @keyframes slideIn {
-    0% { opacity: 0; transform: translateX(50px); }
-    100% { opacity: 1; transform: translateX(0); }
-  }
-  
-  @keyframes fadeOut {
-    0% { opacity: 1; }
-    100% { opacity: 0; transform: translateX(50px); }
-  }
-  
-  @media (max-width: 600px) {
-    .container {
-      width: 90%;
-      padding: 20px;
-    }
-  
-    .dancer {
-      width: 150px;
-    }
-  }
