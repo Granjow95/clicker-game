@@ -11,6 +11,11 @@ const io = new Server(server, {
   },
 });
 
+app.get("/", (req, res) => {
+  res.send("Backend is alive!");
+});
+
+
 const PORT = process.env.PORT || 3000;
 const rooms = {};
 const gameStates = {};
@@ -274,6 +279,7 @@ io.on("connection", (socket) => {
     console.log("❌ Un joueur s'est déconnecté :", socket.id);
   });
 });
+
 
 server.listen(PORT, () => {
   console.log(`🚀 Serveur WebSocket lancé sur http://localhost:${PORT}`);
