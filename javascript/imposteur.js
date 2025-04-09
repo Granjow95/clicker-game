@@ -376,7 +376,39 @@ socket.on(
   }
 );
 
-window.joinImpostorRoom = joinImpostorRoom;
+window.joinImpostorRoom = () => {
+  // Réactive les listeners
+  socket.on("room_update", (room) => {
+    currentPlayers = room.players;
+    updateLobbyDisplay();
+  });
+
+  socket.on("room-created", (room) => {
+    currentPlayers = room.players;
+    document.getElementById("lobby-players").style.display = "block";
+    document.getElementById("lobby-options").classList.remove("hidden");
+    document.getElementById("room-id").classList.add("hidden");
+    document.getElementById("username").classList.add("hidden");
+    document.querySelector("#lobby-setup button").classList.add("hidden");
+    lockLobbyOptionsForNonMaster();
+    updateLobbyDisplay();
+  });
+
+  // Lance la room
+  const roomId = document.getElementById("room-id").value.trim();
+  const username = document.getElementById("username").value.trim();
+
+  if (!roomId || !username) return alert("Remplis les champs.");
+  currentUsername = username;
+  currentRoomId = roomId;
+  if (currentPlayers.length >= 8) return alert("La salle est pleine !");
+
+  socket.emit("join_or_create_room", { roomId, username });
+
+  document.querySelector("#lobby-setup button").classList.add("hidden");
+  document.getElementById("room-id").classList.add("hidden");
+  document.getElementById("username").classList.add("hidden");
+};
 
 socket.on(
   "reveal_results",

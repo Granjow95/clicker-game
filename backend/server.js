@@ -20,9 +20,9 @@ const PORT = process.env.PORT || 3000;
 const rooms = {};
 const gameStates = {};
 const votesState = {};
-const lobbyOptions = {}; // { roomId: { rounds: 3, timer: 30 } }
-const playerPoints = {}; // { roomId: { playerId: score } }
-const roundCount = {}; // { roomId: currentRound }
+const lobbyOptions = {}; 
+const playerPoints = {}; 
+const roundCount = {}; 
 
 function getRandomWordPair() {
   const pairs = [
@@ -78,13 +78,11 @@ function startRound(roomId) {
 io.on("connection", (socket) => {
   console.log("✅ Un joueur s'est connecté :", socket.id);
 
-  // ✅ Remplace les anciens create_room / join_room / check_room
   socket.on("join_or_create_room", ({ roomId, username }) => {
     if (!roomId || !username) return;
     socket.join(roomId);
 
     if (!rooms[roomId]) {
-      // 🔧 Création
       rooms[roomId] = [{ id: socket.id, username }];
       lobbyOptions[roomId] = { rounds: 3, timer: 60 };
       roundCount[roomId] = 1;
@@ -96,7 +94,6 @@ io.on("connection", (socket) => {
         isCreator: true,
       });
     } else {
-      // 👥 Rejoindre
       if (rooms[roomId].length >= 8) {
         socket.emit("error_message", "La salle est pleine (max 8 joueurs).");
         return;
@@ -245,7 +242,6 @@ io.on("connection", (socket) => {
         options: lobbyOptions[roomId],
       });
 
-      // Supprimer la room si vide
       if (rooms[roomId].length === 0) {
         delete rooms[roomId];
         delete gameStates[roomId];

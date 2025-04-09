@@ -1,4 +1,3 @@
-/* === BASE === */
 body {
   background: #dbeafe;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -8,14 +7,23 @@ body {
   display: none !important;
 }
 
-/* === TITRE === */
+header, #title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+
 #impostor-title {
   font-size: 2.5rem;
   margin-top: 5%;
   text-align: center;
 }
 
-/* === MOT BARRE === */
 #word-bar {
   width: 100%;
   padding: 15px 10px;
@@ -26,7 +34,6 @@ body {
   box-sizing: border-box;
 }
 
-/* === JOUEURS ACTIFS === */
 #players-inputs {
   display: flex;
   flex-wrap: wrap;
@@ -44,7 +51,6 @@ body {
   gap: 20px;
 }
 
-/* === FICHE JOUEUR === */
 .player-line {
   width: 200px;
   min-height: 160px;
@@ -128,7 +134,6 @@ body {
   background: #1e40af;
 }
 
-/* === BOUTON MENU === */
 .back-button {
   position: absolute;
   top: 20px;
@@ -172,7 +177,6 @@ body {
 #start-button-container button:hover {
   background: #1e40af;
 }
-/* === PHASE DE VOTE === */
 .vote-grid {
   display: flex;
   flex-wrap: wrap;
@@ -230,7 +234,7 @@ body {
   padding: 12px 24px;
   font-size: 1.2rem;
   font-weight: bold;
-  background: #facc15; /* jaune vif */
+  background: #facc15; 
   color: #92400e;
   border: none;
   border-radius: 10px;
@@ -423,8 +427,18 @@ body {
   color: #713f12;
 }
 
-/* === RESPONSIVE === */
 @media screen and (max-width: 768px) {
+  #impostor-title {
+    font-size: 2rem;
+    margin-top: 20%;
+    padding: 0 10px;
+  }
+
+  #word-bar {
+    font-size: 1.2rem;
+    margin: 20px 10px;
+  }
+
   .player-line {
     width: 90%;
     margin: 10px auto;
@@ -435,53 +449,83 @@ body {
     max-width: 300px;
   }
 
-  #impostor-title {
-    font-size: 2rem;
-  }
-
-  #word-bar {
-    font-size: 1.2rem;
-  }
-
   #lobby-container {
     flex-direction: column;
     align-items: center;
+    gap: 20px;
+  }
+
+  #lobby-setup, #lobby-players {
+    width: 70%;
+  }
+
+  #start-button-container {
+    margin-top: 50px;
+    font-size: 1.5rem;
   }
 }
 
 @media screen and (max-width: 500px) {
-  #lobby-setup {
-    padding: 15px;
-    width: 90%;
-  }
-
-  #lobby-setup input,
-  #lobby-setup button {
+  body {
     font-size: 0.95rem;
   }
 
-  #lobby-players {
-    width: 90%;
-    padding: 12px;
+  #impostor-title {
+    font-size: 1.6rem;
+    margin-top: 10px;
   }
-}
 
-@media screen and (max-width: 480px) {
-  .player-line {
-    width: 100%;
-    padding: 12px;
+  #word-bar {
+    font-size: 1rem;
+    margin-bottom: 30px;
   }
 
   .player-line input,
   .player-line button {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    padding: 8px 10px;
   }
 
   .vote-button {
     font-size: 1rem;
+    padding: 10px 14px;
   }
 
-  #word-bar {
-    font-size: 1.1rem;
+  #lobby-setup input,
+  #lobby-setup button {
+    width: 100%;
+  }
+
+  .final-ranking {
+    width: 95%;
+    padding: 15px;
+  }
+}
+
+@media screen and (max-width: 431px) {
+  .player-line {
+    padding: 10px;
+  }
+
+  .vote-button {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+
+  #end-round {
+    width: 90%;
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .next-round-button {
+    width: 90%;
+    font-size: 1rem;
+  }
+
+  #impostor-title {
+    font-size: 2rem;
+    margin-top: 30%;
+    padding: 0 10px;
   }
 }

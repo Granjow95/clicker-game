@@ -26,20 +26,31 @@ function goBack() {
     game.style.display = "none";
   });
 
+  // Quitter la room côté serveur
   if (currentRoomId) {
     socket.emit("leave_room", currentRoomId);
-    currentRoomId = "";
   }
-  
+
+  // ❌ Retirer les listeners liés à l’ancienne room
+  socket.off("room_update");
+  socket.off("room-created");
+
+  // Réinitialiser les champs et l’état
+  document.getElementById("room-id").value = "";
+  document.getElementById("username").value = "";
+  const createButton = document.querySelector("#lobby-setup button");
+  createButton.disabled = false;
+  createButton.classList.remove("hidden");
+  createButton.onclick = () => joinImpostorRoom();
 
   // 🎨 Revenir au style du menu
   const styleLink = document.getElementById("dynamic-style");
   styleLink.href = "styles/main-menu.css";
 
-  // Réinitialiser le menu
+  // Afficher le menu principal
   document.getElementById("menu").style.display = "block";
 
-  // ===== CLICKER RESET =====
+  // CLICKER RESET
   activeIntervals.forEach(clearInterval);
   activeIntervals = [];
   score = 0;
@@ -58,38 +69,35 @@ function goBack() {
     victoryAudio = null;
   }
 
-// ===== IMPOSTOR RESET =====
-document.getElementById("impostor-title").style.display = "block";
-document.getElementById("word-bar").textContent = "";
-document.getElementById("players-inputs").innerHTML = "";
-document.getElementById("hint-phase").innerHTML = "";
-document.getElementById("reveal-phase").innerHTML = "";
-document.getElementById("lobby-players").style.display = "none";
-document.getElementById("lobby-options").classList.add("hidden");
-document.getElementById("lobby-setup").classList.remove("hidden");
-document.getElementById("room-id").classList.remove("hidden");
-document.getElementById("username").classList.remove("hidden");
-document.querySelector("#lobby-setup button").classList.remove("hidden");
-document.getElementById("new-game").style.display = "none";
-document.getElementById("end-round").classList.add("hidden");
+  // IMPOSTOR RESET
+  document.getElementById("impostor-title").classList.remove("hidden");
+  document.getElementById("word-bar").textContent = "";
+  document.getElementById("players-inputs").innerHTML = "";
+  document.getElementById("hint-phase").innerHTML = "";
+  document.getElementById("reveal-phase").innerHTML = "";
+  document.getElementById("lobby-players").style.display = "none";
+  document.getElementById("lobby-options").classList.add("hidden");
+  document.getElementById("lobby-setup").classList.remove("hidden");
+  document.getElementById("room-id").classList.remove("hidden");
+  document.getElementById("username").classList.remove("hidden");
+  document.getElementById("new-game").style.display = "none";
+  document.getElementById("end-round").classList.add("hidden");
 
-// Réinitialise tous les états
-currentPlayers = [];
-currentRoomId = "";
-currentUsername = "";
-currentTurn = 0;
-currentRound = 1;
-impostorIndex = 0;
-votes = {};
-hasVoted = {};
-hasVotedFor = null;
-allHints = {};
-gameOptions = {
-  totalRounds: 3,
-  timer: 60,
-};
-clearInterval(turnTimer);
-clearInterval(countdownInterval);
-
-
+  // Réinitialiser les états
+  currentPlayers = [];
+  currentRoomId = "";
+  currentUsername = "";
+  currentTurn = 0;
+  currentRound = 1;
+  impostorIndex = 0;
+  votes = {};
+  hasVoted = {};
+  hasVotedFor = null;
+  allHints = {};
+  gameOptions = {
+    totalRounds: 3,
+    timer: 60,
+  };
+  clearInterval(turnTimer);
+  clearInterval(countdownInterval);
 }
