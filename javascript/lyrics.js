@@ -2245,6 +2245,16 @@ function countWordsToFind(lyrics) {
   const progressEl = () => $("#lyrics-progress");
   const guessInput = () => $("#lyrics-guess");
 
+function safeFocus(el) {
+  if (!el || document.activeElement === el) return; // ⬅️ évite un refocus inutile (et le scroll)
+  try {
+    el.focus({ preventScroll: true });
+  } catch (_) {
+    /* anciens navigateurs */
+  }
+}
+
+
   let st = {
     raw: "",
     tokens: [],
@@ -2256,10 +2266,47 @@ function countWordsToFind(lyrics) {
     title: "",
     artist: "",
     finishedCelebrated: false,
+    wasAbandoned: false, // 👈 nouveau
   };
 
   function normalizeTextLyrics(str) {
     return normalizeLyricsWord(str);
+  }
+
+  // Révèle tous les mots de la chanson
+function revealAllLyrics() {
+  if (st.wasAbandoned) return;    // 👈 ignore les clics suivants
+  st.wasAbandoned = true;
+  st.finishedCelebrated = true;
+  for (let i = 0; i < st.revealed.length; i++) {
+    if (st.isWord[i]) st.revealed[i] = true;
+  }
+  updateProgress();
+  renderBoard();
+}
+
+
+  // Animation de défaite (overlay + shake)
+  function showDefeatAnimation() {
+    if (document.getElementById("lyrics-defeat-overlay")) return; // 👈 déjà affiché
+    const overlay = document.createElement("div");
+    overlay.id = "lyrics-defeat-overlay";
+    overlay.innerHTML = `
+    <div class="ld-center">
+      <div class="ld-icon">💔</div>
+      <div class="ld-title">Dommage !</div>
+      <div class="ld-sub">Tu peux réessayer ou changer de chanson.</div>
+    </div>
+  `;
+    document.body.appendChild(overlay);
+
+    // Shake du plateau
+    boardEl().classList.add("ld-shake");
+    setTimeout(() => boardEl().classList.remove("ld-shake"), 700);
+
+    // Disparition douce
+    setTimeout(() => overlay.classList.add("out"), 1800);
+    setTimeout(() => overlay.remove(), 2400);
   }
 
   function tokenizeWithPunctuation(text) {
@@ -2283,6 +2330,7 @@ function countWordsToFind(lyrics) {
     st.totalWords = 0;
     st.foundWords = 0;
     st.finishedCelebrated = false;
+    st.wasAbandoned = false; // 👈
 
     st.tokens.forEach((tok, idx) => {
       const word = isWordToken(tok) ? normalizeTextLyrics(tok) : null;
@@ -2311,13 +2359,15 @@ function countWordsToFind(lyrics) {
 
     // Fin de chanson => célébration
     if (
-      st.totalWords > 0 &&
-      found === st.totalWords &&
-      !st.finishedCelebrated
-    ) {
-      st.finishedCelebrated = true;
-      launchFireworks(2500); // 2.5s de feu d'artifices
-    }
+  st.totalWords > 0 &&
+  found === st.totalWords &&
+  !st.finishedCelebrated &&
+  !st.wasAbandoned
+) {
+  st.finishedCelebrated = true;
+  launchFireworks(2500);
+}
+
   }
 
   function renderBoard() {
@@ -2402,29 +2452,32 @@ function countWordsToFind(lyrics) {
       gained += revealWordNormalized(nWord);
     }
 
-    if (gained > 0) {
-      updateProgress();
-      renderBoard();
-      input.value = ""; // ✅ clear pour enchaîner
-      setError("");
-      input.focus();
+      if (gained > 0) {
+    updateProgress();
+    renderBoard();
+    input.value = ""; // ✅ clear pour enchaîner
+    setError("");
+    // (pas de focus ici)
+  } else {
+    if (endsWithBoundary) {
+      setError("Mot incorrect");
+      input.value = "";
+      // (pas de focus ici)
     } else {
-      if (endsWithBoundary) {
-        setError("Mot incorrect");
-        input.value = "";
-        input.focus();
-      } else {
-        setError("");
-      }
+      setError("");
     }
   }
 
-  function onSubmitGuess() {
-    const input = guessInput();
-    if (!input.value.trim()) return;
-    input.value += " ";
-    processGuessLive();
   }
+
+function onSubmitGuess(e) {
+  if (e) e.preventDefault();
+
+  const input = guessInput();
+  if (!input.value.trim()) return;
+  input.value += " ";
+  processGuessLive();
+}
 
   function loadSongById(id) {
     const song = window.LYRICS_SONGS.find((s) => s.id === id);
@@ -2457,17 +2510,26 @@ function countWordsToFind(lyrics) {
     guessInput().placeholder = `Tape un mot… (${t}${
       a !== "—" ? " — " + a : ""
     })`;
-    guessInput().focus();
+safeFocus(guessInput());
     setError("");
 
-    // 👉 Mise à jour affichage sous le titre
+     // 👉 Mise à jour affichage sous le titre
     const infoEl = document.getElementById("lyrics-song-info");
     if (infoEl) {
       infoEl.textContent = st.title
         ? `${st.title}${st.artist ? " — " + st.artist : ""}`
         : "";
     }
+
+    // ✅ Réactivation du bouton "Abandonner" à chaque nouvelle partie
+    const sb = document.getElementById("lyrics-submit");
+    if (sb) {
+      sb.disabled = false;
+      sb.classList.remove("disabled");
+      sb.textContent = "Abandonner";
+    }
   }
+
 
   function backToSelection() {
     // Affiche la page sélection, cache le jeu
@@ -2483,20 +2545,34 @@ function countWordsToFind(lyrics) {
     const loadCus = document.getElementById("lyrics-load-custom");
     const backSel = document.getElementById("lyrics-back-select");
 
-    submitBtn?.addEventListener("click", onSubmitGuess);
+    // 👉 Le bouton devient "Abandonner"
+    if (submitBtn) {
+      submitBtn.textContent = "Abandonner";
+      submitBtn.classList.add("btn-danger");
+     submitBtn.onclick = (e) => {
+  e.preventDefault();
+  revealAllLyrics();
+  showDefeatAnimation();
+  submitBtn.disabled = true;                 // 👈 désactive
+  submitBtn.classList.add("disabled");       // (optionnel pour le style)
+};
+
+    }
+
+    // Entrée ne doit plus soumettre (on garde la révélation live)
     guessInput().addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        onSubmitGuess();
-        e.preventDefault();
-      }
+      if (e.key === "Enter") e.preventDefault();
     });
+
+    // Révélation instantanée pendant la frappe (déjà présent chez toi)
     guessInput().addEventListener("input", processGuessLive);
 
-    clearBtn?.addEventListener("click", () => {
-      guessInput().value = "";
-      guessInput().focus();
-      setError("");
-    });
+ clearBtn?.addEventListener("click", () => {
+  guessInput().value = "";
+  setError("");
+});
+
+
 
     loadCus?.addEventListener("click", loadCustomSong);
     backSel?.addEventListener("click", backToSelection);

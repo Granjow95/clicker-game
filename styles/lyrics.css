@@ -285,3 +285,49 @@ body {
   pointer-events: none;
   z-index: 9999;
 }
+
+/* Bouton "Abandonner" (style danger soft) */
+#lyrics-submit.btn-danger{
+  border-color:#ef4444;
+  background:#fee2e2;
+  color:#991b1b;
+}
+#lyrics-submit.btn-danger:hover{
+  background:#fecaca;
+}
+
+/* Overlay de défaite */
+#lyrics-defeat-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ld-fade-in .25s ease forwards;
+  pointer-events: none; /* on laisse cliquer derrière si besoin */
+}
+#lyrics-defeat-overlay.out { animation: ld-fade-out .5s ease forwards; }
+
+.ld-center {
+  text-align: center;
+  color: #fff;
+  animation: ld-pop .35s ease both;
+}
+.ld-icon { font-size: 64px; margin-bottom: 8px; }
+.ld-title { font-size: 28px; font-weight: 800; letter-spacing: .5px; }
+.ld-sub { opacity: .9; margin-top: 6px; }
+
+@keyframes ld-fade-in { from {opacity: 0} to {opacity: 1} }
+@keyframes ld-fade-out { to {opacity: 0} }
+@keyframes ld-pop { from { transform: scale(.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+
+/* Shake du plateau */
+.ld-shake { animation: ld-shake .6s ease; }
+@keyframes ld-shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
