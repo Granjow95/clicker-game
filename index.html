@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -21,10 +21,10 @@
           <h2>🕵️ Jeu de l'Imposteur</h2>
           <p>Un mot est différent… Saurez-vous le trouver ?</p>
         </div>
-        <div class="game-card" onclick="startGame('puzzle')">
-          <img src="images/puzzle.png" alt="Puzzle Game" />
-          <h2>🧩 Puzzle Game</h2>
-          <p>Assemble les pièces le plus vite possible !</p>
+        <div class="game-card" onclick="startGame('lyrics')">
+          <img src="images/lyrics.png" alt="Lyrics Game" />
+          <h2>🎤 Lyrics</h2>
+          <p>Devine les paroles mot par mot.</p>
         </div>
         <div class="game-card" onclick="startGame('runner')">
           <img src="images/runner.png" alt="Runner Game" />
@@ -136,11 +136,72 @@
       <div id="reveal-phase"></div>
     </div>
 
-    <!-- Conteneur du jeu Puzzle -->
-    <div id="puzzle-game" class="game-container" style="display: none">
+    <!-- ====== Page intermédiaire Lyrics : sélection de musique ====== -->
+    <div id="lyrics-select" class="game-container" style="display: none">
       <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <h1>🧩 Puzzle Game</h1>
-      <p>Le jeu de puzzle arrive bientôt...</p>
+      <h1>🎤 Choisis une musique</h1>
+
+      <div class="ls-toolbar">
+        <input
+          id="ls-search"
+          type="search"
+          placeholder="Rechercher titre, artiste..."
+        />
+        <select id="ls-genre">
+          <option value="">Tous les genres</option>
+        </select>
+        <select id="ls-artist">
+          <option value="">Tous les artistes</option>
+        </select>
+        <select id="ls-year">
+          <option value="">Toutes années</option>
+        </select>
+        <select id="ls-sort">
+          <option value="title-asc">Titre (A→Z)</option>
+          <option value="title-desc">Titre (Z→A)</option>
+          <option value="artist-asc">Artiste (A→Z)</option>
+          <option value="artist-desc">Artiste (Z→A)</option>
+          <option value="year-desc">Année (récent→ancien)</option>
+          <option value="year-asc">Année (ancien→récent)</option>
+          <option value="words-desc">Mots à trouver (↓)</option>
+          <option value="words-asc">Mots à trouver (↑)</option>
+        </select>
+      </div>
+
+      <div id="ls-grid" class="ls-grid" aria-live="polite"></div>
+    </div>
+
+    <!-- ====== Page du jeu Lyrics ====== -->
+    <div id="lyrics-game" class="game-container" style="display: none">
+      <button onclick="goBack()" class="back-button">Gran.Menu</button>
+      <div class="lyrics-topbar">
+        <button id="lyrics-back-select">Retour</button>
+        <h1 style="margin: 0">🎤 Lyrics</h1>
+      </div>
+
+      <div id="lyrics-song-info" class="lyrics-song-info"></div>
+
+      <!-- Stats -->
+      <div class="lyrics-stats">
+        Progression : <span id="lyrics-progress">0/0</span>
+      </div>
+
+      <!-- Saisie -->
+      <div class="lyrics-input">
+        <input
+          id="lyrics-guess"
+          type="text"
+          placeholder="Tape un mot (accents/majuscules ignorés)"
+        />
+        <button id="lyrics-submit">Valider</button>
+        <button id="lyrics-clear" title="Effacer la saisie">✖</button>
+      </div>
+
+      <div id="lyrics-board" class="lyrics-board" aria-live="polite"></div>
+      <p class="lyrics-legend">
+        Les répétitions d’un mot se révèlent d’un coup. Accents, ponctuation et
+        majuscules ignorés.
+      </p>
     </div>
 
     <!-- Conteneur du jeu Runner -->
@@ -156,5 +217,6 @@
     <script src="javascript/variables.js"></script>
     <script src="javascript/navigation.js"></script>
     <script src="javascript/clicker.js"></script>
+    <script src="javascript/lyrics.js"></script>
   </body>
 </html>

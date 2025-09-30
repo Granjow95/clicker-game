@@ -1,0 +1,286 @@
+/* ======= 📁 css/lyrics.css ======= */
+
+body {
+    background: #dbeafe;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+  }
+
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --border: #e6e8ee;
+  --text: #12151a;
+  --muted: #667085;
+  --accent: #2563eb;
+  --chip: #0ea5e9;
+  --bad: #b42318;
+  --bad-bg: #fef2f2;
+}
+
+/* ----------- GÉNÉRAUX ----------- */
+#lyrics-select, #lyrics-game {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 8px 10px 16px;
+  color: var(--text);
+}
+
+/* ======= PAGE SÉLECTION (ls-*) ======= */
+
+.ls-toolbar {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, minmax(140px, 1fr));
+  gap: .6rem;
+  margin-bottom: .8rem;
+}
+
+.ls-toolbar input,
+.ls-toolbar select {
+  padding: .48rem .66rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.ls-grid {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: 1fr; /* 👉 Toujours UNE colonne */
+}
+
+.ls-card {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: .9rem;
+  width: 100%;
+  text-align: left;
+  padding: .7rem .8rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform .06s ease, background .15s ease, border .15s ease;
+}
+.ls-card:hover {
+  transform: translateY(-1px);
+  background: #fafbff;
+  border-color: #dfe3ea;
+}
+
+.ls-cover {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #eef2f6;
+}
+
+.ls-mid { min-width: 0; }
+.ls-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ls-sub {
+  color: var(--muted);
+  font-size: .93rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ls-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.ls-chip {
+  font-size: .86rem;
+  font-weight: 700;
+  color: #0c4a6e;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  padding: .16rem .6rem;
+}
+
+.ls-empty {
+  color: var(--muted);
+  padding: 1rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #fafbff;
+}
+
+/* ======= PAGE JEU (lyrics-*) ======= */
+
+/* Barre du haut : bouton à gauche, titre centré */
+.lyrics-topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* left | center | right (vide) */
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .6rem;
+}
+
+/* Bouton “Retour à la sélection” : ne prend pas toute la place */
+#lyrics-back-select {
+  justify-self: start;
+  padding: .5rem .75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  /* empêche toute expansion */
+  width: auto;
+}
+
+/* Titre centré au milieu de la barre */
+.lyrics-topbar h1 {
+  grid-column: 2;           /* colonne centrale */
+  justify-self: center;     /* centré horizontalement */
+  margin: 0;                /* enlève la marge par défaut */
+}
+
+
+.custom-lyrics { margin-bottom: .7rem; }
+.custom-lyrics textarea,
+.custom-lyrics input {
+  width: 100%;
+  margin-top: .5rem;
+  padding: .6rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+.custom-lyrics button {
+  margin-top: .5rem;
+  padding: .5rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.lyrics-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .3rem 0 .8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.lyrics-input {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: .6rem;
+}
+#lyrics-guess {
+  flex: 1;
+  padding: .62rem .75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  outline: none;
+}
+#lyrics-submit, #lyrics-clear {
+  padding: .54rem .8rem;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.lyrics-board {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  line-height: 2.05;
+  font-size: 1.06rem;
+  word-wrap: break-word;
+}
+
+.lyrics-token {
+  display: inline-block;
+  margin-right: .28rem;
+  white-space: pre;
+  border-radius: 6px;
+  padding: 0 .08rem;
+}
+.lyrics-token.hidden {
+  opacity: .9;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+.lyrics-token.revealed {
+  font-weight: 650;
+  color: var(--text);
+}
+
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition:
+      background 0.2s,
+      color 0.2s;
+  }
+  
+  .back-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000;
+  }
+
+  /* Info chanson sous le titre */
+.lyrics-song-info {
+  margin-bottom: .8rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Feedback erreur discret */
+.lyrics-feedback {
+  margin: .35rem 0 .6rem;
+  font-weight: 600;
+  padding: .46rem .7rem;
+  border-radius: 10px;
+  display: inline-block;
+  color: var(--bad);
+  background: var(--bad-bg);
+  border: 1px solid #fbd3d3;
+}
+.lyrics-feedback.hidden { display: none; }
+
+.lyrics-legend {
+  opacity: .8;
+  margin-top: .55rem;
+  color: var(--muted);
+}
+
+/* ======= Canvas Fireworks ======= */
+#lyrics-fireworks-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}

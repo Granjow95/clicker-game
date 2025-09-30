@@ -6,6 +6,7 @@ function startGame(game) {
   console.log("🎮 Jeu démarré :", game);
 
   // 🎨 Changement dynamique de CSS selon le jeu
+  // Dans startGame(game)
   const styleLink = document.getElementById("dynamic-style");
   switch (game) {
     case "clicker":
@@ -15,6 +16,17 @@ function startGame(game) {
     case "impostor":
       styleLink.href = "styles/imposteur.css";
       break;
+    case "lyrics":
+    // 👉 on affiche la page de sélection d'abord
+    case "lyrics":
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("lyrics-select").style.display = "block";
+      document.getElementById("lyrics-game").style.display = "none";
+      document.getElementById("dynamic-style").href = "styles/lyrics.css";
+      if (window.renderLyricsSelection) window.renderLyricsSelection();
+      break;
+
+      return; // on sort pour ne pas tomber dans le default
     default:
       styleLink.href = "styles/main-menu.css";
   }
@@ -25,6 +37,10 @@ function goBack() {
   document.querySelectorAll(".game-container").forEach((game) => {
     game.style.display = "none";
   });
+
+  // cacher les vues lyrics
+  document.getElementById("lyrics-select").style.display = "none";
+  document.getElementById("lyrics-game").style.display = "none";
 
   // Quitter la room côté serveur
   if (currentRoomId) {
