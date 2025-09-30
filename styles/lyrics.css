@@ -288,9 +288,8 @@ body {
 
 /* Bouton "Abandonner" (style danger soft) */
 #lyrics-submit.btn-danger{
-  border-color:#ef4444;
-  background:#fee2e2;
-  color:#991b1b;
+  background:#ef4444;
+  color:white;
 }
 #lyrics-submit.btn-danger:hover{
   background:#fecaca;
