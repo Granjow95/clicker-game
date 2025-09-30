@@ -2329,6 +2329,7 @@ function countWordsToFind(lyrics) {
         container.appendChild(document.createElement("br"));
         return;
       }
+
       const span = document.createElement("span");
       span.className = "lyrics-token";
 
@@ -2340,9 +2341,11 @@ function countWordsToFind(lyrics) {
         span.classList.add("hidden");
         span.textContent = "_".repeat(Math.max(1, visibleLen));
         span.title = `${visibleLen} lettre(s)`;
+        span.dataset.nword = normalizeTextLyrics(tok); // 👈 ajout
       } else {
         span.textContent = tok;
       }
+
       container.appendChild(span);
     });
   }
@@ -2497,6 +2500,26 @@ function countWordsToFind(lyrics) {
 
     loadCus?.addEventListener("click", loadCustomSong);
     backSel?.addEventListener("click", backToSelection);
+
+    // Indice : clic sur un mot caché => révèle ce mot + toutes ses occurrences
+    boardEl().addEventListener("click", (e) => {
+      const t = e.target;
+      if (
+        !t.classList.contains("lyrics-token") ||
+        !t.classList.contains("hidden")
+      )
+        return;
+
+      const nWord = t.dataset.nword;
+      if (!nWord) return;
+
+      const gained = revealWordNormalized(nWord);
+      if (gained > 0) {
+        updateProgress();
+        renderBoard();
+        setError("");
+      }
+    });
   }
 
   (function observeView() {
