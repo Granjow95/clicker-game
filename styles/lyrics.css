@@ -1,96 +1,181 @@
-/* ======= 📁 css/lyrics.css ======= */
+/* ======= lyrics.css — style cartoon ======= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+
+* { box-sizing: border-box; }
 
 body {
-    background: #dbeafe;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    text-align: center;
-  }
-
-:root {
-  --bg: #f6f7fb;
-  --card: #ffffff;
-  --border: #e6e8ee;
-  --text: #12151a;
-  --muted: #667085;
-  --accent: #2563eb;
-  --chip: #0ea5e9;
-  --bad: #b42318;
-  --bad-bg: #fef2f2;
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  background-color: #fff7d6;
+  background-image: radial-gradient(circle, #fcd34d 1.5px, transparent 1.5px);
+  background-size: 32px 32px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
 
-/* ----------- GÉNÉRAUX ----------- */
-#lyrics-select, #lyrics-game {
-  max-width: 1000px;
+:root {
+  --card: #ffffff;
+  --border: #1a1a1a;
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+  --accent: #f97316;
+  --chip: #fbbf24;
+  --bad: #dc2626;
+  --bad-bg: #fee2e2;
+  --sh: 4px 4px 0 #1a1a1a;
+  --sh-lg: 6px 6px 0 #1a1a1a;
+}
+
+/* ── Zones principales ── */
+#lyrics-select,
+#lyrics-game {
+  max-width: 820px;
   margin: 0 auto;
-  padding: 8px 10px 16px;
+  padding: 80px 16px 48px;
   color: var(--text);
 }
 
-/* ======= PAGE SÉLECTION (ls-*) ======= */
+/* ── Bouton Gran.Menu (position fixe, toujours visible) ── */
+.back-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  background: var(--card);
+  border: 3px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 var(--border);
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px 14px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.back-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+.back-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--border);
+}
+
+/* ======= PAGE SÉLECTION ======= */
+
+#lyrics-select h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2.4rem;
+  color: #ffffff;
+  -webkit-text-stroke: 2.5px #1a1a1a;
+  text-shadow: 4px 4px 0 #1a1a1a;
+  margin: 0 0 20px;
+}
 
 .ls-toolbar {
   display: grid;
-  grid-template-columns: 1fr repeat(4, minmax(140px, 1fr));
-  gap: .6rem;
-  margin-bottom: .8rem;
+  grid-template-columns: 1fr repeat(4, minmax(130px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .ls-toolbar input,
 .ls-toolbar select {
-  padding: .48rem .66rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border: 3px solid var(--border);
+  border-radius: 12px;
   background: var(--card);
+  box-shadow: 3px 3px 0 var(--border);
+  outline: none;
+  transition: transform 0.1s, box-shadow 0.1s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.ls-toolbar input:focus,
+.ls-toolbar select:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
 }
 
+/* Grille de chansons */
 .ls-grid {
   display: grid;
-  gap: .75rem;
-  grid-template-columns: 1fr; /* 👉 Toujours UNE colonne */
+  gap: 10px;
+  grid-template-columns: 1fr;
 }
 
 .ls-card {
   display: grid;
-  grid-template-columns: 64px 1fr auto;
+  grid-template-columns: 68px 1fr auto;
   align-items: center;
-  gap: .9rem;
-  width: 100%;
+  gap: 12px;
   text-align: left;
-  padding: .7rem .8rem;
+  padding: 10px 14px;
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--sh);
   cursor: pointer;
-  transition: transform .06s ease, background .15s ease, border .15s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .ls-card:hover {
-  transform: translateY(-1px);
-  background: #fafbff;
-  border-color: #dfe3ea;
+  transform: translate(-2px, -2px);
+  box-shadow: var(--sh-lg);
+}
+.ls-card:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--border);
 }
 
-.ls-cover {
+/* Conteneur de cover (toujours affiché, placeholder si pas d'image) */
+.ls-cover-wrap {
   width: 64px;
   height: 64px;
-  object-fit: cover;
+  flex-shrink: 0;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #eef2f6;
+  border: 3px solid var(--border);
+  background: #fde68a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ls-cover-wrap.ls-cover-empty::after {
+  content: '♪';
+  font-size: 2rem;
+  color: #92400e;
+}
+.ls-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .ls-mid { min-width: 0; }
+
 .ls-title {
-    font-size: 1rem;
-  font-weight: 700;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
   color: var(--text);
-  margin-bottom: .12rem;
+  margin-bottom: 2px;
+  /* 2 lignes max, puis ellipsis */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
 }
+
 .ls-sub {
   color: var(--muted);
-  font-size: .93rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -103,182 +188,248 @@ body {
 }
 
 .ls-chip {
-  font-size: .86rem;
-  font-weight: 700;
-  color: #0c4a6e;
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--chip);
+  border: 2.5px solid var(--border);
   border-radius: 999px;
-  padding: .16rem .6rem;
+  padding: 3px 12px;
+  box-shadow: 2px 2px 0 var(--border);
 }
 
 .ls-empty {
-  color: var(--muted);
-  padding: 1rem;
-  text-align: center;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-  background: #fafbff;
-}
-
-/* ======= PAGE JEU (lyrics-*) ======= */
-
-/* Barre du haut : bouton à gauche, titre centré */
-.lyrics-topbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto; /* left | center | right (vide) */
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: .6rem;
-}
-
-/* Bouton “Retour à la sélection” : ne prend pas toute la place */
-#lyrics-back-select {
-  justify-self: start;
-  padding: .5rem .75rem;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  cursor: pointer;
-  /* empêche toute expansion */
-  width: auto;
-}
-
-/* Titre centré au milieu de la barre */
-.lyrics-topbar h1 {
-  grid-column: 2;           /* colonne centrale */
-  justify-self: center;     /* centré horizontalement */
-  margin: 0;                /* enlève la marge par défaut */
-}
-
-
-.custom-lyrics { margin-bottom: .7rem; }
-.custom-lyrics textarea,
-.custom-lyrics input {
-  width: 100%;
-  margin-top: .5rem;
-  padding: .6rem .7rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card);
-}
-.custom-lyrics button {
-  margin-top: .5rem;
-  padding: .5rem .7rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card);
-  cursor: pointer;
-}
-
-.lyrics-stats {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  margin: .3rem 0 .8rem;
   font-weight: 700;
   color: var(--muted);
-}
-
-.lyrics-input {
-  display: flex;
-  gap: .5rem;
-  align-items: center;
-  margin-bottom: .6rem;
-}
-#lyrics-guess {
-  flex: 1;
-  padding: .62rem .75rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  outline: none;
-}
-#lyrics-submit, #lyrics-clear {
-  padding: .54rem .8rem;
-  border-radius: 12px;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--card);
-}
-
-.lyrics-board {
-  background: var(--card);
-  border: 1px solid var(--border);
+  padding: 20px;
+  text-align: center;
+  border: 3px dashed var(--border);
   border-radius: 14px;
-  padding: 14px;
-  line-height: 2.05;
-  font-size: 1.06rem;
-  word-wrap: break-word;
+  background: #fffbeb;
 }
 
-.lyrics-token {
-  display: inline-block;
-  margin-right: .28rem;
-  white-space: pre;
-  border-radius: 6px;
-  padding: 0 .08rem;
-}
-.lyrics-token.hidden {
-  opacity: .9;
-  letter-spacing: .06em;
+.ls-loading-banner {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
   color: var(--muted);
+  text-align: center;
+  margin: 0 0 10px;
+  padding: 8px 16px;
+  background: var(--card);
+  border: 3px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--border);
 }
-.lyrics-token.revealed {
-  font-weight: 650;
+
+/* ======= PAGE JEU ======= */
+
+.lyrics-topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lyrics-topbar h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: #ffffff;
+  -webkit-text-stroke: 2px #1a1a1a;
+  text-shadow: 3px 3px 0 #1a1a1a;
+  grid-column: 2;
+  justify-self: center;
+  margin: 0;
+}
+
+#lyrics-back-select {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
+  justify-self: start;
+  padding: 7px 14px;
+  border: 3px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 3px 3px 0 var(--border);
+  cursor: pointer;
+  width: auto;
+  color: var(--text);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#lyrics-back-select:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+#lyrics-back-select:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--border);
+}
+
+/* Info chanson */
+.lyrics-song-info {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  padding: 7px 18px;
+  background: var(--chip);
+  border: 3px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--sh);
+  display: inline-block;
   color: var(--text);
 }
 
-  .back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: none;
-    border: none;
-    color: #333;
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 6px;
-    transition:
-      background 0.2s,
-      color 0.2s;
-  }
-  
-  .back-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #000;
-  }
-
-  /* Info chanson sous le titre */
-.lyrics-song-info {
-  margin-bottom: .8rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--accent);
+/* Barre sticky (stats + saisie) */
+.lyrics-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff7d6;
+  padding: 8px 0 10px;
+  /* Transition douce pour l'ombre qui apparaît au scroll */
+  transition: box-shadow 0.15s ease;
+}
+.lyrics-sticky-bar.is-stuck {
+  box-shadow: 0 5px 0 var(--border);
+}
+/* Sentinelle invisible placée juste avant la barre pour détecter le scroll */
+.lyrics-sticky-sentinel {
+  height: 1px;
+  pointer-events: none;
+  visibility: hidden;
 }
 
-/* Feedback erreur discret */
+/* Stats */
+.lyrics-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  background: var(--card);
+  border: 3px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 var(--border);
+  padding: 5px 16px;
+  color: var(--text);
+}
+
+/* Zone de saisie */
+.lyrics-input {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
+#lyrics-guess {
+  flex: 1;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  border: 3px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 3px 3px 0 var(--border);
+  outline: none;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#lyrics-guess:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+
+#lyrics-submit,
+#lyrics-clear {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  padding: 10px 16px;
+  border: 3px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 3px 3px 0 var(--border);
+  cursor: pointer;
+  color: var(--text);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#lyrics-submit:hover,
+#lyrics-clear:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+#lyrics-submit:active,
+#lyrics-clear:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--border);
+}
+
+#lyrics-submit.btn-danger {
+  background: #ef4444;
+  color: white;
+  border-color: #991b1b;
+  box-shadow: 3px 3px 0 #991b1b;
+}
+#lyrics-submit.btn-danger:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #991b1b;
+}
+
+/* Plateau des paroles */
+.lyrics-board {
+  background: var(--card);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--sh-lg);
+  padding: 18px 20px;
+  line-height: 2.15;
+  font-size: 1.06rem;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+/* Tokens */
+.lyrics-token {
+  display: inline-block;
+  margin-right: 4px;
+  white-space: pre;
+  border-radius: 5px;
+  padding: 0 1px;
+}
+.lyrics-token.hidden {
+  color: #c4c4c4;
+  letter-spacing: 0.06em;
+}
+.lyrics-token.revealed {
+  font-weight: 900;
+  color: #16a34a;
+}
+
+/* Feedback erreur */
 .lyrics-feedback {
-  margin: .35rem 0 .6rem;
-  font-weight: 600;
-  padding: .46rem .7rem;
+  font-family: 'Fredoka One', cursive;
+  margin: 6px 0 10px;
+  padding: 8px 16px;
   border-radius: 10px;
   display: inline-block;
   color: var(--bad);
   background: var(--bad-bg);
-  border: 1px solid #fbd3d3;
+  border: 3px solid var(--bad);
+  box-shadow: 3px 3px 0 var(--bad);
 }
 .lyrics-feedback.hidden { display: none; }
 
+/* Légende */
 .lyrics-legend {
-  opacity: .8;
-  margin-top: .55rem;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--muted);
+  margin-top: 10px;
+  opacity: 0.7;
 }
 
-/* ======= Canvas Fireworks ======= */
+/* ======= Fireworks ======= */
 #lyrics-fireworks-canvas {
   position: fixed;
   inset: 0;
@@ -286,47 +437,97 @@ body {
   z-index: 9999;
 }
 
-/* Bouton "Abandonner" (style danger soft) */
-#lyrics-submit.btn-danger{
-  background:#ef4444;
-  color:white;
-}
-#lyrics-submit.btn-danger:hover{
-  background:#fecaca;
-}
-
-/* Overlay de défaite */
+/* ======= Overlay défaite ======= */
 #lyrics-defeat-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: ld-fade-in .25s ease forwards;
-  pointer-events: none; /* on laisse cliquer derrière si besoin */
+  animation: ld-fade-in 0.25s ease forwards;
+  pointer-events: none;
 }
-#lyrics-defeat-overlay.out { animation: ld-fade-out .5s ease forwards; }
+#lyrics-defeat-overlay.out { animation: ld-fade-out 0.5s ease forwards; }
 
 .ld-center {
   text-align: center;
-  color: #fff;
-  animation: ld-pop .35s ease both;
+  background: var(--card);
+  border: 4px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 8px 8px 0 var(--border);
+  padding: 40px 52px;
+  animation: ld-pop 0.35s ease both;
 }
-.ld-icon { font-size: 64px; margin-bottom: 8px; }
-.ld-title { font-size: 28px; font-weight: 800; letter-spacing: .5px; }
-.ld-sub { opacity: .9; margin-top: 6px; }
+.ld-icon { font-size: 64px; margin-bottom: 10px; }
+.ld-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: 2rem;
+  color: var(--text);
+}
+.ld-sub {
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 8px;
+}
 
-@keyframes ld-fade-in { from {opacity: 0} to {opacity: 1} }
-@keyframes ld-fade-out { to {opacity: 0} }
-@keyframes ld-pop { from { transform: scale(.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes ld-fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes ld-fade-out { to { opacity: 0 } }
+@keyframes ld-pop {
+  from { transform: scale(0.85); opacity: 0 }
+  to   { transform: scale(1);    opacity: 1 }
+}
 
-/* Shake du plateau */
-.ld-shake { animation: ld-shake .6s ease; }
+.ld-shake { animation: ld-shake 0.6s ease; }
 @keyframes ld-shake {
   10%, 90% { transform: translateX(-2px); }
   20%, 80% { transform: translateX(4px); }
   30%, 50%, 70% { transform: translateX(-6px); }
-  40%, 60% { transform: translateX(6px); }
+  40%, 60%  { transform: translateX(6px); }
+}
+
+/* ======= Toast ======= */
+.ls-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a1a1a;
+  color: #fff;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem;
+  padding: 12px 22px;
+  border-radius: 14px;
+  border: 3px solid #fff;
+  box-shadow: 4px 4px 0 #fff3;
+  z-index: 10000;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.ls-toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+.ls-toast.ls-toast-error {
+  background: #dc2626;
+  border-color: #7f1d1d;
+  box-shadow: 4px 4px 0 #7f1d1d;
+}
+
+/* ── Responsive ── */
+@media screen and (max-width: 700px) {
+  .ls-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ls-toolbar input { grid-column: 1 / -1; }
+  #lyrics-select h1 { font-size: 1.9rem; }
+  .lyrics-topbar h1 { font-size: 1.6rem; }
+}
+
+@media screen and (max-width: 480px) {
+  #lyrics-select,
+  #lyrics-game { padding: 70px 10px 30px; }
+  .ls-toolbar { grid-template-columns: 1fr; }
+  .ld-center { padding: 30px 28px; }
 }

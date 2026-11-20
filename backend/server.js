@@ -15,14 +15,53 @@ app.get("/", (req, res) => {
   res.send("Backend is alive!");
 });
 
+// ── Recherche audio YouTube (pour le karaoké) ──
+// Autorise les requêtes du front et renvoie l'ID de la première vidéo trouvée.
+app.get("/yt-search", async (req, res) => {
+  // Recherche publique sans authentification → CORS ouvert (aucun cookie/credential)
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET");
+
+  const q = (req.query.q || "").toString().slice(0, 200).trim();
+  if (!q) return res.json({ videoId: null });
+
+  try {
+    // sp=EgIQAQ%3D%3D → filtre « Vidéos » uniquement (exclut chaînes / playlists)
+    const url = "https://www.youtube.com/results?search_query=" +
+      encodeURIComponent(q) + "&sp=EgIQAQ%253D%253D";
+    const r = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+    const html = await r.text();
+    // On renvoie plusieurs candidats : certaines vidéos refusent l'intégration (erreur 101/150),
+    // le front essaiera la suivante jusqu'à en trouver une lisible.
+    const ids = [];
+    const re = /"videoId":"([\w-]{11})"/g;
+    let m;
+    while ((m = re.exec(html)) !== null && ids.length < 10) {
+      if (!ids.includes(m[1])) ids.push(m[1]);
+    }
+    return res.json({ videoIds: ids, videoId: ids[0] || null });
+  } catch (e) {
+    console.error("yt-search error:", e.message);
+    return res.json({ videoIds: [], videoId: null });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 const rooms = {};
 const gameStates = {};
 const votesState = {};
-const lobbyOptions = {}; 
-const playerPoints = {}; 
-const roundCount = {}; 
+const lobbyOptions = {};
+const playerPoints = {};
+const roundCount = {};
+
+// ── Karaoké rooms ──
+const karaokeRooms = {};
 
 function getRandomWordPair() {
   const pairs = [
@@ -253,7 +292,82 @@ io.on("connection", (socket) => {
     }
   });
 
+  // ── Karaoké events ──
+
+  socket.on("karaoke_join", ({ roomId, username }) => {
+    if (!roomId || !username) return;
+    socket.join(roomId);
+
+    const creating = !karaokeRooms[roomId];
+    if (creating) {
+      karaokeRooms[roomId] = { host: socket.id, players: [], song: null, currentLine: 0, started: false };
+    } else if (karaokeRooms[roomId].players.length >= 10) {
+      socket.emit("karaoke_error", "Salle pleine (max 10 joueurs).");
+      return;
+    }
+
+    karaokeRooms[roomId].players.push({ id: socket.id, username });
+    const room = karaokeRooms[roomId];
+
+    socket.emit("karaoke_joined", {
+      roomId,
+      players: room.players,
+      host: room.host,
+      isHost: creating,
+      song: room.song,
+      currentLine: room.currentLine,
+      started: room.started,
+    });
+
+    io.to(roomId).emit("karaoke_room_update", {
+      players: room.players,
+      host: room.host,
+      song: room.song,
+      currentLine: room.currentLine,
+      started: room.started,
+    });
+  });
+
+  socket.on("karaoke_select_song", ({ roomId, song }) => {
+    const room = karaokeRooms[roomId];
+    if (!room || room.host !== socket.id) return;
+    room.song = song;
+    room.currentLine = 0;
+    room.started = false;
+    io.to(roomId).emit("karaoke_song_selected", { song });
+  });
+
+  socket.on("karaoke_start", (roomId) => {
+    const room = karaokeRooms[roomId];
+    if (!room || room.host !== socket.id || !room.song) return;
+    room.started = true;
+    room.currentLine = 0;
+    io.to(roomId).emit("karaoke_started", { currentLine: 0 });
+  });
+
+  socket.on("karaoke_advance", ({ roomId, direction }) => {
+    const room = karaokeRooms[roomId];
+    if (!room || room.host !== socket.id) return;
+    if (direction === "next") room.currentLine++;
+    else if (direction === "prev" && room.currentLine > 0) room.currentLine--;
+    io.to(roomId).emit("karaoke_line_changed", { currentLine: room.currentLine });
+  });
+
+  socket.on("karaoke_leave", (roomId) => {
+    socket.leave(roomId);
+    const room = karaokeRooms[roomId];
+    if (!room) return;
+    room.players = room.players.filter((p) => p.id !== socket.id);
+    if (room.players.length === 0) { delete karaokeRooms[roomId]; return; }
+    if (room.host === socket.id) room.host = room.players[0].id;
+    io.to(roomId).emit("karaoke_room_update", {
+      players: room.players, host: room.host,
+      song: room.song, currentLine: room.currentLine, started: room.started,
+    });
+  });
+
   socket.on("disconnect", () => {
+    // Impostor cleanup
     for (const roomId in rooms) {
       const before = rooms[roomId].length;
       rooms[roomId] = rooms[roomId].filter((p) => p.id !== socket.id);
@@ -269,6 +383,20 @@ io.on("connection", (socket) => {
           id: roomId,
           players: rooms[roomId],
           options: lobbyOptions[roomId],
+        });
+      }
+    }
+    // Karaoké cleanup
+    for (const roomId in karaokeRooms) {
+      const room = karaokeRooms[roomId];
+      const before = room.players.length;
+      room.players = room.players.filter((p) => p.id !== socket.id);
+      if (room.players.length === 0) { delete karaokeRooms[roomId]; }
+      else if (room.players.length !== before) {
+        if (room.host === socket.id) room.host = room.players[0].id;
+        io.to(roomId).emit("karaoke_room_update", {
+          players: room.players, host: room.host,
+          song: room.song, currentLine: room.currentLine, started: room.started,
         });
       }
     }

@@ -9,60 +9,32 @@
   <body>
     <!-- Conteneur du menu -->
     <div id="menu">
-      <h1>🎮 Choisis ton jeu !</h1>
+      <div class="menu-header">
+        <h1>🎮 Gran'Games</h1>
+        <p class="menu-tagline">Choisis ton jeu et joue !</p>
+      </div>
       <div class="game-selection">
-        <div class="game-card" onclick="startGame('clicker')">
-          <img src="images/clicker.png" alt="Clicker Game" />
-          <h2>🖱️ Skibidi Clicker</h2>
-          <p>Clicker rapide avec des bonus et mini-jeux.</p>
-        </div>
         <div class="game-card" onclick="startGame('impostor')">
-          <img src="images/impostor.png" alt="Impostor Game" />
-          <h2>🕵️ Jeu de l'Imposteur</h2>
+          <span class="card-icon">🕵️</span>
+          <h2>Jeu de l'Imposteur</h2>
           <p>Un mot est différent… Saurez-vous le trouver ?</p>
         </div>
         <div class="game-card" onclick="startGame('lyrics')">
-          <img src="images/lyrics.png" alt="Lyrics Game" />
-          <h2>🎤 Lyrics</h2>
+          <span class="card-icon">🎤</span>
+          <h2>Lyrics</h2>
           <p>Devine les paroles mot par mot.</p>
         </div>
-        <div class="game-card" onclick="startGame('runner')">
-          <img src="images/runner.png" alt="Runner Game" />
-          <h2>🏃 Infinite Runner</h2>
-          <p>Évite les obstacles et va le plus loin possible.</p>
+        <div class="game-card" onclick="startGame('karaoke')">
+          <span class="card-icon">🎵</span>
+          <h2>Karaoké</h2>
+          <p>Chante tes chansons préférées en solo ou avec tes amis !</p>
         </div>
-      </div>
-    </div>
-
-    <!-- Conteneur du jeu Skibidi Clicker -->
-    <div id="clicker-game" class="game-container" style="display: none">
-      <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <div class="container">
-        <h1>Skibidi Clicker</h1>
-        <p>Score : <span id="score">0</span></p>
-        <div id="cps">0 clic/s</div>
-        <button id="clickButton">Clique-moi !</button>
-      </div>
-      <div id="bg-video"></div>
-
-      <!-- Mini-jeu code à 4 chiffres -->
-      <div id="code-game" style="display: none">
-        <h2>🔐 Trouve le code à 4 chiffres</h2>
-        <p>
-          <span style="color: yellow">Jaune</span> = Bon chiffre mauvaise place
-          / <span style="color: red">Rouge</span> = Bon chiffre bonne place
-        </p>
-        <div id="code-inputs"></div>
-        <input
-          type="text"
-          id="code-attempt"
-          maxlength="4"
-          placeholder="Ex:1234"
-          inputmode="numeric"
-          pattern="[0-9]*"
-        />
-        <button onclick="submitCodeAttempt()">Valider</button>
-        <div id="code-feedback"></div>
+        <div class="game-card" onclick="startGame('runner')">
+          <span class="card-icon">🏃</span>
+          <h2>Infinite Runner</h2>
+          <p>Évite les obstacles et va le plus loin possible.</p>
+          <span class="card-badge">Bientôt</span>
+        </div>
       </div>
     </div>
 
@@ -163,8 +135,6 @@
           <option value="artist-desc">Artiste (Z→A)</option>
           <option value="year-desc">Année (récent→ancien)</option>
           <option value="year-asc">Année (ancien→récent)</option>
-          <option value="words-desc">Mots à trouver (↓)</option>
-          <option value="words-asc">Mots à trouver (↑)</option>
         </select>
       </div>
 
@@ -181,20 +151,20 @@
 
       <div id="lyrics-song-info" class="lyrics-song-info"></div>
 
-      <!-- Stats -->
-      <div class="lyrics-stats">
-        Progression : <span id="lyrics-progress">0/0</span>
-      </div>
-
-      <!-- Saisie -->
-      <div class="lyrics-input">
-        <input
-          id="lyrics-guess"
-          type="text"
-          placeholder="Tape un mot (accents/majuscules ignorés)"
-        />
-        <button id="lyrics-submit">Abandonner</button>
-        <button id="lyrics-clear" title="Effacer la saisie">✖</button>
+      <!-- Stats + saisie (barre sticky) -->
+      <div class="lyrics-sticky-bar">
+        <div class="lyrics-stats">
+          Progression : <span id="lyrics-progress">0/0</span>
+        </div>
+        <div class="lyrics-input">
+          <input
+            id="lyrics-guess"
+            type="text"
+            placeholder="Tape un mot (accents/majuscules ignorés)"
+          />
+          <button id="lyrics-submit">Abandonner</button>
+          <button id="lyrics-clear" title="Effacer la saisie">✖</button>
+        </div>
       </div>
 
       <div id="lyrics-board" class="lyrics-board" aria-live="polite"></div>
@@ -211,12 +181,106 @@
       <p>Le jeu de course arrive bientôt...</p>
     </div>
 
+    <!-- ====== KARAOKÉ : sélection du mode ====== -->
+    <div id="karaoke-mode" class="game-container" style="display:none">
+      <button onclick="karaokeBackToMenu()" class="back-button">Gran.Menu</button>
+      <h1>🎵 Karaoké</h1>
+      <div class="kk-mode-grid">
+        <button class="kk-mode-card" onclick="karaokeStartSolo()">
+          <span class="kk-mode-icon">🎤</span>
+          <strong>Solo</strong>
+          <p>Chante seul(e) à ton rythme</p>
+        </button>
+        <button class="kk-mode-card" onclick="karaokeShowRoom()">
+          <span class="kk-mode-icon">👥</span>
+          <strong>Multijoueur</strong>
+          <p>Crée une salle et chante avec tes amis</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====== KARAOKÉ : lobby multijoueur ====== -->
+    <div id="karaoke-room" class="game-container" style="display:none">
+      <button onclick="karaokeBackToMode()" class="back-button">Retour</button>
+      <h1>👥 Salle Karaoké</h1>
+
+      <div id="kk-join-form" class="kk-join-form">
+        <input id="kk-username" type="text" placeholder="Ton pseudo" maxlength="20" autocomplete="off" />
+        <input id="kk-roomcode" type="text" placeholder="Code de salle (laisser vide pour créer)" maxlength="6" autocomplete="off" />
+        <button onclick="karaokeJoinRoom()" class="kk-btn-primary">Rejoindre / Créer</button>
+        <p id="kk-join-error" class="kk-join-error" style="display:none"></p>
+      </div>
+
+      <div id="kk-lobby" style="display:none">
+        <div class="kk-room-code-display">
+          Code de la salle : <strong id="kk-room-code-text"></strong>
+          <button onclick="kk_copyCode()" class="kk-copy-btn" title="Copier le code">📋</button>
+        </div>
+        <div id="kk-players-list" class="kk-players-list"></div>
+
+        <!-- Panneau hôte -->
+        <div id="kk-host-panel" class="kk-host-panel" style="display:none">
+          <div id="kk-selected-song-display" class="kk-selected-song-display" style="display:none"></div>
+          <button onclick="karaokeGoSelectSong()" class="kk-btn-secondary">🎵 Choisir une musique</button>
+          <button id="kk-start-btn" onclick="karaokeMultiStart()" class="kk-btn-start" style="display:none">▶ Démarrer le karaoké !</button>
+        </div>
+
+        <!-- Message invité -->
+        <div id="kk-guest-panel" class="kk-guest-panel" style="display:none">
+          <div id="kk-guest-song-display" class="kk-guest-song-display">En attente que l'hôte choisisse une musique…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== KARAOKÉ : sélection de musique ====== -->
+    <div id="karaoke-select" class="game-container" style="display:none">
+      <button onclick="karaokeBackFromSelect()" class="back-button">Retour</button>
+      <h1>🎵 Choisir une musique</h1>
+      <div class="kk-search-bar">
+        <input id="kk-search" type="search" placeholder="Titre, artiste…" autocomplete="off" />
+      </div>
+      <div id="kk-songs-grid" class="kk-songs-grid"></div>
+    </div>
+
+    <!-- ====== KARAOKÉ : jeu ====== -->
+    <div id="karaoke-game" style="display:none">
+      <div class="kk-topbar">
+        <button onclick="karaokeExitGame()" class="kk-exit-btn">✕ Quitter</button>
+        <span id="kk-song-title-bar" class="kk-song-title-bar"></span>
+        <span id="kk-line-counter" class="kk-line-counter"></span>
+      </div>
+
+      <div class="kk-stage">
+        <div id="kk-line-prev" class="kk-lyric kk-lyric-prev"></div>
+        <div id="kk-line-curr" class="kk-lyric kk-lyric-curr"></div>
+        <div id="kk-line-next" class="kk-lyric kk-lyric-next"></div>
+      </div>
+
+      <div class="kk-footer">
+        <div id="kk-controls" class="kk-controls">
+          <button id="kk-prev-btn" onclick="karaokeAdvance('prev')" class="kk-ctrl-btn">◀ Préc.</button>
+          <button id="kk-play-btn" onclick="karaokeToggleAutoPlay()" class="kk-ctrl-btn kk-ctrl-auto">▶ Auto</button>
+          <button id="kk-next-btn" onclick="karaokeAdvance('next')" class="kk-ctrl-btn">Suiv. ▶</button>
+        </div>
+        <div id="kk-spectator-msg" class="kk-spectator-msg" style="display:none">🎤 L'hôte contrôle les paroles</div>
+        <div id="kk-players-bar" class="kk-players-bar"></div>
+      </div>
+
+      <div id="kk-end-overlay" class="kk-end-overlay" style="display:none">
+        <div class="kk-end-box">
+          <div class="kk-end-icon">🎤</div>
+          <h2>Fin de la chanson !</h2>
+          <button onclick="karaokeRestartSong()" class="kk-btn-primary">Recommencer</button>
+          <button onclick="karaokeExitGame()" class="kk-btn-secondary">Changer de musique</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Chargement des scripts JavaScript -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="javascript/imposteur.js"></script>
-    <script src="javascript/variables.js"></script>
     <script src="javascript/navigation.js"></script>
-    <script src="javascript/clicker.js"></script>
     <script src="javascript/lyrics.js"></script>
+    <script src="javascript/karaoke.js"></script>
   </body>
 </html>

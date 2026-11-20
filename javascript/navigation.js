@@ -9,15 +9,9 @@ function startGame(game) {
   // Dans startGame(game)
   const styleLink = document.getElementById("dynamic-style");
   switch (game) {
-    case "clicker":
-      styleLink.href = "styles/clicker.css";
-      initClickerGame();
-      break;
     case "impostor":
       styleLink.href = "styles/imposteur.css";
       break;
-    case "lyrics":
-    // 👉 on affiche la page de sélection d'abord
     case "lyrics":
       document.getElementById("menu").style.display = "none";
       document.getElementById("lyrics-select").style.display = "block";
@@ -25,8 +19,12 @@ function startGame(game) {
       document.getElementById("dynamic-style").href = "styles/lyrics.css";
       if (window.renderLyricsSelection) window.renderLyricsSelection();
       break;
-
-      return; // on sort pour ne pas tomber dans le default
+    case "karaoke":
+      document.getElementById("karaoke-game").style.display = "none";
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("karaoke-mode").style.display = "block";
+      document.getElementById("dynamic-style").href = "styles/karaoke.css";
+      break;
     default:
       styleLink.href = "styles/main-menu.css";
   }
@@ -64,26 +62,7 @@ function goBack() {
   styleLink.href = "styles/main-menu.css";
 
   // Afficher le menu principal
-  document.getElementById("menu").style.display = "block";
-
-  // CLICKER RESET
-  activeIntervals.forEach(clearInterval);
-  activeIntervals = [];
-  score = 0;
-  clickValue = 1;
-  unlockedMilestones.length = 0;
-  document.getElementById("score").textContent = "0";
-  document.getElementById("cps").textContent = "0 clic/s";
-  document.body.style.backgroundColor = "#dbeafe";
-  document.getElementById("bg-video").innerHTML = "";
-  document.querySelectorAll(".dancer, .confetti").forEach((el) => el.remove());
-  document.getElementById("code-game").style.display = "none";
-  codeGameActive = false;
-  gameSolved = false;
-  if (victoryAudio) {
-    victoryAudio.pause();
-    victoryAudio = null;
-  }
+  document.getElementById("menu").style.display = "";
 
   // IMPOSTOR RESET
   document.getElementById("impostor-title").classList.remove("hidden");
