@@ -1,0 +1,27 @@
+const PORT = process.env.PORT || 3000;
+const IS_PROD = process.env.NODE_ENV === "production";
+
+// Origines autorisées : ALLOWED_ORIGINS="https://a.com,https://b.com" (séparées par des virgules).
+const DEFAULT_ORIGINS = ["https://granjow.netlify.app"];
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
+  : DEFAULT_ORIGINS;
+
+const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+// Hors production, on accepte aussi localhost pour le développement.
+function isOriginAllowed(origin) {
+  if (!origin) return true; // requêtes sans en-tête Origin (curl, serveur à serveur)
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return !IS_PROD && LOCAL_ORIGIN.test(origin);
+}
+
+module.exports = {
+  PORT,
+  IS_PROD,
+  isOriginAllowed,
+  MAX_BUFFER_BYTES: 200 * 1024, // une chanson (paroles) tient largement dedans
+  MAX_ROOMS: 500,
+  MAX_IMPOSTEUR_PLAYERS: 8,
+  MAX_KARAOKE_PLAYERS: 10,
+};
