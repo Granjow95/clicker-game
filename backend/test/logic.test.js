@@ -68,3 +68,11 @@ test("CORS : prod autorisée, origine inconnue refusée", () => {
   assert.equal(isOriginAllowed("https://evil.example"), false);
   assert.equal(isOriginAllowed(undefined), true);
 });
+
+test("limiteur par clé : bloque au-delà du quota puis repart avec la fenêtre", async () => {
+  const { createKeyedLimiter } = require("../lib/util");
+  const allow = createKeyedLimiter({ max: 2, windowMs: 50 });
+  assert.deepEqual([allow("ip"), allow("ip"), allow("ip"), allow("autre")], [true, true, false, true]);
+  await new Promise((r) => setTimeout(r, 70));
+  assert.equal(allow("ip"), true);
+});

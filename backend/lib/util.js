@@ -25,4 +25,22 @@ function createRateLimiter({ capacity = 30, perSecond = 15 } = {}) {
   };
 }
 
-module.exports = { clean, clampInt, createRateLimiter };
+// Limiteur à fenêtre fixe par clé (ex. IP) : `max` appels par `windowMs`.
+function createKeyedLimiter({ max, windowMs }) {
+  const hits = new Map();
+  return function allow(key) {
+    const now = Date.now();
+    if (hits.size > 5000) {
+      for (const [k, v] of hits) if (now - v.start > windowMs) hits.delete(k);
+    }
+    const h = hits.get(key);
+    if (!h || now - h.start > windowMs) {
+      hits.set(key, { start: now, count: 1 });
+      return true;
+    }
+    h.count++;
+    return h.count <= max;
+  };
+}
+
+module.exports = { clean, clampInt, createRateLimiter, createKeyedLimiter };

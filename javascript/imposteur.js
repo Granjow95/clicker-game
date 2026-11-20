@@ -76,6 +76,7 @@ socket.on("room_update", (room) => {
 
 socket.on("room-created", (room) => {
   currentPlayers = room.players;
+  if (room.id) currentRoomId = room.id;
 
   // Affiche les joueurs
   document.getElementById("lobby-players").style.display = "block";
@@ -314,37 +315,12 @@ function showVotingPhase() {
       voteInfo.innerHTML = `<strong>Tu as voté pour :</strong> ${esc(player.username)}`;
       revealPhase.appendChild(voteInfo);
 
-      if (Object.keys(hasVoted).length === currentPlayers.length) {
-        setTimeout(() => {
-          revealImpostorAndHints();
-        }, 800);
-      }
     };
 
     grid.appendChild(btn);
   });
 
   revealPhase.appendChild(grid);
-}
-
-function revealImpostorAndHints() {
-  const revealPhase = document.getElementById("reveal-phase");
-  const impostor = currentPlayers?.[impostorIndex];
-  const impostorName = impostor?.username || "inconnu";
-
-  const h3 = document.createElement("h3");
-  h3.className = "impostor-reveal";
-  h3.innerHTML = `🕵️ L’imposteur était <strong>${esc(impostorName)}</strong>`;
-  revealPhase.appendChild(h3);
-
-  const list = document.createElement("ul");
-  currentPlayers.forEach((p) => {
-    const li = document.createElement("li");
-    const hintList = allHints[p.id] || [];
-    li.innerHTML = `<strong>${esc(p.username)} :</strong> ${esc(hintList.join(", ")) || "(aucun mot)"}`;
-    list.appendChild(li);
-  });
-  revealPhase.appendChild(list);
 }
 
 socket.on("hint_submitted", ({ playerId, hint, players }) => {
@@ -392,6 +368,7 @@ window.joinImpostorRoom = () => {
 
   socket.on("room-created", (room) => {
     currentPlayers = room.players;
+    if (room.id) currentRoomId = room.id;
     document.getElementById("lobby-players").style.display = "block";
     document.getElementById("lobby-options").classList.remove("hidden");
     document.getElementById("room-id").classList.add("hidden");
@@ -497,4 +474,25 @@ socket.on("lobby_options_updated", ({ options }) => {
 
 socket.on("error_message", (msg) => {
   alert(msg);
+});
+
+// L'hôte a quitté en cours de partie : le nouvel hôte récupère les boutons de la phase en cours.
+socket.on("host_changed", ({ phase, isLastRound }) => {
+  if (phase === "hints") {
+    const endBtn = document.getElementById("end-round");
+    if (!endBtn) return;
+    endBtn.classList.remove("hidden");
+    endBtn.onclick = () => {
+      socket.emit("force_vote", currentRoomId);
+      endBtn.classList.add("hidden");
+    };
+  } else if (phase === "revealed" && !isLastRound) {
+    const revealPhase = document.getElementById("reveal-phase");
+    if (!revealPhase || revealPhase.querySelector(".next-round-button")) return;
+    const btn = document.createElement("button");
+    btn.textContent = "🔁 Manche suivante";
+    btn.className = "next-round-button";
+    btn.onclick = () => socket.emit("start_next_round", currentRoomId);
+    revealPhase.appendChild(btn);
+  }
 });

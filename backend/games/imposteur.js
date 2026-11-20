@@ -38,7 +38,7 @@ function pickWordPair(rand = randomInt) {
 function sanitizeOptions(options) {
   return {
     rounds: clampInt(options?.rounds, 1, 10, 3),
-    timer: clampInt(options?.timer, 10, 300, 60),
+    timer: clampInt(options?.timer, 10, 120, 60),
   };
 }
 
@@ -71,16 +71,24 @@ function buildRanking(points, players) {
 
 // ── Câblage Socket.io ──
 
+// Salles Socket.io préfixées par jeu : pas de collision avec le karaoké, et impossible de
+// rejoindre « à la main » la salle privée d'un autre via un identifiant deviné.
+const ns = (roomId) => `imp:${roomId}`;
+// Dictionnaires sans prototype : « constructor » ou « __proto__ » sont des noms de salle comme les autres.
+const dict = () => Object.create(null);
+const cid = (v) => clean(v, 30);
+
 function createImposteur(io) {
-  const rooms = {};
-  const gameStates = {};
-  const votesState = {};
-  const lobbyOptions = {};
-  const playerPoints = {};
-  const roundCount = {};
+  const rooms = dict();
+  const gameStates = dict(); // { turn, hints, impostorId, impostorName, wordPair, phase }
+  const votesState = dict();
+  const lobbyOptions = dict();
+  const playerPoints = dict();
+  const roundCount = dict();
 
   const isHost = (roomId, socket) => rooms[roomId]?.[0]?.id === socket.id;
   const isMember = (roomId, socket) => !!rooms[roomId]?.some((p) => p.id === socket.id);
+  const isLastRound = (roomId) => roundCount[roomId] >= lobbyOptions[roomId].rounds;
 
   function deleteRoom(roomId) {
     delete rooms[roomId];
@@ -92,7 +100,7 @@ function createImposteur(io) {
   }
 
   function roomUpdate(roomId) {
-    io.to(roomId).emit("room_update", {
+    io.to(ns(roomId)).emit("room_update", {
       id: roomId,
       players: rooms[roomId],
       options: lobbyOptions[roomId],
@@ -104,16 +112,23 @@ function createImposteur(io) {
     if (!players || players.length === 0) return;
 
     const wordPair = pickWordPair();
-    const impostorIndex = randomInt(players.length);
-    gameStates[roomId] = { turn: 0, hints: {}, impostorIndex, wordPair };
+    const impostor = players[randomInt(players.length)];
+    gameStates[roomId] = {
+      turn: 0,
+      hints: { 0: [] },
+      impostorId: impostor.id,
+      impostorName: impostor.username,
+      wordPair,
+      phase: "hints",
+    };
     delete votesState[roomId];
 
     const playerData = players.map((p) => ({ id: p.id, username: p.username }));
-    players.forEach((player, index) => {
+    players.forEach((player) => {
+      // L'identité de l'imposteur n'est révélée qu'à la fin (reveal_results).
       io.to(player.id).emit("round_started", {
-        word: index === impostorIndex ? wordPair.impostor : wordPair.normal,
+        word: player.id === impostor.id ? wordPair.impostor : wordPair.normal,
         players: playerData,
-        impostorIndex,
         timer: lobbyOptions[roomId].timer,
         round: roundCount[roomId],
         totalRounds: lobbyOptions[roomId].rounds,
@@ -122,12 +137,111 @@ function createImposteur(io) {
     io.to(players[0].id).emit("next_turn", 0);
   }
 
+  // Prochain joueur qui n'a pas encore donné d'indice ce tour-ci (robuste aux départs).
+  function nextPlayerToHint(roomId) {
+    const st = gameStates[roomId];
+    const done = st?.hints[st.turn] || [];
+    return rooms[roomId]?.find((p) => !done.some((h) => h.playerId === p.id));
+  }
+
+  function promptNext(roomId) {
+    const st = gameStates[roomId];
+    const room = rooms[roomId];
+    if (!st || !room || room.length === 0 || st.phase !== "hints") return;
+    if (!st.hints[st.turn]) st.hints[st.turn] = [];
+
+    const next = nextPlayerToHint(roomId);
+    if (next) {
+      io.to(next.id).emit("next_turn", st.hints[st.turn].length);
+      return;
+    }
+    st.turn++;
+    st.hints[st.turn] = [];
+    io.to(room[0].id).emit("next_turn", 0);
+  }
+
+  // Termine la manche quand tous les joueurs présents ont voté.
+  function tryFinalizeVotes(roomId) {
+    const st = gameStates[roomId];
+    const room = rooms[roomId];
+    const votes = votesState[roomId];
+    if (!st || !room || !votes || st.phase !== "voting") return;
+    if (room.length === 0 || !room.every((p) => votes[p.id])) return;
+
+    // Seuls les votes des joueurs présents comptent (un joueur parti ne vote plus).
+    const valid = {};
+    room.forEach((p) => (valid[p.id] = votes[p.id]));
+    scoreVotes(valid, st.impostorId, playerPoints[roomId]);
+
+    // Si l'imposteur est parti, on l'ajoute à la liste de révélation pour afficher son nom.
+    let revealPlayers = room;
+    let impostorIndex = room.findIndex((p) => p.id === st.impostorId);
+    if (impostorIndex < 0) {
+      revealPlayers = [...room, { id: st.impostorId, username: st.impostorName }];
+      impostorIndex = room.length;
+    }
+
+    st.phase = "revealed";
+    io.to(ns(roomId)).emit("reveal_results", {
+      votes: valid,
+      impostorIndex,
+      hints: st.hints,
+      players: revealPlayers,
+      wordPair: st.wordPair,
+      points: playerPoints[roomId],
+      scores: playerPoints[roomId],
+      isLastRound: isLastRound(roomId),
+      round: roundCount[roomId],
+      totalRounds: lobbyOptions[roomId].rounds,
+    });
+    delete votesState[roomId];
+  }
+
+  function removePlayer(socket, roomId) {
+    const room = rooms[roomId];
+    if (!room) return;
+    const idx = room.findIndex((p) => p.id === socket.id);
+    if (idx < 0) return;
+
+    const st = gameStates[roomId];
+    const wasHost = idx === 0;
+    const wasNext = !!st && st.phase === "hints" && nextPlayerToHint(roomId)?.id === socket.id;
+
+    rooms[roomId] = room.filter((p) => p.id !== socket.id);
+    if (rooms[roomId].length === 0) {
+      deleteRoom(roomId);
+      return;
+    }
+    if (votesState[roomId]) delete votesState[roomId][socket.id];
+    roomUpdate(roomId);
+
+    if (!st) return;
+    if (wasNext) promptNext(roomId);
+    if (st.phase === "voting") tryFinalizeVotes(roomId);
+    if (wasHost) {
+      // Le nouvel hôte récupère les boutons de contrôle de la phase en cours.
+      io.to(rooms[roomId][0].id).emit("host_changed", {
+        phase: st.phase,
+        isLastRound: isLastRound(roomId),
+      });
+    }
+  }
+
+  function leaveRoom(socket) {
+    const roomId = socket.data.impRoom;
+    if (!roomId) return;
+    socket.data.impRoom = undefined;
+    socket.leave(ns(roomId));
+    removePlayer(socket, roomId);
+  }
+
   function register(socket) {
     socket.on("join_or_create_room", (data) => {
-      const roomId = clean(data?.roomId, 30);
+      const roomId = cid(data?.roomId);
       const username = clean(data?.username, 20);
       if (!roomId || !username) return;
-      if (isMember(roomId, socket)) return; // déjà dans la salle
+      if (socket.data.impRoom === roomId && isMember(roomId, socket)) return;
+      leaveRoom(socket); // un socket = une salle à la fois
 
       let isCreator = false;
       if (!rooms[roomId]) {
@@ -145,117 +259,89 @@ function createImposteur(io) {
         return;
       }
 
-      socket.join(roomId);
+      socket.join(ns(roomId));
+      socket.data.impRoom = roomId;
       rooms[roomId].push({ id: socket.id, username });
       socket.emit("room-created", { id: roomId, players: rooms[roomId], isCreator });
       roomUpdate(roomId);
     });
 
     socket.on("update_lobby_options", (data) => {
-      const roomId = data?.roomId;
+      const roomId = cid(data?.roomId);
       if (!lobbyOptions[roomId] || !isHost(roomId, socket)) return;
       lobbyOptions[roomId] = sanitizeOptions(data.options);
-      io.to(roomId).emit("lobby_options_updated", { options: lobbyOptions[roomId] });
+      io.to(ns(roomId)).emit("lobby_options_updated", { options: lobbyOptions[roomId] });
     });
 
     socket.on("vote", (data) => {
-      const roomId = data?.roomId;
+      const roomId = cid(data?.roomId);
       const votedId = data?.votedId;
       const room = rooms[roomId];
-      if (!room || !gameStates[roomId] || !isMember(roomId, socket)) return;
-      if (!room.some((p) => p.id === votedId)) return;
+      const st = gameStates[roomId];
+      if (!room || !st || st.phase !== "voting" || !isMember(roomId, socket)) return;
+      if (typeof votedId !== "string" || !room.some((p) => p.id === votedId)) return;
 
       if (!votesState[roomId]) votesState[roomId] = {};
       if (votesState[roomId][socket.id]) return; // un seul vote par joueur
       votesState[roomId][socket.id] = votedId;
-
-      if (Object.keys(votesState[roomId]).length < room.length) return;
-
-      const { impostorIndex, wordPair, hints } = gameStates[roomId];
-      const impostorId = room[impostorIndex]?.id;
-      scoreVotes(votesState[roomId], impostorId, playerPoints[roomId]);
-
-      io.to(roomId).emit("reveal_results", {
-        votes: votesState[roomId],
-        impostorIndex,
-        hints,
-        players: room,
-        wordPair,
-        points: playerPoints[roomId],
-        scores: playerPoints[roomId],
-        isLastRound: roundCount[roomId] >= lobbyOptions[roomId].rounds,
-        round: roundCount[roomId],
-        totalRounds: lobbyOptions[roomId].rounds,
-      });
-      delete votesState[roomId];
+      tryFinalizeVotes(roomId);
     });
 
     socket.on("submit_hint", (data) => {
-      const roomId = data?.roomId;
+      const roomId = cid(data?.roomId);
       const hint = clean(data?.hint, 40);
-      const room = rooms[roomId];
-      if (!room || !gameStates[roomId]) return;
-
-      const state = gameStates[roomId];
-      if (!state.hints[state.turn]) state.hints[state.turn] = [];
-      const currentHints = state.hints[state.turn];
+      const st = gameStates[roomId];
+      if (!rooms[roomId] || !st || st.phase !== "hints") return;
+      if (!st.hints[st.turn]) st.hints[st.turn] = [];
 
       // C'est à ce joueur de jouer ? (identité = socket, jamais l'id envoyé par le client)
-      if (room[currentHints.length]?.id !== socket.id) return;
+      if (nextPlayerToHint(roomId)?.id !== socket.id) return;
 
-      currentHints.push({ playerId: socket.id, hint });
-      io.to(roomId).emit("hint_submitted", { playerId: socket.id, hint, players: room });
-
-      if (currentHints.length < room.length) {
-        const nextPlayer = room[currentHints.length];
-        setTimeout(() => io.to(nextPlayer.id).emit("next_turn", currentHints.length), 500);
-      } else {
-        state.turn++;
-        state.hints[state.turn] = [];
-        setTimeout(() => {
-          if (rooms[roomId]?.[0]) io.to(rooms[roomId][0].id).emit("next_turn", 0);
-        }, 500);
-      }
+      st.hints[st.turn].push({ playerId: socket.id, hint });
+      io.to(ns(roomId)).emit("hint_submitted", {
+        playerId: socket.id,
+        hint,
+        players: rooms[roomId],
+      });
+      setTimeout(() => promptNext(roomId), 500);
     });
 
-    socket.on("force_vote", (roomId) => {
-      if (!gameStates[roomId] || !isHost(roomId, socket)) return;
-      io.to(roomId).emit("all_hints_done");
+    socket.on("force_vote", (rawRoomId) => {
+      const roomId = cid(rawRoomId);
+      const st = gameStates[roomId];
+      if (!st || st.phase !== "hints" || !isHost(roomId, socket)) return;
+      st.phase = "voting";
+      io.to(ns(roomId)).emit("all_hints_done");
     });
 
-    socket.on("start_next_round", (roomId) => {
+    socket.on("start_next_round", (rawRoomId) => {
+      const roomId = cid(rawRoomId);
       if (!roundCount[roomId] || !lobbyOptions[roomId] || !isHost(roomId, socket)) return;
+      if (gameStates[roomId]?.phase !== "revealed") return; // pas de saut de manche
       roundCount[roomId]++;
       if (roundCount[roomId] > lobbyOptions[roomId].rounds) {
-        io.to(roomId).emit("game_over", buildRanking(playerPoints[roomId], rooms[roomId]));
+        const present = Object.fromEntries(
+          Object.entries(playerPoints[roomId]).filter(([id]) => rooms[roomId].some((p) => p.id === id))
+        );
+        io.to(ns(roomId)).emit("game_over", buildRanking(present, rooms[roomId]));
       } else {
         startRound(roomId);
       }
     });
 
-    socket.on("start_round", (roomId) => {
+    socket.on("start_round", (rawRoomId) => {
+      const roomId = cid(rawRoomId);
       if (!rooms[roomId] || !isHost(roomId, socket)) return;
       roundCount[roomId] = 1;
       playerPoints[roomId] = {};
       startRound(roomId);
     });
 
-    socket.on("leave_room", (roomId) => {
-      socket.leave(roomId);
-      removePlayer(socket, roomId);
-    });
-  }
-
-  function removePlayer(socket, roomId) {
-    if (!rooms[roomId]) return;
-    const before = rooms[roomId].length;
-    rooms[roomId] = rooms[roomId].filter((p) => p.id !== socket.id);
-    if (rooms[roomId].length === 0) deleteRoom(roomId);
-    else if (rooms[roomId].length !== before) roomUpdate(roomId);
+    socket.on("leave_room", () => leaveRoom(socket));
   }
 
   function onDisconnect(socket) {
-    for (const roomId of Object.keys(rooms)) removePlayer(socket, roomId);
+    leaveRoom(socket);
   }
 
   return { register, onDisconnect, _state: { rooms, gameStates, votesState } };

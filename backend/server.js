@@ -9,9 +9,13 @@ const { createImposteur } = require("./games/imposteur");
 const { createKaraoke } = require("./games/karaoke");
 
 const app = express();
+app.disable("x-powered-by");
+app.set("trust proxy", 1); // Render est derrière un proxy : req.ip = vraie IP du client
 const server = http.createServer(app);
 const io = new Server(server, {
   maxHttpBufferSize: MAX_BUFFER_BYTES,
+  // Filtre aussi le transport websocket (l'option cors ne couvre que les requêtes HTTP).
+  allowRequest: (req, cb) => cb(null, isOriginAllowed(req.headers.origin)),
   cors: {
     origin: (origin, cb) => cb(null, isOriginAllowed(origin)),
     methods: ["GET", "POST"],

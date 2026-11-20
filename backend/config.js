@@ -1,5 +1,6 @@
 const PORT = process.env.PORT || 3000;
-const IS_PROD = process.env.NODE_ENV === "production";
+// Render définit RENDER=true : même sans NODE_ENV, on est considéré en production.
+const IS_PROD = process.env.NODE_ENV === "production" || !!process.env.RENDER;
 
 // Origines autorisées : ALLOWED_ORIGINS="https://a.com,https://b.com" (séparées par des virgules).
 const DEFAULT_ORIGINS = ["https://granjow.netlify.app"];

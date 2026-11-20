@@ -16,8 +16,12 @@ function sanitizeSong(song) {
   return out;
 }
 
+const ns = (roomId) => `kk:${roomId}`;
+const cid = (v) => clean(v, 30);
+const MAX_LINE = 5000;
+
 function createKaraoke(io) {
-  const rooms = {};
+  const rooms = Object.create(null); // sans prototype : « constructor » est un nom de salle valide
 
   const snapshot = (room) => ({
     players: room.players,
@@ -35,15 +39,24 @@ function createKaraoke(io) {
     if (room.players.length === 0) { delete rooms[roomId]; return; }
     if (room.players.length === before) return;
     if (room.host === socket.id) room.host = room.players[0].id;
-    io.to(roomId).emit("karaoke_room_update", snapshot(room));
+    io.to(ns(roomId)).emit("karaoke_room_update", snapshot(room));
+  }
+
+  function leaveRoom(socket) {
+    const roomId = socket.data.kkRoom;
+    if (!roomId) return;
+    socket.data.kkRoom = undefined;
+    socket.leave(ns(roomId));
+    removePlayer(socket, roomId);
   }
 
   function register(socket) {
     socket.on("karaoke_join", (data) => {
-      const roomId = clean(data?.roomId, 30);
+      const roomId = cid(data?.roomId);
       const username = clean(data?.username, 20);
       if (!roomId || !username) return;
-      if (rooms[roomId]?.players.some((p) => p.id === socket.id)) return;
+      if (socket.data.kkRoom === roomId && rooms[roomId]?.players.some((p) => p.id === socket.id)) return;
+      leaveRoom(socket); // un socket = une salle à la fois
 
       const creating = !rooms[roomId];
       if (creating) {
@@ -57,49 +70,53 @@ function createKaraoke(io) {
         return;
       }
 
-      socket.join(roomId);
+      socket.join(ns(roomId));
+      socket.data.kkRoom = roomId;
       const room = rooms[roomId];
       room.players.push({ id: socket.id, username });
 
       socket.emit("karaoke_joined", { roomId, isHost: creating, ...snapshot(room) });
-      io.to(roomId).emit("karaoke_room_update", snapshot(room));
+      io.to(ns(roomId)).emit("karaoke_room_update", snapshot(room));
     });
 
     socket.on("karaoke_select_song", (data) => {
-      const room = rooms[data?.roomId];
+      const roomId = cid(data?.roomId);
+      const room = rooms[roomId];
       if (!room || room.host !== socket.id) return;
       const song = sanitizeSong(data.song);
-      if (!song) return;
+      if (!song) {
+        socket.emit("karaoke_error", "Chanson invalide.");
+        return;
+      }
       room.song = song;
       room.currentLine = 0;
       room.started = false;
-      io.to(data.roomId).emit("karaoke_song_selected", { song });
+      io.to(ns(roomId)).emit("karaoke_song_selected", { song });
     });
 
-    socket.on("karaoke_start", (roomId) => {
+    socket.on("karaoke_start", (rawRoomId) => {
+      const roomId = cid(rawRoomId);
       const room = rooms[roomId];
       if (!room || room.host !== socket.id || !room.song) return;
       room.started = true;
       room.currentLine = 0;
-      io.to(roomId).emit("karaoke_started", { currentLine: 0 });
+      io.to(ns(roomId)).emit("karaoke_started", { currentLine: 0 });
     });
 
     socket.on("karaoke_advance", (data) => {
-      const room = rooms[data?.roomId];
+      const roomId = cid(data?.roomId);
+      const room = rooms[roomId];
       if (!room || room.host !== socket.id) return;
-      if (data.direction === "next") room.currentLine++;
+      if (data.direction === "next" && room.currentLine < MAX_LINE) room.currentLine++;
       else if (data.direction === "prev" && room.currentLine > 0) room.currentLine--;
-      io.to(data.roomId).emit("karaoke_line_changed", { currentLine: room.currentLine });
+      io.to(ns(roomId)).emit("karaoke_line_changed", { currentLine: room.currentLine });
     });
 
-    socket.on("karaoke_leave", (roomId) => {
-      socket.leave(roomId);
-      removePlayer(socket, roomId);
-    });
+    socket.on("karaoke_leave", () => leaveRoom(socket));
   }
 
   function onDisconnect(socket) {
-    for (const roomId of Object.keys(rooms)) removePlayer(socket, roomId);
+    leaveRoom(socket);
   }
 
   return { register, onDisconnect, _rooms: rooms };
