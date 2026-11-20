@@ -78,7 +78,7 @@ const ns = (roomId) => `imp:${roomId}`;
 const dict = () => Object.create(null);
 const cid = (v) => clean(v, 30);
 
-function createImposteur(io) {
+function createImposteur(io, results = { record() {} }) {
   const rooms = dict();
   const gameStates = dict(); // { turn, hints, impostorId, impostorName, wordPair, phase }
   const votesState = dict();
@@ -171,7 +171,26 @@ function createImposteur(io) {
     // Seuls les votes des joueurs présents comptent (un joueur parti ne vote plus).
     const valid = {};
     room.forEach((p) => (valid[p.id] = votes[p.id]));
-    scoreVotes(valid, st.impostorId, playerPoints[roomId]);
+    const before = { ...playerPoints[roomId] };
+    const { mostVoted } = scoreVotes(valid, st.impostorId, playerPoints[roomId]);
+
+    // Historique : une ligne par joueur connecté (userId figé au join), points de cette manche.
+    // Pas de stats sous 3 identités distinctes ; un seul socket compté par compte.
+    const identities = new Set(room.map((p) => p.userId || p.id));
+    const seen = new Set();
+    room.forEach((p) => {
+      if (identities.size < 3 || !p.userId || seen.has(p.userId)) return;
+      seen.add(p.userId);
+      const isImpostor = p.id === st.impostorId;
+      results.record({
+        userId: p.userId,
+        game: "imposteur",
+        score: (playerPoints[roomId][p.id] || 0) - (before[p.id] || 0),
+        won: isImpostor ? mostVoted !== st.impostorId : valid[p.id] === st.impostorId,
+        rounds: 1,
+        meta: { role: isImpostor ? "impostor" : "player", round: roundCount[roomId] },
+      });
+    });
 
     // Si l'imposteur est parti, on l'ajoute à la liste de révélation pour afficher son nom.
     let revealPlayers = room;
@@ -261,7 +280,10 @@ function createImposteur(io) {
 
       socket.join(ns(roomId));
       socket.data.impRoom = roomId;
-      rooms[roomId].push({ id: socket.id, username });
+      const player = { id: socket.id, username };
+      // userId figé au join, non énumérable : jamais envoyé aux autres joueurs.
+      Object.defineProperty(player, "userId", { value: socket.data.userId || null, enumerable: false, writable: true });
+      rooms[roomId].push(player);
       socket.emit("room-created", { id: roomId, players: rooms[roomId], isCreator });
       roomUpdate(roomId);
     });
@@ -344,7 +366,12 @@ function createImposteur(io) {
     leaveRoom(socket);
   }
 
-  return { register, onDisconnect, _state: { rooms, gameStates, votesState } };
+  // Compte supprimé : on retire l'identité figée des joueurs en salle.
+  function forgetUser(uid) {
+    for (const id in rooms) for (const p of rooms[id]) if (p.userId === uid) p.userId = null;
+  }
+
+  return { register, onDisconnect, forgetUser, _state: { rooms, gameStates, votesState } };
 }
 
 module.exports = {

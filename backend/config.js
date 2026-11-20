@@ -8,6 +8,11 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
   : DEFAULT_ORIGINS;
 
+// Supabase (comptes et historique). Si l'une des deux variables manque, ces fonctions sont désactivées.
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+const SUPABASE_ENABLED = !!(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+
 const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
 // Hors production, on accepte aussi localhost pour le développement.
@@ -20,6 +25,9 @@ function isOriginAllowed(origin) {
 module.exports = {
   PORT,
   IS_PROD,
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_ENABLED,
   isOriginAllowed,
   MAX_BUFFER_BYTES: 200 * 1024, // une chanson (paroles) tient largement dedans
   MAX_ROOMS: 500,

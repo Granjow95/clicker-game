@@ -20,7 +20,7 @@ const ns = (roomId) => `kk:${roomId}`;
 const cid = (v) => clean(v, 30);
 const MAX_LINE = 5000;
 
-function createKaraoke(io) {
+function createKaraoke(io, results = { record() {} }) {
   const rooms = Object.create(null); // sans prototype : « constructor » est un nom de salle valide
 
   const snapshot = (room) => ({
@@ -73,7 +73,9 @@ function createKaraoke(io) {
       socket.join(ns(roomId));
       socket.data.kkRoom = roomId;
       const room = rooms[roomId];
-      room.players.push({ id: socket.id, username });
+      const player = { id: socket.id, username };
+      Object.defineProperty(player, "userId", { value: socket.data.userId || null, enumerable: false, writable: true });
+      room.players.push(player);
 
       socket.emit("karaoke_joined", { roomId, isHost: creating, ...snapshot(room) });
       io.to(ns(roomId)).emit("karaoke_room_update", snapshot(room));
@@ -100,6 +102,16 @@ function createKaraoke(io) {
       if (!room || room.host !== socket.id || !room.song) return;
       room.started = true;
       room.currentLine = 0;
+      // Participation enregistrée au plus une fois par minute et par salle (anti-spam de lignes).
+      if (!room.lastRecorded || Date.now() - room.lastRecorded > 60000) {
+        room.lastRecorded = Date.now();
+        const seen = new Set();
+        room.players.forEach((p) => {
+          if (!p.userId || seen.has(p.userId)) return;
+          seen.add(p.userId);
+          results.record({ userId: p.userId, game: "karaoke", score: 0, won: false, rounds: 1, meta: { participation: true } });
+        });
+      }
       io.to(ns(roomId)).emit("karaoke_started", { currentLine: 0 });
     });
 
@@ -119,7 +131,11 @@ function createKaraoke(io) {
     leaveRoom(socket);
   }
 
-  return { register, onDisconnect, _rooms: rooms };
+  function forgetUser(uid) {
+    for (const id in rooms) for (const p of rooms[id].players) if (p.userId === uid) p.userId = null;
+  }
+
+  return { register, onDisconnect, forgetUser, _rooms: rooms };
 }
 
 module.exports = { createKaraoke, sanitizeSong };
