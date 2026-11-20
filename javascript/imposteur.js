@@ -1,4 +1,11 @@
 const socket = io("https://granjow.onrender.com");
+
+// Échappe le HTML : pseudos et indices viennent d'autres joueurs, jamais de confiance.
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
 let currentPlayerId = "";
 socket.on("connect", () => {
   currentPlayerId = socket.id;
@@ -304,7 +311,7 @@ function showVotingPhase() {
 
       const voteInfo = document.createElement("p");
       voteInfo.className = "vote-info";
-      voteInfo.innerHTML = `<strong>Tu as voté pour :</strong> ${player.username}`;
+      voteInfo.innerHTML = `<strong>Tu as voté pour :</strong> ${esc(player.username)}`;
       revealPhase.appendChild(voteInfo);
 
       if (Object.keys(hasVoted).length === currentPlayers.length) {
@@ -327,14 +334,14 @@ function revealImpostorAndHints() {
 
   const h3 = document.createElement("h3");
   h3.className = "impostor-reveal";
-  h3.innerHTML = `🕵️ L’imposteur était <strong>${impostorName}</strong>`;
+  h3.innerHTML = `🕵️ L’imposteur était <strong>${esc(impostorName)}</strong>`;
   revealPhase.appendChild(h3);
 
   const list = document.createElement("ul");
   currentPlayers.forEach((p) => {
     const li = document.createElement("li");
     const hintList = allHints[p.id] || [];
-    li.innerHTML = `<strong>${p.username} :</strong> ${hintList.join(", ") || "(aucun mot)"}`;
+    li.innerHTML = `<strong>${esc(p.username)} :</strong> ${esc(hintList.join(", ")) || "(aucun mot)"}`;
     list.appendChild(li);
   });
   revealPhase.appendChild(list);
@@ -424,7 +431,7 @@ socket.on(
     const revealPhase = document.getElementById("reveal-phase");
 
     revealPhase.innerHTML = `
-    <h3 class="impostor-reveal">🕵️ L’imposteur était <strong>${players?.[impostorIndex]?.username || "???"}</strong></h3>
+    <h3 class="impostor-reveal">🕵️ L’imposteur était <strong>${esc(players?.[impostorIndex]?.username || "???")}</strong></h3>
     <p class="word-reveal">🟥 Mot de l’imposteur : <strong>${wordPair?.impostor || "(inconnu)"}</strong></p>
     <p class="word-reveal">🟩 Mot des autres joueurs : <strong>${wordPair?.normal || "(inconnu)"}</strong></p>
   `;
@@ -435,7 +442,7 @@ socket.on(
     for (const id in points) {
       const player = players.find((p) => p.id === id);
       if (player) {
-        gainSection.innerHTML += `<li>${player.username} : +${points[id]} pts</li>`;
+        gainSection.innerHTML += `<li>${esc(player.username)} : +${points[id]} pts</li>`;
       }
     }
     gainSection.innerHTML += "</ul>";
@@ -450,7 +457,7 @@ socket.on(
         .sort((a, b) => b.score - a.score);
 
       const classementHTML = classement
-        .map((e, i) => `<li>#${i + 1} - ${e.username} : ${e.score} pts</li>`)
+        .map((e, i) => `<li>#${i + 1} - ${esc(e.username)} : ${e.score} pts</li>`)
         .join("");
 
       revealPhase.innerHTML += `

@@ -114,10 +114,18 @@ function startRound(roomId) {
   io.to(players[0].id).emit("next_turn", 0);
 }
 
+// Nettoie une entrée texte venant d'un client : type, caractères de contrôle, longueur.
+function clean(value, max) {
+  if (typeof value !== "string") return "";
+  return value.replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, max);
+}
+
 io.on("connection", (socket) => {
   console.log("✅ Un joueur s'est connecté :", socket.id);
 
-  socket.on("join_or_create_room", ({ roomId, username }) => {
+  socket.on("join_or_create_room", (data) => {
+    const roomId = clean(data?.roomId, 30);
+    const username = clean(data?.username, 20);
     if (!roomId || !username) return;
     socket.join(roomId);
 
@@ -212,7 +220,9 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("submit_hint", ({ roomId, playerId, hint }) => {
+  socket.on("submit_hint", (data) => {
+    const { roomId, playerId } = data || {};
+    const hint = clean(data?.hint, 40);
     const room = rooms[roomId];
     if (!room || !gameStates[roomId]) return;
 
@@ -294,7 +304,9 @@ io.on("connection", (socket) => {
 
   // ── Karaoké events ──
 
-  socket.on("karaoke_join", ({ roomId, username }) => {
+  socket.on("karaoke_join", (data) => {
+    const roomId = clean(data?.roomId, 30);
+    const username = clean(data?.username, 20);
     if (!roomId || !username) return;
     socket.join(roomId);
 
