@@ -1,0 +1,45 @@
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # tous les jours, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      HEALTH_URL: ${{ secrets.HEALTH_URL }}
+    steps:
+      - name: Requete REST Supabase (activite base)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 200 avec [] suffit : la requete atteint Postgres meme sans policy de lecture publique.
+          curl --fail --silent --show-error --retry 3 --retry-delay 5 --retry-all-errors \
+            --max-time 30 --output /dev/null \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL%/}/rest/v1/profiles?select=id&limit=1"
+          echo "Supabase REST: OK"
+
+      - name: Ping /health du backend (Render peut dormir)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Cold start Render : timeout genereux, plusieurs essais.
+          curl --fail --silent --show-error --retry 3 --retry-delay 15 --retry-all-errors \
+            --connect-timeout 30 --max-time 120 --output /dev/null \
+            "${HEALTH_URL}"
+          echo "Backend /health: OK"
