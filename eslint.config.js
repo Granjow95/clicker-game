@@ -4,7 +4,8 @@ const globals = require("globals");
 // Défini dans config.js / imposteur.js / lyrics.js / karaoke.js : voir l'ordre des <script>.
 const SHARED_GLOBALS = {
   io: "readonly", YT: "readonly",
-  GRAN_BACKEND: "readonly", socket: "readonly",
+  GRAN_BACKEND: "readonly", GRAN_SUPABASE_URL: "readonly", GRAN_SUPABASE_KEY: "readonly",
+  socket: "readonly", granAuth: "readonly", granAccount: "readonly", esc: "readonly", kk: "readonly",
   joinImpostorRoom: "readonly", showToast: "readonly",
   topSongsWithCache: "readonly", searchWithCache: "readonly", getLyricsWithCache: "readonly",
   getSyncedLyrics: "readonly", _tryLyricsOvh: "readonly", _tryLrclibDirect: "readonly",

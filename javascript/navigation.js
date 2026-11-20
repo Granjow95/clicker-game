@@ -96,6 +96,9 @@ function goBack() {
   };
   clearInterval(turnTimer);
   clearInterval(countdownInterval);
+
+  // Applique un changement de compte reporté pendant la partie
+  if (typeof granAuth !== "undefined") granAuth.flushReconnect();
 }
 
 // Accessibilité : les cartes du menu se activent aussi au clavier (Entrée / Espace).

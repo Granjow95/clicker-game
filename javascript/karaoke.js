@@ -75,6 +75,7 @@ window.karaokeBackToMenu = function () {
   kkHideAll();
   document.getElementById('dynamic-style').href = 'styles/main-menu.css';
   document.getElementById('menu').style.display = '';
+  granAuth.flushReconnect();
 };
 
 window.karaokeBackToMode = function () {
@@ -84,6 +85,7 @@ window.karaokeBackToMode = function () {
   }
   kk.mode = null;
   kkShow('karaoke-mode');
+  granAuth.flushReconnect();
 };
 
 /* ───────────────────────────────────────────────

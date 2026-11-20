@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gran'Games</title>
+    <link rel="stylesheet" href="styles/account.css" />
     <link id="dynamic-style" rel="stylesheet" href="styles/main-menu.css" />
   </head>
   <body>
     <!-- Conteneur du menu -->
     <div id="menu">
+      <button type="button" id="account-btn" class="account-btn" aria-haspopup="dialog">👤 Compte</button>
       <div class="menu-header">
         <h1>🎮 Gran'Games</h1>
         <p class="menu-tagline">Choisis ton jeu et joue !</p>
@@ -283,10 +285,17 @@
 
     <!-- Chargement des scripts JavaScript -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"
+      integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ"
+      crossorigin="anonymous"
+    ></script>
     <script src="javascript/config.js"></script>
+    <script src="javascript/auth.js"></script>
     <script src="javascript/imposteur.js"></script>
     <script src="javascript/navigation.js"></script>
     <script src="javascript/lyrics.js"></script>
     <script src="javascript/karaoke.js"></script>
+    <script src="javascript/account.js"></script>
   </body>
 </html>

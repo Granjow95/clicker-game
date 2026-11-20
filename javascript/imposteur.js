@@ -1,5 +1,4 @@
-const socket = io(GRAN_BACKEND);
-
+// Le socket est créé dans auth.js (handshake avec le jeton du compte éventuel).
 // Échappe le HTML : pseudos et indices viennent d'autres joueurs, jamais de confiance.
 function esc(value) {
   return String(value).replace(/[&<>"']/g, (c) => ({

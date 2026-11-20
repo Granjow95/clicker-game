@@ -788,10 +788,21 @@ function showToast(msg, isError = true) {
 
   function revealAllLyrics() {
     if (st.wasAbandoned) return;
+    if (!st.finishedCelebrated) sendResult(false);
     st.wasAbandoned = true;
     st.finishedCelebrated = true;
     for (let i = 0; i < st.revealed.length; i++) if (st.isWord[i]) st.revealed[i] = true;
     updateProgress(); renderBoard();
+  }
+
+  // Résultat envoyé au serveur (joueurs connectés seulement ; le serveur ignore l'identité du client).
+  function sendResult(won) {
+    if (!granAuth.user() || !socket.connected) return;
+    const found = st.revealed.reduce((n, v, i) => n + (v && st.isWord[i] ? 1 : 0), 0);
+    socket.emit('lyrics_result', {
+      score: found, won, rounds: 1,
+      durationS: Math.max(0, Math.round((Date.now() - (st.startedAt || Date.now())) / 1000)),
+    });
   }
 
   function showDefeatAnimation() {
@@ -845,6 +856,7 @@ function showToast(msg, isError = true) {
     if (st.totalWords > 0 && found === st.totalWords && !st.finishedCelebrated && !st.wasAbandoned) {
       st.finishedCelebrated = true;
       launchFireworks(2500);
+      sendResult(true);
     }
   }
 
@@ -910,6 +922,7 @@ function showToast(msg, isError = true) {
     st.tokens   = tokenize(raw);
     st.isWord   = new Array(st.tokens.length).fill(false);
     st.revealed = new Array(st.tokens.length).fill(false);
+    st.startedAt = Date.now();
     st.title    = optTitle  || '';
     st.artist   = optArtist || '';
 
