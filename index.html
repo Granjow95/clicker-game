@@ -14,22 +14,22 @@
         <p class="menu-tagline">Choisis ton jeu et joue !</p>
       </div>
       <div class="game-selection">
-        <div class="game-card" onclick="startGame('impostor')">
+        <div class="game-card" role="button" tabindex="0" onclick="startGame('impostor')">
           <span class="card-icon">🕵️</span>
           <h2>Jeu de l'Imposteur</h2>
           <p>Un mot est différent… Saurez-vous le trouver ?</p>
         </div>
-        <div class="game-card" onclick="startGame('lyrics')">
+        <div class="game-card" role="button" tabindex="0" onclick="startGame('lyrics')">
           <span class="card-icon">🎤</span>
           <h2>Lyrics</h2>
           <p>Devine les paroles mot par mot.</p>
         </div>
-        <div class="game-card" onclick="startGame('karaoke')">
+        <div class="game-card" role="button" tabindex="0" onclick="startGame('karaoke')">
           <span class="card-icon">🎵</span>
           <h2>Karaoké</h2>
           <p>Chante tes chansons préférées en solo ou avec tes amis !</p>
         </div>
-        <div class="game-card" onclick="startGame('runner')">
+        <div class="game-card game-card-soon" aria-disabled="true">
           <span class="card-icon">🏃</span>
           <h2>Infinite Runner</h2>
           <p>Évite les obstacles et va le plus loin possible.</p>
@@ -69,8 +69,11 @@
             type="text"
             id="room-id"
             placeholder="Nom de la salle (ex: room123)"
+            aria-label="Nom de la salle"
+            maxlength="30"
+            autocomplete="off"
           />
-          <input type="text" id="username" placeholder="Ton pseudo" />
+          <input type="text" id="username" placeholder="Ton pseudo" aria-label="Ton pseudo" maxlength="20" autocomplete="off" />
           <button onclick="joinImpostorRoom()">Rejoindre la salle</button>
 
           <div id="lobby-options" class="hidden">
@@ -116,19 +119,20 @@
       <div class="ls-toolbar">
         <input
           id="ls-search"
+          aria-label="Rechercher un titre ou un artiste"
           type="search"
           placeholder="Rechercher titre, artiste..."
         />
-        <select id="ls-genre">
+        <select id="ls-genre" aria-label="Genre">
           <option value="">Tous les genres</option>
         </select>
-        <select id="ls-artist">
+        <select id="ls-artist" aria-label="Artiste">
           <option value="">Tous les artistes</option>
         </select>
-        <select id="ls-year">
+        <select id="ls-year" aria-label="Année">
           <option value="">Toutes années</option>
         </select>
-        <select id="ls-sort">
+        <select id="ls-sort" aria-label="Trier par">
           <option value="title-asc">Titre (A→Z)</option>
           <option value="title-desc">Titre (Z→A)</option>
           <option value="artist-asc">Artiste (A→Z)</option>
@@ -159,11 +163,12 @@
         <div class="lyrics-input">
           <input
             id="lyrics-guess"
+            aria-label="Tape un mot"
             type="text"
             placeholder="Tape un mot (accents/majuscules ignorés)"
           />
           <button id="lyrics-submit">Abandonner</button>
-          <button id="lyrics-clear" title="Effacer la saisie">✖</button>
+          <button id="lyrics-clear" title="Effacer la saisie" aria-label="Effacer la saisie">✖</button>
         </div>
       </div>
 
@@ -205,8 +210,8 @@
       <h1>👥 Salle Karaoké</h1>
 
       <div id="kk-join-form" class="kk-join-form">
-        <input id="kk-username" type="text" placeholder="Ton pseudo" maxlength="20" autocomplete="off" />
-        <input id="kk-roomcode" type="text" placeholder="Code de salle (laisser vide pour créer)" maxlength="6" autocomplete="off" />
+        <input id="kk-username" aria-label="Ton pseudo" type="text" placeholder="Ton pseudo" maxlength="20" autocomplete="off" />
+        <input id="kk-roomcode" aria-label="Code de salle" type="text" placeholder="Code de salle (laisser vide pour créer)" maxlength="6" autocomplete="off" />
         <button onclick="karaokeJoinRoom()" class="kk-btn-primary">Rejoindre / Créer</button>
         <p id="kk-join-error" class="kk-join-error" style="display:none"></p>
       </div>
@@ -237,7 +242,7 @@
       <button onclick="karaokeBackFromSelect()" class="back-button">Retour</button>
       <h1>🎵 Choisir une musique</h1>
       <div class="kk-search-bar">
-        <input id="kk-search" type="search" placeholder="Titre, artiste…" autocomplete="off" />
+        <input id="kk-search" aria-label="Rechercher une chanson" type="search" placeholder="Titre, artiste…" autocomplete="off" />
       </div>
       <div id="kk-songs-grid" class="kk-songs-grid"></div>
     </div>
@@ -278,6 +283,7 @@
 
     <!-- Chargement des scripts JavaScript -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="javascript/config.js"></script>
     <script src="javascript/imposteur.js"></script>
     <script src="javascript/navigation.js"></script>
     <script src="javascript/lyrics.js"></script>

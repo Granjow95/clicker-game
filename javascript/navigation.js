@@ -1,6 +1,7 @@
 // ======= 📁 navigation.js =======
 
 function startGame(game) {
+  if (!document.getElementById(`${game}-game`)) return; // jeu pas encore disponible (ex. runner)
   document.getElementById("menu").style.display = "none";
   document.getElementById(`${game}-game`).style.display = "block";
   console.log("🎮 Jeu démarré :", game);
@@ -96,3 +97,11 @@ function goBack() {
   clearInterval(turnTimer);
   clearInterval(countdownInterval);
 }
+
+// Accessibilité : les cartes du menu se activent aussi au clavier (Entrée / Espace).
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.(".game-card[role='button']")) {
+    e.preventDefault();
+    e.target.click();
+  }
+});

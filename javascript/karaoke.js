@@ -27,11 +27,8 @@ const kk = {
   audioWatchdog: null,
 };
 
-// En local (localhost / 127.0.0.1 / fichier ouvert directement) on vise le backend local,
-// sinon le backend de production sur Render.
-const KK_BACKEND = (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === 'file:')
-  ? 'http://localhost:3000'
-  : 'https://granjow.onrender.com';
+// Adresse du backend : voir javascript/config.js
+const KK_BACKEND = GRAN_BACKEND;
 
 /* ───────────────────────────────────────────────
    NAVIGATION — afficher / cacher les sections

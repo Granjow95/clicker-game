@@ -1,4 +1,4 @@
-const socket = io("https://granjow.onrender.com");
+const socket = io(GRAN_BACKEND);
 
 // Échappe le HTML : pseudos et indices viennent d'autres joueurs, jamais de confiance.
 function esc(value) {

@@ -13,7 +13,7 @@ const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 function isOriginAllowed(origin) {
   if (!origin) return true; // requêtes sans en-tête Origin (curl, serveur à serveur)
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  return !IS_PROD && LOCAL_ORIGIN.test(origin);
+  return !IS_PROD && (origin === "null" || LOCAL_ORIGIN.test(origin)); // "null" = fichier ouvert en local
 }
 
 module.exports = {
