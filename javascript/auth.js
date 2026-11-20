@@ -97,6 +97,7 @@ const granAuth = (() => {
       return fail(error);
     },
     async signInOAuth(provider) {
+      if (provider !== 'discord') return { error: 'Fournisseur non pris en charge.' };
       if (!sb) return { error: 'Comptes indisponibles.' };
       const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: redirectTo() } });
       return fail(error);

@@ -5,7 +5,7 @@
 
 ## Contexte
 
-Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot de passe, Google, Discord) pour conserver l'historique des parties. La base Supabase existe déjà : `profiles`, `game_results`, la vue `player_stats`, la RLS (lecture, modification et suppression de ses propres lignes ; `game_results` n'a aucune policy INSERT ni UPDATE, seul le DELETE de ses propres lignes est permis) et le trigger `handle_new_user`.
+Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot de passe de 6 caractères minimum, Discord ; Google écarté : configuration trop lourde) pour conserver l'historique des parties. La base Supabase existe déjà : `profiles`, `game_results`, la vue `player_stats`, la RLS (lecture, modification et suppression de ses propres lignes ; `game_results` n'a aucune policy INSERT ni UPDATE, seul le DELETE de ses propres lignes est permis) et le trigger `handle_new_user`.
 
 ## Décisions
 

@@ -74,7 +74,7 @@ const granAccount = (() => {
     const form = el('form', { class: 'acc-form', novalidate: true },
       signup && field('acc-username', 'Pseudo (3 à 20 lettres, chiffres ou _)', { type: 'text', maxlength: '20', autocomplete: 'username', required: true }),
       field('acc-email', 'Email', { type: 'email', autocomplete: 'email', required: true }),
-      field('acc-password', 'Mot de passe', { type: 'password', autocomplete: signup ? 'new-password' : 'current-password', minlength: '8', required: true }),
+      field('acc-password', 'Mot de passe', { type: 'password', autocomplete: signup ? 'new-password' : 'current-password', minlength: '6', required: true }),
       el('button', { type: 'submit', class: 'acc-btn acc-primary', text: signup ? 'Créer mon compte' : 'Se connecter' }),
       st);
     form.addEventListener('submit', async (e) => {
@@ -84,7 +84,7 @@ const granAccount = (() => {
       const username = signup ? form.querySelector('#acc-username').value.trim() : '';
       if (!email || !password) return setStatus(st, 'Email et mot de passe requis.', 'error');
       if (signup && !USERNAME_RE.test(username)) return setStatus(st, 'Pseudo invalide : 3 à 20 lettres, chiffres ou _.', 'error');
-      if (signup && password.length < 8) return setStatus(st, 'Mot de passe : 8 caractères minimum.', 'error');
+      if (signup && password.length < 6) return setStatus(st, 'Mot de passe : 6 caractères minimum.', 'error');
       const submit = form.querySelector('button[type=submit]');
       submit.disabled = true;
       setStatus(st, 'Un instant…');
@@ -105,7 +105,7 @@ const granAccount = (() => {
       el('p', { class: 'acc-hint', text: 'Le compte est facultatif : sans lui, tu joues toujours avec un pseudo.' }),
       form,
       el('div', { class: 'acc-sep', role: 'separator', text: 'ou' }),
-      el('div', { class: 'acc-oauth-row' }, oauth('google', 'Continuer avec Google'), oauth('discord', 'Continuer avec Discord')),
+      el('div', { class: 'acc-oauth-row' }, oauth('discord', 'Continuer avec Discord')),
       el('button', { type: 'button', class: 'acc-link', onclick: () => renderAuth(signup ? 'signin' : 'signup'),
         text: signup ? 'J\'ai déjà un compte' : 'Pas de compte ? Créer un compte' }),
     );
