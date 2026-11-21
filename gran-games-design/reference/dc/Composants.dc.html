@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gran'Games, composants</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.dot{animation:blink 600ms steps(2,end) infinite}
+.dot2{animation-delay:150ms}.dot3{animation-delay:300ms}
+@keyframes shimmer{0%{opacity:.5}50%{opacity:.85}100%{opacity:.5}}
+.skel{animation:shimmer 1200ms ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.dot,.skel{animation:none}}
+</style>
+</helmet>
+<div class="ground" style="width: 1440px; min-height: 2200px; box-sizing: border-box; padding: 72px 80px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column; gap: 64px">
+
+  <div style="display: flex; justify-content: space-between; align-items: end; gap: 24px">
+    <h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 88px; line-height: 0.9; font-weight: 700">Les pièces<br>de la console</h1>
+    <p style="margin: 0; max-width: 460px; font-size: 17px; line-height: 1.55; color: #B9B596">Communes à tous les jeux. Un jeu peut changer la couleur de fond derrière elles, jamais leur forme.</p>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 20px">
+    <h2 style="margin: 0; font-size: 26px; font-weight: 800">En-tête</h2>
+    <header style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 16px; padding: 12px 16px 12px 20px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap">
+      <a href="#" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #EFE8CC">
+        <svg width="26" height="30" viewBox="0 0 26 30" aria-hidden="true"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"/><rect x="4" y="9" width="18" height="12" fill="#1B1D16"/><rect x="5" y="25" width="3" height="5" fill="#1B1D16"/><rect x="11" y="25" width="3" height="5" fill="#1B1D16"/><rect x="17" y="25" width="3" height="5" fill="#1B1D16"/></svg>
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 26px">Gran'Games</span>
+      </a>
+      <nav aria-label="Navigation principale" style="display: flex; gap: 4px; background: #333828; border-radius: 10px; padding: 4px; margin-left: auto">
+        <a href="#" aria-current="page" style="padding: 10px 18px; border-radius: 7px; background: #EFE8CC; color: #1B1D16; text-decoration: none; font-weight: 600; font-size: 16px">Accueil</a>
+        <a href="#" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 16px">Jeux</a>
+        <a href="#" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 16px">Nouveautés</a>
+      </nav>
+      <button class="key" type="button" style="display: flex; align-items: center; gap: 10px; background: #F28AA6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 8px 14px 8px 8px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif; min-height: 48px">
+        <span aria-hidden="true" style="width: 28px; height: 28px; background: #1B1D16; color: #F28AA6; display: grid; place-items: center; font-family: 'Pixelify Sans', monospace; font-weight: 700; border-radius: 4px">A</span>
+        Amir
+      </button>
+    </header>
+    <p style="margin: 0; font-size: 15px; color: #B9B596">Pendant une partie, l'en-tête se réduit à une barre de 56 px : retour, fil d'Ariane, compte. Il reste toujours là.</p>
+    <header style="background: #1E4D3B; border: 2px solid #2D6A52; border-radius: 16px; padding: 6px 8px; display: flex; align-items: center; gap: 16px">
+      <a href="#" class="key" style="display: flex; align-items: center; gap: 8px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 6px 14px 6px 10px; box-shadow: 0 3px 0 #1B1D16; text-decoration: none; font-weight: 600; font-size: 15px; min-height: 44px; box-sizing: border-box">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="#1B1D16" stroke-width="2.5" stroke-linecap="square"><path d="M11 3 5 9l6 6"/></svg>
+        Accueil
+      </a>
+      <nav aria-label="Fil d'Ariane" style="font-size: 15px; display: flex; gap: 8px; align-items: center; color: #CFE3D8">
+        <span style="font-family: 'Pixelify Sans', monospace; color: #EFE8CC">Gran'Games</span><span aria-hidden="true">/</span><span>Imposteur</span><span aria-hidden="true">/</span><span aria-current="page" style="color: #EFE8CC; font-weight: 600">Salle KRAB</span>
+      </nav>
+      <button type="button" aria-label="Compte : Amir" class="key" style="margin-left: auto; width: 44px; height: 44px; background: #F28AA6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #1B1D16; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 18px">A</button>
+    </header>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px">
+    <div style="display: flex; flex-direction: column; gap: 20px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Touches</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center">
+        <button class="key" type="button" style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 24px; height: 56px; box-shadow: 0 4px 0 #000; font: 600 20px 'Pixelify Sans', monospace">Rejoindre la salle</button>
+        <button class="key" type="button" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 24px; height: 56px; box-shadow: 0 4px 0 #000; font: 600 18px 'Bricolage Grotesque', sans-serif">Créer une salle</button>
+        <button class="key" type="button" style="background: transparent; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; padding: 0 22px; height: 56px; font: 600 18px 'Bricolage Grotesque', sans-serif">Voir les règles</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center">
+        <button class="key" type="button" style="background: #B83A24; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 24px; height: 56px; box-shadow: 0 4px 0 #000; font: 600 18px 'Bricolage Grotesque', sans-serif">Supprimer mon compte</button>
+        <button type="button" disabled style="background: #333828; color: #8E8C74; border: 3px dashed #5A6146; border-radius: 10px; padding: 0 24px; height: 56px; font: 600 18px 'Bricolage Grotesque', sans-serif; cursor: not-allowed">En attente de joueurs</button>
+        <button type="button" aria-busy="true" style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 24px; height: 56px; box-shadow: 0 4px 0 #000; font: 600 18px 'Bricolage Grotesque', sans-serif; display: flex; align-items: center; gap: 10px">
+          <span aria-hidden="true" style="display: flex; gap: 4px"><span class="dot" style="width: 8px; height: 8px; background: #1B1D16"></span><span class="dot dot2" style="width: 8px; height: 8px; background: #1B1D16"></span><span class="dot dot3" style="width: 8px; height: 8px; background: #1B1D16"></span></span>
+          Connexion…
+        </button>
+      </div>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #B9B596">Principal (bouton d'or, police pixel), secondaire (parchemin), fantôme (contour), danger (brique), désactivé (pointillés, la raison est dans le libellé), chargement (trois pixels qui clignotent, libellé au participe). Hauteur 56 px, 44 px en compact. Un seul principal par écran.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Champs</h2>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <label for="c-pseudo" style="font-weight: 600; font-size: 15px">Ton pseudo</label>
+          <input id="c-pseudo" class="fld" value="Amir" style="height: 52px; box-sizing: border-box; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 14px; font: 400 18px 'Bricolage Grotesque', sans-serif">
+          <span style="font-size: 13px; color: #B9B596">2 à 16 caractères</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <label for="c-mail" style="font-weight: 600; font-size: 15px">Email</label>
+          <input id="c-mail" class="fld" value="amir@" aria-invalid="true" aria-describedby="c-mail-err" style="height: 52px; box-sizing: border-box; background: #EFE8CC; color: #1B1D16; border: 3px solid #B83A24; border-radius: 6px; padding: 0 14px; font: 400 18px 'Bricolage Grotesque', sans-serif; box-shadow: 0 0 0 3px #B83A24">
+          <span id="c-mail-err" style="font-size: 14px; color: #F4A08E; font-weight: 600">Il manque la fin de l'adresse (après le @).</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span id="c-code" style="font-weight: 600; font-size: 15px">Code de salle</span>
+          <div role="group" aria-labelledby="c-code" style="display: flex; gap: 8px">
+            <input aria-label="Lettre 1" class="fld" value="K" style="width: 52px; height: 60px; box-sizing: border-box; text-align: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 6px; font: 700 28px 'Pixelify Sans', monospace">
+            <input aria-label="Lettre 2" class="fld" value="R" style="width: 52px; height: 60px; box-sizing: border-box; text-align: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 6px; font: 700 28px 'Pixelify Sans', monospace">
+            <input aria-label="Lettre 3" class="fld" value="A" style="width: 52px; height: 60px; box-sizing: border-box; text-align: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 6px; font: 700 28px 'Pixelify Sans', monospace">
+            <input aria-label="Lettre 4" class="fld" value="" style="width: 52px; height: 60px; box-sizing: border-box; text-align: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #2E63B8; border-radius: 6px; font: 700 28px 'Pixelify Sans', monospace; box-shadow: 0 0 0 3px #2E63B8">
+          </div>
+          <span style="font-size: 13px; color: #B9B596">4 lettres, collage accepté</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span id="c-manches" style="font-weight: 600; font-size: 15px">Nombre de manches</span>
+          <div role="group" aria-labelledby="c-manches" style="display: flex; align-items: center; height: 60px; border: 3px solid #1B1D16; border-radius: 10px; background: #EFE8CC; color: #1B1D16; overflow: hidden; width: fit-content">
+            <button type="button" aria-label="Une manche de moins" style="width: 56px; height: 100%; border: 0; border-right: 3px solid #1B1D16; background: #D8CFAC; font: 700 26px 'Pixelify Sans', monospace; cursor: pointer">-</button>
+            <output style="width: 72px; text-align: center; font: 700 30px 'Pixelify Sans', monospace">3</output>
+            <button type="button" aria-label="Une manche de plus" style="width: 56px; height: 100%; border: 0; border-left: 3px solid #1B1D16; background: #F2B630; font: 700 26px 'Pixelify Sans', monospace; cursor: pointer">+</button>
+          </div>
+          <span style="font-size: 13px; color: #B9B596">Entre 1 et 10</span>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #B9B596">Libellé toujours visible au-dessus. Erreur sous le champ, en phrase complète qui dit quoi corriger. Focus : anneau faïence 3 px, jamais retiré.</p>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1fr); gap: 32px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Joueurs et pastilles</h2>
+      <ul class="px" style="list-style: none; margin: 0; padding: 12px; background: #EFE8CC; color: #1B1D16; display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{players}}" as="p" hint-placeholder-count="5">
+          <li style="display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 6px; background: {{p.bg}}; opacity: {{p.op}}">
+            <span aria-hidden="true" style="width: 36px; height: 36px; border: 2px solid #1B1D16; border-radius: 4px; background: {{p.color}}; display: grid; place-items: center; font: 700 18px 'Pixelify Sans', monospace">{{p.init}}</span>
+            <span style="font-weight: 600; font-size: 17px; flex: 1">{{p.name}}</span>
+            <sc-for list="{{p.tags}}" as="t" hint-placeholder-count="1">
+              <span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; border: 2px solid #1B1D16; background: {{t.bg}}; color: {{t.fg}}">{{t.label}}</span>
+            </sc-for>
+          </li>
+        </sc-for>
+      </ul>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">Hôte (couronne en pixels + pastille or), toi (bonbon), prêt (pomme), déconnecté (grisé, « revient ? »). Jamais la couleur seule : toujours un mot.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Classement</h2>
+      <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{ranking}}" as="r" hint-placeholder-count="4">
+          <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; background: {{r.bg}}; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 10px 14px; box-shadow: 0 4px 0 #000">
+            <span style="font: 700 30px 'Pixelify Sans', monospace">{{r.pos}}</span>
+            <span style="font-weight: 600; font-size: 18px">{{r.name}}</span>
+            <span style="font: 700 22px 'Pixelify Sans', monospace; font-variant-numeric: tabular-nums">{{r.pts}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Minuteur</h2>
+      <div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-weight: 600">Tour de Léa</span>
+          <span style="font: 700 40px 'Pixelify Sans', monospace; font-variant-numeric: tabular-nums">0:42</span>
+        </div>
+        <div role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="60" aria-valuenow="42" style="display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px">
+          <sc-for list="{{segs}}" as="g" hint-placeholder-count="20">
+            <span style="height: 18px; background: {{g}}; border: 2px solid #1B1D16"></span>
+          </sc-for>
+        </div>
+      </div>
+      <div class="px" style="background: #B83A24; color: #EFE8CC; padding: 20px; display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-weight: 600">Moins de 10 s</span>
+        <span style="font: 700 40px 'Pixelify Sans', monospace">0:07</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">20 segments qui s'éteignent un par un (pas de barre lisse : on compte en pixels). Sous 10 s, le panneau passe en brique. Le chiffre est annoncé aux lecteurs d'écran à 30 s et 10 s seulement.</p>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Notifications (toasts)</h2>
+      <div role="status" style="display: flex; align-items: center; gap: 14px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 0 #000">
+        <span aria-hidden="true" style="width: 32px; height: 32px; background: #7FB342; border: 2px solid #1B1D16; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M3 8l3 3 7-7"/></svg></span>
+        <span style="flex: 1; font-size: 16px"><b>Code copié.</b> Envoie KRAB à tes amis.</span>
+      </div>
+      <div role="alert" style="display: flex; align-items: center; gap: 14px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 0 #000">
+        <span aria-hidden="true" style="width: 32px; height: 32px; background: #B83A24; border: 2px solid #1B1D16; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#EFE8CC" stroke-width="3" stroke-linecap="square"><path d="M4 4l8 8M12 4l-8 8"/></svg></span>
+        <span style="flex: 1; font-size: 16px"><b>Connexion perdue.</b> On réessaie toutes les 3 s.</span>
+        <button class="key" type="button" style="background: #F2B630; border: 2px solid #1B1D16; border-radius: 8px; height: 44px; padding: 0 14px; font: 600 15px 'Bricolage Grotesque', sans-serif; box-shadow: 0 3px 0 #1B1D16">Réessayer</button>
+      </div>
+      <div role="status" style="display: flex; align-items: center; gap: 14px; background: #1B1D16; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; padding: 12px 14px">
+        <span aria-hidden="true" style="width: 32px; height: 32px; background: #F2B630; border: 2px solid #EFE8CC; display: grid; place-items: center; color: #1B1D16; font: 700 18px 'Pixelify Sans', monospace">!</span>
+        <span style="flex: 1; font-size: 16px">Léa est maintenant l'hôte.</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">En bas au centre sur téléphone, en bas à droite sur ordinateur. 4 s, en pause au survol ou si l'onglet est caché. Erreurs : restent jusqu'à action.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Vide, chargement, erreur</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div class="px" style="background: #333828; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 260px">
+          <svg width="48" height="48" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><path d="M2 3h8v1H2zM1 4h1v6H1zM10 4h1v6h-1zM2 10h8v1H2z" fill="#B9B596"/><path d="M4 6h1v1H4zM7 6h1v1H7zM5 8h2v1H5z" fill="#B9B596"/></svg>
+          <p style="margin: 0; font-weight: 800; font-size: 18px">Rien par ici</p>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #D8CFAC">Tu n'as pas encore joué. Ta première partie s'affichera ici.</p>
+          <a href="#" style="font-weight: 600; font-size: 15px; margin-top: auto">Choisir un jeu</a>
+        </div>
+        <div class="px" style="background: #333828; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 260px" aria-busy="true">
+          <span class="skel" style="height: 56px; background: #4A5139"></span>
+          <span class="skel" style="height: 16px; width: 80%; background: #4A5139"></span>
+          <span class="skel" style="height: 16px; width: 55%; background: #4A5139"></span>
+          <span style="display: flex; gap: 4px; margin-top: auto" aria-hidden="true"><span class="dot" style="width: 10px; height: 10px; background: #F2B630"></span><span class="dot dot2" style="width: 10px; height: 10px; background: #F2B630"></span><span class="dot dot3" style="width: 10px; height: 10px; background: #F2B630"></span></span>
+          <span style="font-size: 14px; color: #D8CFAC">Chargement des chansons…</span>
+        </div>
+        <div class="px" style="background: #333828; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 260px">
+          <svg width="48" height="48" viewBox="0 0 12 12" aria-hidden="true" shape-rendering="crispEdges"><path d="M5 1h2v1H5zM4 2h4v1H4zM3 3h6v1H3zM2 4h8v6H2z" fill="#B83A24"/><path d="M5 5h2v3H5zM5 9h2v1H5z" fill="#EFE8CC"/></svg>
+          <p style="margin: 0; font-weight: 800; font-size: 18px">Serveur injoignable</p>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #D8CFAC">Le serveur de jeu ne répond pas. Il se réveille parfois en 30 s.</p>
+          <button class="key" type="button" style="margin-top: auto; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 44px; font: 600 15px 'Bricolage Grotesque', sans-serif; box-shadow: 0 3px 0 #000">Réessayer</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Fenêtre (modale)</h2>
+      <div style="background: rgba(18,20,14,.72); border-radius: 16px; padding: 40px; display: grid; place-items: center">
+        <div role="dialog" aria-modal="true" aria-labelledby="m-t" style="width: 100%; max-width: 440px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 14px 20px; background: #F2B630; border-bottom: 3px solid #1B1D16">
+            <h3 id="m-t" style="margin: 0; font: 700 24px 'Pixelify Sans', monospace">Quitter la partie ?</h3>
+            <button type="button" aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; cursor: pointer; display: grid; place-items: center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px">
+            <p style="margin: 0; font-size: 17px; line-height: 1.5">La manche continue sans toi. Tes points de cette partie ne seront pas comptés.</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap">
+              <button class="key" type="button" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; padding: 0 20px; font: 600 16px 'Bricolage Grotesque', sans-serif; box-shadow: 0 4px 0 #000">Rester</button>
+              <button class="key" type="button" style="background: #B83A24; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; padding: 0 20px; font: 600 16px 'Bricolage Grotesque', sans-serif; box-shadow: 0 4px 0 #000">Quitter la partie</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">Élément &lt;dialog&gt; natif. Bandeau titre coloré par le jeu en cours. Échap ferme, le focus revient au bouton d'origine. Sur téléphone, devient un tiroir qui monte du bas.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Carte de chanson</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+        <a href="#" style="text-decoration: none; color: #1B1D16; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+          <span aria-hidden="true" style="aspect-ratio: 1; background: #2E63B8; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+            <span style="position: absolute; inset: 18%; border-radius: 50%; background: repeating-radial-gradient(#1B1D16 0 2px, #2A2C24 2px 5px)"></span>
+            <span style="position: absolute; inset: 42%; border-radius: 50%; background: #F2B630"></span>
+          </span>
+          <span style="padding: 12px; display: flex; flex-direction: column; gap: 2px">
+            <span style="font-weight: 800; font-size: 17px">[Titre]</span>
+            <span style="font-size: 14px; color: #5A5A45">[Artiste], [année]</span>
+          </span>
+        </a>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.55; color: #B9B596">
+          <p style="margin: 0">La pochette réelle s'affiche si l'API en fournit une. Sinon, une pochette générée : un vinyle dont la couleur du rond central est tirée du titre (toujours la même pour la même chanson).</p>
+          <p style="margin: 0">Survol (souris seulement) : la carte monte de 4 px et le disque tourne d'un quart de tour, 220 ms.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var host = { label: 'Hôte', bg: '#F2B630', fg: '#1B1D16' };
+    var me = { label: 'Toi', bg: '#F28AA6', fg: '#1B1D16' };
+    var ready = { label: 'Prêt', bg: '#7FB342', fg: '#1B1D16' };
+    var gone = { label: 'Revient ?', bg: '#D8CFAC', fg: '#1B1D16' };
+    var players = [
+      { name: 'Léa', init: 'L', color: '#F2B630', bg: '#FFFFFF66', op: 1, tags: [host, ready] },
+      { name: 'Amir', init: 'A', color: '#F28AA6', bg: '#F28AA633', op: 1, tags: [me, ready] },
+      { name: 'Yanis', init: 'Y', color: '#7FB342', bg: 'transparent', op: 1, tags: [ready] },
+      { name: 'Sofia', init: 'S', color: '#2E63B8', bg: 'transparent', op: 1, tags: [] },
+      { name: 'Malik', init: 'M', color: '#D8CFAC', bg: 'transparent', op: 0.55, tags: [gone] }
+    ];
+    var ranking = [
+      { pos: '1', name: 'Léa', pts: '300', bg: '#F2B630' },
+      { pos: '2', name: 'Amir', pts: '200', bg: '#F28AA6' },
+      { pos: '3', name: 'Yanis', pts: '100', bg: '#EFE8CC' },
+      { pos: '4', name: 'Sofia', pts: '0', bg: '#D8CFAC' }
+    ];
+    var segs = [];
+    for (var i = 0; i < 20; i++) segs.push(i < 14 ? '#7FB342' : '#D8CFAC');
+    return { players: players, ranking: ranking, segs: segs };
+  }
+}
+</script>
+</body>
+</html>

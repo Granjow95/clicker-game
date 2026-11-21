@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lyrics, parcours téléphone</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Shrikhand&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.phone{width:390px;height:844px;border-radius:40px;border:3px solid #000;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:0 12px 0 rgba(0,0,0,.35);background:#2E63B8}
+.lined{background-color:#F6F0D8;background-image:repeating-linear-gradient(transparent 0 33px,#C9D6EE 33px 35px)}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer;text-decoration:none}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #F2B630;outline-offset:3px}
+.fld{height:52px;box-sizing:border-box;width:100%;background:#EFE8CC;color:#1B1D16;border:3px solid #1B1D16;border-radius:6px;padding:0 14px;font:400 17px 'Bricolage Grotesque',sans-serif}
+.vinyl{border-radius:50%;background:repeating-radial-gradient(#1B1D16 0 2px,#2A2C24 2px 5px)}
+.back{display:flex;align-items:center;gap:6px;height:44px;padding:0 12px 0 8px;background:#EFE8CC;color:#1B1D16;border:3px solid #1B1D16;border-radius:10px;box-shadow:0 3px 0 #000;font-weight:600;font-size:15px}
+</style>
+</head>
+<body>
+<div style="width: 1832px; height: 1060px; box-sizing: border-box; padding: 56px 64px; background: #1B3E7A; font-family: 'Bricolage Grotesque', sans-serif; color: #EFE8CC; display: flex; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-weight: 600; color: #D6E2F7">1. Choix de la musique</p>
+<div class="phone">
+<div style="padding: 10px; display: flex; align-items: center; gap: 10px">
+<a class="key back" href="#/"><svg aria-hidden="true" fill="none" height="16" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 18 18" width="16"><path d="M11 3 5 9l6 6"></path></svg>Accueil</a>
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 15px; color: #D6E2F7">Gran'Games / Lyrics</span>
+</div>
+<div style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-family: 'Shrikhand', serif; font-weight: 400; font-size: 56px; line-height: 1; color: #F2B630">Lyrics</h1>
+<label for="l-q" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Chercher un titre ou un artiste</label>
+<div style="position: relative"><input class="fld" id="l-q" placeholder="Titre ou artiste" style="padding-left: 44px" value="bus"/><svg aria-hidden="true" height="20" shape-rendering="crispEdges" style="position: absolute; left: 14px; top: 16px" viewbox="0 0 10 10" width="20"><path d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7zM8 8h1v1H8z" fill="#1B1D16"></path></svg></div>
+<div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px">
+<button aria-pressed="true" style="flex: 0 0 auto; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #1B1D16; background: #F2B630; color: #1B1D16; font: 600 14px 'Bricolage Grotesque', sans-serif" type="button">Tous genres</button>
+<button style="flex: 0 0 auto; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #EFE8CC; background: transparent; color: #EFE8CC; font: 600 14px 'Bricolage Grotesque', sans-serif" type="button">Artiste</button>
+<button style="flex: 0 0 auto; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #EFE8CC; background: transparent; color: #EFE8CC; font: 600 14px 'Bricolage Grotesque', sans-serif" type="button">Année</button>
+<button style="flex: 0 0 auto; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #EFE8CC; background: transparent; color: #EFE8CC; font: 600 14px 'Bricolage Grotesque', sans-serif" type="button">Tri : A à Z</button>
+</div>
+</div>
+<div style="flex: 1; overflow: hidden; padding: 12px 16px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start">
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #F2B630; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #2E63B8"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Le Bus de minuit</span><span style="font-size: 13px; color: #4A4A38">Les Néons Tièdes</span></span>
+</a>
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #F28AA6; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #1B1D16"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Bus 258 (version longue)</span><span style="font-size: 13px; color: #4A4A38">Madame Tartine</span></span>
+</a>
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #7FB342; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #F2B630"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Abribus</span><span style="font-size: 13px; color: #4A4A38">Club Sandwich</span></span>
+</a>
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #EFE8CC; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #B83A24"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Terminus</span><span style="font-size: 13px; color: #4A4A38">Les Néons Tièdes</span></span>
+</a>
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #B83A24; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #EFE8CC"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Ticket perdu</span><span style="font-size: 13px; color: #4A4A38">Bérénice et les Pneus</span></span>
+</a>
+
+<a class="key" href="#/lyrics/1" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; overflow: hidden; display: flex; flex-direction: column">
+<span aria-hidden="true" style="aspect-ratio: 1; background: #2E63B8; position: relative; display: block; border-bottom: 3px solid #1B1D16">
+<span class="vinyl" style="position: absolute; inset: 14%"></span>
+<span style="position: absolute; inset: 40%; border-radius: 50%; background: #F28AA6"></span>
+</span>
+<span style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-weight: 800; font-size: 15px; line-height: 1.2">Le Bus des vacances</span><span style="font-size: 13px; color: #4A4A38">Club Sandwich</span></span>
+</a>
+
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-weight: 600; color: #D6E2F7">2. Partie (mot inexistant tapé)</p>
+<div class="phone">
+<div style="padding: 10px; display: flex; align-items: center; gap: 10px; background: #2E63B8">
+<span aria-hidden="true" class="vinyl" style="width: 44px; height: 44px; flex: 0 0 44px; position: relative"><span style="position: absolute; inset: 36%; border-radius: 50%; background: #F2B630"></span></span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 800">Le Bus de minuit</span><span style="font-size: 13px; color: #D6E2F7">Les Néons Tièdes</span></span>
+<button class="key" style="height: 44px; padding: 0 12px; background: transparent; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; font: 600 14px 'Bricolage Grotesque', sans-serif" type="button">Abandonner</button>
+</div>
+<div style="background: #F2B630; color: #1B1D16; border-top: 3px solid #1B1D16; border-bottom: 3px solid #1B1D16; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="font: 700 22px 'Pixelify Sans', monospace">12/180</span>
+<span aria-label="Mots trouvés" aria-valuemax="180" aria-valuemin="0" aria-valuenow="12" role="progressbar" style="flex: 1; height: 12px; background: #EFE8CC; border: 2px solid #1B1D16; position: relative"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 7%; background: #2E63B8"></span></span>
+</div>
+<div style="display: flex; gap: 8px">
+<label for="l-w" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Tape un mot</label>
+<input aria-describedby="l-wm" class="fld" id="l-w" style="border-color: #B83A24; box-shadow: 0 0 0 3px #B83A24" value="brouette"/>
+<button aria-label="Effacer le mot" class="key" style="flex: 0 0 52px; height: 52px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; display: grid; place-items: center" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<span id="l-wm" role="status" style="font-size: 14px; font-weight: 600; color: #7A2414">« brouette » n'est pas dans la chanson.</span>
+</div>
+<div class="lined" style="flex: 1; overflow: hidden; color: #1B1D16; padding: 12px 16px; display: flex; flex-direction: column; gap: 0">
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">Je</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">le</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">bus</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">de</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">minuit</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.24em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 4.96em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 4.96em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.24em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">moi</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">je</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">Le</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 5.58em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.8599999999999999em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.8599999999999999em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">Et</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">moi</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">je</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.24em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">Je</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">le</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">bus</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">de</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">minuit</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.8599999999999999em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 6.2em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 4.96em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.1em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">je</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.8599999999999999em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 4.34em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 5.58em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">Le</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">bus</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">de</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 0px; font-weight: 800; font-size: 18px; background: transparent; color: #1B1D16; border-radius: 3px; padding: 0 2px">minuit</span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.24em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 2.48em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 1.8599999999999999em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+<span style="display: inline-block; height: 24px; line-height: 24px; min-width: 3.7199999999999998em; font-weight: 800; font-size: 18px; background: #2E63B8; color: #1B1D16; border-radius: 3px; padding: 0 2px"></span>
+
+</div>
+
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-weight: 600; color: #D6E2F7">3. Victoire</p>
+<div class="phone" style="background: #F2B630; color: #1B1D16">
+<div style="flex: 1; padding: 32px 20px 24px; display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; position: relative">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<span style="position: absolute; left: 12%; top: 18%; width: 12px; height: 12px; background: #2E63B8"></span><span style="position: absolute; left: 80%; top: 12%; width: 10px; height: 10px; background: #F28AA6"></span><span style="position: absolute; left: 70%; top: 34%; width: 12px; height: 12px; background: #7FB342"></span><span style="position: absolute; left: 20%; top: 40%; width: 8px; height: 8px; background: #1B1D16"></span><span style="position: absolute; left: 88%; top: 46%; width: 8px; height: 8px; background: #2E63B8"></span><span style="position: absolute; left: 6%; top: 60%; width: 10px; height: 10px; background: #F28AA6"></span>
+</div>
+<span aria-hidden="true" class="vinyl" style="width: 200px; height: 200px; position: relative; margin-top: 24px; border: 4px solid #1B1D16"><span style="position: absolute; inset: 36%; border-radius: 50%; background: #2E63B8; border: 3px solid #1B1D16"></span></span>
+<h1 style="margin: 0; font-family: 'Shrikhand', serif; font-weight: 400; font-size: 52px; line-height: 1">Disque d'or</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.45">Tu as retrouvé les <b>180 mots</b> du Bus de minuit.</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%">
+<div style="background: #EFE8CC; border: 3px solid #1B1D16; padding: 12px"><span style="font: 700 30px 'Pixelify Sans', monospace">[mm:ss]</span><br/><span style="font-size: 13px">temps</span></div>
+<div style="background: #EFE8CC; border: 3px solid #1B1D16; padding: 12px"><span style="font: 700 30px 'Pixelify Sans', monospace">[n]</span><br/><span style="font-size: 13px">mots tapés pour rien</span></div>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; width: 100%">
+<button class="key" style="height: 56px; background: #1B1D16; color: #F2B630; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #6E5310; font: 700 20px 'Pixelify Sans', monospace" type="button">Une autre chanson</button>
+<button class="key" style="height: 52px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Revoir les paroles</button>
+</div>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-weight: 600; color: #D6E2F7">4. Défaite (abandon)</p>
+<div class="phone" style="background: #1B3E7A">
+<div style="padding: 24px 20px 12px; display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Shrikhand', serif; font-weight: 400; font-size: 46px; line-height: 1; color: #F2B630">Rayé.</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.45">Tu en as trouvé <b>134 sur 180</b>. Les 46 manquants sont en brique.</p>
+</div>
+<div class="lined" style="flex: 1; overflow: hidden; margin: 0 12px; border: 3px solid #1B1D16; border-radius: 8px; color: #1B1D16; padding: 10px 12px">
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Je</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">cours</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">après</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">le</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">bus</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">de</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">minuit</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Il</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">part</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">toujours</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">quand</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">j’arrive</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">La</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">ville</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">dort,</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">moi</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">je</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">cours</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">encore</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Le</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">chauffeur</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">rit</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">dans</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">son</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">rétro</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Et</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">moi</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">je</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">chante</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">sous</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">la</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">pluie</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Je</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">cours</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">après</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">le</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">bus</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">de</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">minuit</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Mes</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">chaussures</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">prennent</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">l’eau</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Demain</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">promis</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">je</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">pars</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">plus</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">tôt</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Demain</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">promis,</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">demain</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">peut-être</span>
+
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px">
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">Le</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">bus</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">de</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">minuit</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">me</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">fait</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #1B1D16; background: transparent; padding: 0 3px; border-radius: 3px">des</span>
+
+<span style="font-weight: 800; font-size: 17px; color: #EFE8CC; background: #B83A24; padding: 0 3px; border-radius: 3px">signes</span>
+
+</div>
+
+</div>
+<div style="padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 10px">
+<button class="key" style="height: 56px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace" type="button">Retenter cette chanson</button>
+<button class="key" style="height: 52px; background: transparent; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Choisir une autre chanson</button>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

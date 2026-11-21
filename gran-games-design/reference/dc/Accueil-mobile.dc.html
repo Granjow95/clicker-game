@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gran'Games, accueil téléphone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Special+Elite&amp;family=Shrikhand&amp;family=Bungee&amp;family=Anton&amp;family=VT323&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.cart{clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%)}
+.ridges{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 5px,transparent 5px 10px)}
+.pins{background-image:repeating-linear-gradient(90deg,#C9A64A 0 8px,transparent 8px 13px)}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.shelf{scroll-snap-type:x mandatory;scrollbar-width:none}
+.shelf>*{scroll-snap-align:center}
+</style>
+</helmet>
+<div class="ground" style="width: 390px; min-height: 3500px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; overflow: hidden">
+
+  <header style="padding: 12px 12px 0; display: flex; flex-direction: column; gap: 10px">
+    <div style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 14px; padding: 6px 6px 6px 14px; display: flex; align-items: center; justify-content: space-between">
+      <a href="#/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #EFE8CC">
+        <svg width="20" height="24" viewBox="0 0 26 30" aria-hidden="true"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"/><rect x="4" y="9" width="18" height="12" fill="#1B1D16"/></svg>
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">Gran'Games</span>
+      </a>
+      <button class="key" type="button" aria-label="Compte" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; display: grid; place-items: center">
+        <svg width="18" height="18" viewBox="0 0 9 9" aria-hidden="true" shape-rendering="crispEdges"><path d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z" fill="#1B1D16"/></svg>
+      </button>
+    </div>
+    <nav aria-label="Navigation principale" style="display: flex; gap: 4px; background: #333828; border-radius: 10px; padding: 4px">
+      <a href="#/" aria-current="page" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; background: #EFE8CC; color: #1B1D16; text-decoration: none; font-weight: 600; font-size: 15px">Accueil</a>
+      <a href="#/jeux" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 15px">Jeux</a>
+      <a href="#/nouveautes" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 15px">Nouveautés</a>
+    </nav>
+  </header>
+
+  <main>
+    <section style="padding: 40px 20px 0; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 104px; line-height: 0.82; letter-spacing: -2px">Gran'<br>Games</h1>
+      <p style="margin: 0; font-size: 20px; line-height: 1.35; font-weight: 600">Des petits jeux pour se chamailler entre amis, dans le navigateur.</p>
+      <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #D8CFAC">Pas de pub. Pas de compte obligatoire : un pseudo suffit.</p>
+    </section>
+
+    <section aria-label="Les jeux en cartouches" style="padding-top: 32px">
+      <ul class="shelf" style="list-style: none; margin: 0; padding: 24px 20px 0; display: flex; gap: 14px; overflow-x: auto">
+        <sc-for list="{{games}}" as="g" hint-placeholder-count="5">
+          <li style="flex: 0 0 168px">
+            <a href="{{g.href}}" class="cart" aria-label="Jouer à {{g.name}}" style="display: flex; flex-direction: column; height: 220px; background: {{g.body}}; transform: rotate({{g.rot}}); text-decoration: none; color: {{g.ink}}">
+              <span class="ridges" style="height: 16px; display: block"></span>
+              <span style="margin: 8px 12px 0; flex: 1; background: {{g.label}}; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+                <span style="font-family: {{g.font}}; font-size: {{g.size}}; line-height: 1">{{g.name}}</span>
+                <span style="font-size: 12px; font-weight: 600">{{g.mode}}</span>
+              </span>
+              <span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+            </a>
+          </li>
+        </sc-for>
+      </ul>
+      <div aria-hidden="true" style="height: 20px; margin: -4px 0 0; background: #4A5139; border-top: 4px solid #6E7A55; box-shadow: 0 8px 0 #1B1D16"></div>
+      <p style="margin: 20px 20px 0; font-size: 14px; color: #B9B596">Glisse pour voir les 5 cartouches.</p>
+    </section>
+
+    <section aria-labelledby="m-salle" style="padding: 40px 12px 0">
+      <div class="px" style="background: #F2B630; color: #1B1D16; padding: 24px 20px; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="m-salle" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 34px; line-height: 1; font-weight: 700">On t'a donné un code ?</h2>
+        <div style="display: flex; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 6px; width: 120px">
+            <label for="m-code" style="font-weight: 600; font-size: 14px">Code</label>
+            <input id="m-code" class="fld" placeholder="KRAB" maxlength="4" style="width: 100%; height: 52px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 10px; font: 700 24px 'Pixelify Sans', monospace; letter-spacing: 0.15em; color: #1B1D16">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0">
+            <label for="m-pseudo" style="font-weight: 600; font-size: 14px">Ton pseudo</label>
+            <input id="m-pseudo" class="fld" placeholder="Ton pseudo" style="width: 100%; height: 52px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 12px; font: 400 17px 'Bricolage Grotesque', sans-serif; color: #1B1D16">
+          </div>
+        </div>
+        <button class="key" type="button" style="background: #1B1D16; color: #F2B630; border: 3px solid #1B1D16; border-radius: 10px; height: 56px; box-shadow: 0 4px 0 #6E5310; font: 700 20px 'Pixelify Sans', monospace">Rejoindre</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="m-jeux" style="padding-top: 56px">
+      <h2 id="m-jeux" style="margin: 0 20px 20px; font-family: 'Pixelify Sans', monospace; font-size: 52px; line-height: 1; font-weight: 700">Les jeux</h2>
+      <sc-for list="{{games}}" as="g" hint-placeholder-count="5">
+        <a href="{{g.href}}" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: {{g.body}}; color: {{g.text}}; border-top: 4px solid #1B1D16; text-decoration: none">
+          <span style="font-family: {{g.font}}; font-size: {{g.rowSize}}; line-height: 1; color: {{g.title}}">{{g.name}}</span>
+          <span style="font-size: 16px; line-height: 1.45">{{g.desc}}</span>
+          <span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+            <sc-for list="{{g.chips}}" as="c" hint-placeholder-count="2">
+              <span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid {{g.text}}">{{c}}</span>
+            </sc-for>
+            <span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+          </span>
+        </a>
+      </sc-for>
+    </section>
+
+    <section aria-labelledby="m-news" style="padding: 56px 20px 0; display: flex; flex-direction: column; gap: 16px">
+      <h2 id="m-news" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 44px; line-height: 1; font-weight: 700">Quoi de neuf</h2>
+      <ol style="list-style: none; margin: 0; padding: 0; border-top: 3px solid #EFE8CC">
+        <sc-for list="{{news}}" as="n" hint-placeholder-count="4">
+          <li style="padding: 16px 0; border-bottom: 2px solid #4A5139; display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; gap: 8px; align-items: center">
+              <span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: {{n.bg}}; color: #1B1D16">{{n.tag}}</span>
+              <span style="font-family: 'Pixelify Sans', monospace; font-size: 14px; color: #B9B596">{{n.date}}</span>
+            </span>
+            <span style="font-weight: 800; font-size: 18px">{{n.title}}</span>
+            <span style="font-size: 15px; line-height: 1.5; color: #D8CFAC">{{n.text}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </section>
+
+    <section style="padding: 48px 12px 0">
+      <div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px">
+        <span style="font-family: 'Pixelify Sans', monospace; font-size: 28px; font-weight: 700; line-height: 1">Ta fiche de joueur</span>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores et tes 20 dernières parties.</p>
+        <button class="key" type="button" style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Créer mon compte</button>
+        <button class="key" type="button" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif">J'ai déjà un compte</button>
+      </div>
+    </section>
+  </main>
+
+  <footer style="margin-top: 64px; background: #1B1D16; border-top: 4px solid #4A5139; padding: 32px 20px 40px; display: flex; flex-direction: column; gap: 24px">
+    <span aria-hidden="true" style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 120px; line-height: 0.8; color: #333828">GG</span>
+    <span style="font-size: 17px; font-weight: 600">Bien joué. Reviens quand tu veux.</span>
+    <nav aria-label="Pied de page" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; font-size: 16px">
+      <a href="#/regles/imposteur">Règles des jeux</a>
+      <a href="#/profil">Mon profil</a>
+      <a href="#/confidentialite">Confidentialité</a>
+      <a href="#/credits">Crédits</a>
+    </nav>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var games = [
+      { name: 'Imposteur', href: '#/imposteur', mode: 'En salle', chips: ['En salle', 'Jusqu’à 8'], body: '#1E4D3B', label: '#EFE8CC', ink: '#1B1D16', text: '#EFE8CC', title: '#EFE8CC', font: "'Special Elite', monospace", size: '24px', rowSize: '54px', rot: '-4deg', desc: 'Tout le monde a le même mot. Sauf un. Indices, vote, démasquage.' },
+      { name: 'Lyrics', href: '#/lyrics', mode: 'Solo', chips: ['Solo'], body: '#2E63B8', label: '#F2B630', ink: '#1B1D16', text: '#EFE8CC', title: '#F2B630', font: "'Shrikhand', serif", size: '28px', rowSize: '56px', rot: '3deg', desc: 'Tous les mots d’une chanson sont cachés. Tape ceux que tu connais.' },
+      { name: 'Karaoké', href: '#/karaoke', mode: 'Solo ou salle', chips: ['Solo', 'En salle'], body: '#6E1A1F', label: '#F2B630', ink: '#6E1A1F', text: '#EFE8CC', title: '#F2B630', font: "'Bungee', sans-serif", size: '22px', rowSize: '44px', rot: '-2deg', desc: 'Les paroles défilent en rythme. Toi, tu chantes. Les autres subissent.' },
+      { name: 'Plus ou Moins', href: '#/plus-ou-moins', mode: 'Solo', chips: ['Solo', 'Nouveau'], body: '#F28AA6', label: '#E4E0D4', ink: '#1B1D16', text: '#1B1D16', title: '#1B1D16', font: "'Anton', sans-serif", size: '26px', rowSize: '54px', rot: '4deg', desc: 'Deux choses. Laquelle a le plus ? Une erreur et la série s’arrête.' },
+      { name: 'Course de frappe', href: '#/frappe', mode: 'Solo ou salle', chips: ['Solo', 'En salle', 'Nouveau'], body: '#2F3134', label: '#F2B630', ink: '#1B1D16', text: '#EFE8CC', title: '#F2B630', font: "'VT323', monospace", size: '30px', rowSize: '60px', rot: '-3deg', desc: 'Une phrase, un chrono. Sans faute, et plus vite que les autres.' }
+    ];
+    var news = [
+      { date: '[date]', tag: 'Nouveau jeu', bg: '#F28AA6', title: 'Plus ou Moins', text: 'Une erreur et ta série s’arrête.' },
+      { date: '[date]', tag: 'Nouveau jeu', bg: '#F2B630', title: 'Course de frappe', text: 'Seul ou à plusieurs sur la même piste.' },
+      { date: '[date]', tag: 'Console', bg: '#7FB342', title: 'Le bouton retour marche enfin', text: 'Chaque jeu et chaque salle a son adresse.' }
+    ];
+    return { games: games, news: news };
+  }
+}
+</script>
+</body>
+</html>

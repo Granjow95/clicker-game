@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gran'Games, animations et navigation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+@keyframes insert{0%,15%{transform:translateY(-70px) rotate(-6deg);opacity:1}45%{transform:translateY(0) rotate(0);opacity:1}60%,100%{transform:translateY(18px);opacity:0}}
+@keyframes wipe{0%,55%{clip-path:inset(100% 0 0 0)}85%,100%{clip-path:inset(0 0 0 0)}}
+.demo-cart{animation:insert 2400ms cubic-bezier(.23,1,.32,1) infinite}
+.demo-world{animation:wipe 2400ms cubic-bezier(.77,0,.175,1) infinite}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.demo-shake{animation:shake 300ms cubic-bezier(.23,1,.32,1) infinite;animation-delay:1s}
+@keyframes flip{0%,30%{transform:rotateX(0)}50%,100%{transform:rotateX(180deg)}}
+.flip{transform-style:preserve-3d;animation:flip 2000ms cubic-bezier(.23,1,.32,1) infinite alternate}
+.face{backface-visibility:hidden;position:absolute;inset:0;display:grid;place-items:center}
+@media (prefers-reduced-motion: reduce){.demo-cart,.demo-world,.demo-shake,.flip{animation:none}}
+</style>
+</helmet>
+<div class="ground" style="width: 1440px; min-height: 1900px; box-sizing: border-box; padding: 72px 80px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column; gap: 56px">
+
+  <div style="display: flex; justify-content: space-between; align-items: end; gap: 24px">
+    <h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 88px; line-height: 0.9; font-weight: 700">Ça bouge,<br>mais pas trop</h1>
+    <p style="margin: 0; max-width: 500px; font-size: 17px; line-height: 1.55; color: #B9B596">Un seul grand moment par écran. Ce qu'on fait souvent (taper, naviguer au clavier) ne s'anime pas. Ce qui arrive rarement (gagner, entrer dans un jeu) a droit à un peu de spectacle.</p>
+  </div>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Entrer dans un jeu : l'insertion de cartouche</h2>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px">
+        <div style="height: 300px; background: #333828; border: 2px solid #4A5139; position: relative; overflow: hidden; display: grid; place-items: center">
+          <div style="position: absolute; bottom: 40px; left: 50%; width: 180px; margin-left: -90px; height: 22px; background: #1B1D16; border-radius: 4px"></div>
+          <div class="demo-cart" style="width: 120px; height: 150px; background: #1E4D3B; border: 3px solid #1B1D16; position: relative; top: 10px; display: grid; place-items: center">
+            <span style="background: #EFE8CC; color: #1B1D16; padding: 10px 8px; font: 700 15px 'Pixelify Sans', monospace">Imposteur</span>
+          </div>
+        </div>
+        <div style="height: 300px; background: #333828; border: 2px solid #4A5139; position: relative; overflow: hidden">
+          <div class="demo-world" style="position: absolute; inset: 0; background: #1E4D3B; display: grid; place-items: center">
+            <span style="font: 700 32px 'Pixelify Sans', monospace; color: #EFE8CC">Le salon</span>
+          </div>
+        </div>
+      </div>
+      <ol style="margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 16px; line-height: 1.55; color: #D8CFAC">
+        <li>Clic sur une cartouche : elle se redresse et descend dans la fente de l'en-tête. 260 ms, <b style="color: #EFE8CC">ease-out fort</b>.</li>
+        <li>Le monde du jeu se déroule de bas en haut (clip-path inset 100% vers 0). 320 ms, <b style="color: #EFE8CC">ease-in-out fort</b>, départ à 160 ms.</li>
+        <li>Le titre du jeu prend le focus, le titre de l'onglet change, l'URL devient <code>#/imposteur</code>.</li>
+        <li>Sortie (bouton Accueil ou retour du navigateur) : l'inverse, deux fois plus vite. 180 ms.</li>
+      </ol>
+      <p style="margin: 0; font-size: 14px; color: #B9B596">API View Transitions quand elle existe (document.startViewTransition), sinon la même chose en WAAPI sur deux calques. Mouvement réduit : simple fondu de 150 ms.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Trois courbes, pas une de plus</h2>
+      <sc-for list="{{curves}}" as="c" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 12px">
+          <svg width="96" height="72" viewBox="0 0 100 100" aria-hidden="true" preserveAspectRatio="none"><rect width="100" height="100" fill="#D8CFAC"/><path d="{{c.path}}" fill="none" stroke="#1B1D16" stroke-width="5"/></svg>
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font: 700 20px 'Pixelify Sans', monospace">{{c.name}}</span>
+            <code style="font-size: 13px">{{c.value}}</code>
+            <span style="font-size: 14px; color: #4A4A38">{{c.use}}</span>
+          </span>
+        </div>
+      </sc-for>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">Jamais d'ease-in sur une interface : ça démarre mou au moment où l'œil regarde. Survols et couleurs : <code>ease</code> simple. Barres de progression continues : <code>linear</code>.</p>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 16px">
+    <h2 style="margin: 0; font-size: 26px; font-weight: 800">Table des mouvements</h2>
+    <div style="overflow-x: auto; border: 3px solid #1B1D16; border-radius: 10px">
+      <table style="width: 100%; border-collapse: collapse; background: #EFE8CC; color: #1B1D16; font-size: 15px">
+        <thead>
+          <tr style="background: #1B1D16; color: #EFE8CC; text-align: left">
+            <th scope="col" style="padding: 12px 16px">Élément</th>
+            <th scope="col" style="padding: 12px 16px">Ce qui bouge</th>
+            <th scope="col" style="padding: 12px 16px">Durée</th>
+            <th scope="col" style="padding: 12px 16px">Courbe</th>
+            <th scope="col" style="padding: 12px 16px">Mouvement réduit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+            <tr style="border-top: 2px solid #D8CFAC">
+              <th scope="row" style="padding: 10px 16px; text-align: left; font-weight: 800">{{r.el}}</th>
+              <td style="padding: 10px 16px">{{r.what}}</td>
+              <td style="padding: 10px 16px; font-family: 'Pixelify Sans', monospace; font-size: 17px; white-space: nowrap">{{r.dur}}</td>
+              <td style="padding: 10px 16px; white-space: nowrap">{{r.ease}}</td>
+              <td style="padding: 10px 16px; color: #4A4A38">{{r.reduced}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <div style="background: #333828; border: 2px solid #4A5139; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+      <h3 style="margin: 0; font-size: 20px; font-weight: 800">Mot inexistant</h3>
+      <div class="demo-shake" style="height: 52px; background: #EFE8CC; border: 3px solid #B83A24; border-radius: 6px; display: flex; align-items: center; padding: 0 14px; color: #1B1D16; font-size: 18px">brouette</div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #D8CFAC">Secousse horizontale 300 ms, amplitude qui décroît (6, 6, 4, 3 px), bord brique 600 ms. Le champ se vide. Mouvement réduit : bord brique seul.</p>
+    </div>
+    <div style="background: #333828; border: 2px solid #4A5139; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+      <h3 style="margin: 0; font-size: 20px; font-weight: 800">Mot trouvé (Lyrics)</h3>
+      <div style="display: flex; gap: 8px; perspective: 400px">
+        <span class="flip" style="position: relative; width: 110px; height: 44px; display: block">
+          <span class="face" style="background: #F2B630; border: 2px solid #1B1D16; border-radius: 4px"></span>
+          <span class="face" style="background: #EFE8CC; color: #1B1D16; border: 2px solid #1B1D16; border-radius: 4px; transform: rotateX(180deg); font-weight: 800; font-size: 18px">nuit</span>
+        </span>
+        <span class="flip" style="position: relative; width: 110px; height: 44px; display: block; animation-delay: 60ms">
+          <span class="face" style="background: #F2B630; border: 2px solid #1B1D16; border-radius: 4px"></span>
+          <span class="face" style="background: #EFE8CC; color: #1B1D16; border: 2px solid #1B1D16; border-radius: 4px; transform: rotateX(180deg); font-weight: 800; font-size: 18px">nuit</span>
+        </span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #D8CFAC">La case se retourne comme un panneau d'aéroport : rotateX 180 ms, décalage de 30 ms entre occurrences, 12 maximum, le reste apparaît d'un coup. Le texte saisi, lui, ne s'anime jamais.</p>
+    </div>
+    <div style="background: #333828; border: 2px solid #4A5139; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+      <h3 style="margin: 0; font-size: 20px; font-weight: 800">Gagné, perdu</h3>
+      <div style="display: flex; gap: 10px; align-items: end; height: 52px" aria-hidden="true">
+        <span style="width: 12px; height: 12px; background: #F2B630"></span><span style="width: 8px; height: 8px; background: #7FB342; margin-bottom: 30px"></span><span style="width: 12px; height: 12px; background: #F28AA6; margin-bottom: 14px"></span><span style="width: 8px; height: 8px; background: #2E63B8; margin-bottom: 38px"></span><span style="width: 12px; height: 12px; background: #EFE8CC; margin-bottom: 6px"></span><span style="width: 8px; height: 8px; background: #F2B630; margin-bottom: 24px"></span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #D8CFAC">Gagné : 24 pixels de couleur jaillissent du score (600 ms, une seule fois) puis le score se compte (800 ms, ease-out). Perdu : le panneau descend de 8 px et se désature, pas de secousse plein écran. Mouvement réduit : score final affiché direct.</p>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Routes (#hash, retour navigateur qui marche)</h2>
+      <div style="border: 3px solid #1B1D16; border-radius: 10px; overflow: hidden; background: #EFE8CC; color: #1B1D16">
+        <sc-for list="{{routes}}" as="r" hint-placeholder-count="12">
+          <div style="display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; padding: 9px 16px; border-top: 2px solid #D8CFAC; font-size: 15px">
+            <code style="font-weight: 700">{{r.path}}</code>
+            <span>{{r.what}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">Les écrans internes d'un jeu (indices, vote, révélation) ne créent pas d'entrée d'historique : ils dépendent du serveur. Retour depuis une partie en cours : la fenêtre « Quitter la partie ? ».</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <h2 style="margin: 0; font-size: 26px; font-weight: 800">Jetons CSS (styles/base.css)</h2>
+      <pre style="margin: 0; background: #1B1D16; color: #EFE8CC; border: 2px solid #4A5139; border-radius: 10px; padding: 20px; font-size: 13px; line-height: 1.6; overflow-x: auto; white-space: pre">{{tokens}}</pre>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #B9B596">Chaque styles/&lt;jeu&gt;.css ne redéfinit que --monde-fond, --monde-surface, --monde-accent, --monde-police et le motif. Tout le reste vient de base.css.</p>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var curves = [
+      { name: 'ease-out fort', value: 'cubic-bezier(0.23, 1, 0.32, 1)', use: 'Ce qui entre, ce qui répond à un clic', path: 'M0 100 C23 0, 32 0, 100 0' },
+      { name: 'ease-in-out fort', value: 'cubic-bezier(0.77, 0, 0.175, 1)', use: 'Ce qui se déplace déjà à l’écran', path: 'M0 100 C77 100, 17.5 0, 100 0' },
+      { name: 'tiroir', value: 'cubic-bezier(0.32, 0.72, 0, 1)', use: 'Tiroirs et fenêtres sur téléphone', path: 'M0 100 C32 28, 0 0, 100 0' }
+    ];
+    var rows = [
+      { el: 'Touche', what: 'descend de 3 px, l’épaisseur passe de 4 à 1 px', dur: '120 ms', ease: 'ease-out fort', reduced: 'identique (c’est un retour, pas un voyage)' },
+      { el: 'Cartouche (survol)', what: 'monte de 14 px, se redresse à 0°', dur: '220 ms', ease: 'ease-out fort', reduced: 'contour bouton d’or seulement' },
+      { el: 'Accueil vers jeu', what: 'insertion puis déroulé du monde', dur: '260 + 320 ms', ease: 'out puis in-out', reduced: 'fondu 150 ms' },
+      { el: 'Écran vers écran (jeu)', what: 'fondu + 8 px + flou 2 px', dur: '200 ms', ease: 'ease-out fort', reduced: 'fondu 120 ms' },
+      { el: 'Fenêtre', what: 'scale 0,96 vers 1 + opacité, depuis le centre', dur: '200 ms (sortie 150)', ease: 'ease-out fort', reduced: 'opacité seule' },
+      { el: 'Tiroir téléphone', what: 'translateY(100%) vers 0', dur: '320 ms (sortie 200)', ease: 'tiroir', reduced: 'opacité seule' },
+      { el: 'Toast', what: 'monte du bas, sort par le bas', dur: '300 ms (sortie 200)', ease: 'ease', reduced: 'opacité seule' },
+      { el: 'Liste de joueurs', what: 'un joueur arrive : glisse de 8 px + fondu', dur: '200 ms', ease: 'ease-out fort', reduced: 'apparition directe' },
+      { el: 'Révélation imposteur', what: 'tampon : scale 1,3 vers 1 + rotation -8°', dur: '240 ms', ease: 'ease-out fort', reduced: 'apparition directe' },
+      { el: 'Compte à rebours', what: 'chaque chiffre : scale 1,15 vers 1 + fondu', dur: '400 ms', ease: 'ease-out fort', reduced: 'chiffre seul, pas d’échelle' },
+      { el: 'Chiffre (Plus ou Moins)', what: 'compté de 0 à la valeur', dur: '700 ms', ease: 'ease-out fort', reduced: 'valeur finale direct' },
+      { el: 'Ligne karaoké', what: 'la ligne suivante monte et grossit', dur: '280 ms', ease: 'ease-in-out fort', reduced: 'changement direct' },
+      { el: 'Frappe (lettres)', what: 'couleur seule, aucun mouvement', dur: '0 ms', ease: 'aucune', reduced: 'identique' }
+    ];
+    var routes = [
+      { path: '#/', what: 'Accueil' },
+      { path: '#/jeux', what: 'Accueil, ancré sur la liste des jeux' },
+      { path: '#/nouveautes', what: 'Accueil, ancré sur les nouveautés' },
+      { path: '#/profil', what: 'Profil (connecté), sinon fenêtre de compte' },
+      { path: '#/imposteur', what: 'Entrée de l’Imposteur' },
+      { path: '#/imposteur/KRAB', what: 'Salle KRAB (lien partageable)' },
+      { path: '#/lyrics', what: 'Choix de la musique' },
+      { path: '#/lyrics/<id>', what: 'Partie sur une chanson' },
+      { path: '#/karaoke', what: 'Choix du mode' },
+      { path: '#/karaoke/salle/<code>', what: 'Salon karaoké' },
+      { path: '#/plus-ou-moins', what: 'Écran de départ' },
+      { path: '#/frappe', what: 'Course de frappe (solo ou salle)' },
+      { path: '#/regles/<jeu>', what: 'Règles d’un jeu' },
+      { path: 'tout le reste', what: 'Page 404' }
+    ];
+    var tokens = [
+      ':root {',
+      '  --mousse: #22261C;   --lichen: #333828;',
+      '  --parchemin: #EFE8CC; --papier-ombre: #D8CFAC;',
+      '  --encre: #1B1D16;    --bouton-dor: #F2B630;',
+      '  --faience: #2E63B8;  --bonbon: #F28AA6;',
+      '  --pomme: #7FB342;    --brique: #B83A24;',
+      '',
+      '  --police-pixel: "Pixelify Sans", monospace;',
+      '  --police-texte: "Bricolage Grotesque", sans-serif;',
+      '',
+      '  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px;',
+      '  --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;',
+      '  --rayon-champ: 6px; --rayon-touche: 10px;',
+      '  --rayon-fenetre: 16px; --coin-cartouche: 28px;',
+      '  --trait: 3px solid var(--encre);',
+      '  --epaisseur: 0 4px 0 #000;',
+      '',
+      '  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);',
+      '  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);',
+      '  --ease-tiroir: cubic-bezier(0.32, 0.72, 0, 1);',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  :root { --mouvement: 0; }',
+      '}'
+    ].join('\n');
+    return { curves: curves, rows: rows, routes: routes, tokens: tokens };
+  }
+}
+</script>
+</body>
+</html>

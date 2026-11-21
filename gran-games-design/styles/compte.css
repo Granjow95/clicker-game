@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Compte : fenêtre (connexion, inscription, confirmation, résumé, supprimé)
+   et page Profil (#/profil). Référence : reference/html/Compte.html, Profil.html
+   ========================================================================== */
+
+/* Fenêtre de compte : réutilise dialog.fenetre (base.css), sur papier */
+.fenetre-compte { --fenetre-teinte: var(--bouton-dor); }
+.fenetre-compte--confirmation { --fenetre-teinte: var(--pomme); }
+.fenetre-compte--connecte { --fenetre-teinte: var(--bonbon); }
+.fenetre-compte--supprime { --fenetre-teinte: var(--papier-ombre); }
+.separateur-ou { display: flex; align-items: center; gap: 12px; color: var(--texte-doux-papier); font-size: 14px; }
+.separateur-ou::before, .separateur-ou::after { content: ""; flex: 1; height: 2px; background: var(--papier-ombre); }
+.key--discord { background: var(--encre); color: var(--parchemin); font-size: 16px; min-height: 52px; }
+.key--discord img { width: 22px; height: 22px; } /* logo officiel Discord, à prendre dans leur kit de marque */
+.alerte { display: flex; gap: 12px; align-items: start; background: #F6D9D1; border: 3px solid var(--brique); border-radius: 8px; padding: 12px; font-size: 15px; line-height: 1.45; }
+.alerte__icone { flex: 0 0 24px; height: 24px; background: var(--brique); color: var(--parchemin); display: grid; place-items: center; font: 700 16px var(--police-pixel); }
+.formulaire-envoi .field { opacity: .55; } /* pendant l'envoi : champs en lecture seule */
+
+/* Résumé connecté */
+.resume-ligne { display: grid; grid-template-columns: 14px minmax(0,1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid var(--papier-ombre); }
+.pastille-jeu { width: 14px; height: 14px; border: 2px solid var(--encre); }
+
+/* Page profil */
+.profil { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; padding-block: 48px 96px; }
+.profil__fiche { flex: 1 1 320px; max-width: 400px; display: flex; flex-direction: column; gap: 24px; }
+.profil__contenu { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px; }
+.profil__avatar { width: 140px; height: 140px; background: var(--bonbon); border: 4px solid var(--encre); display: grid; place-items: center; font: 700 80px var(--police-pixel); object-fit: cover; }
+.zone-danger { background: #3A1F18; border: 2px solid var(--brique); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.zone-danger p { color: #EBC9BF; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.stat-jeu { border: var(--trait); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.stat-jeu dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.stat-jeu dt { font-size: 13px; }
+.stat-jeu dd { margin: 0; font: 700 26px var(--police-pixel); }
+.stat-jeu--imposteur { background: #1E4D3B; color: #EFE8CC; }
+.stat-jeu--lyrics { background: #2E63B8; color: #FFFFFF; }
+.stat-jeu--karaoke { background: #6E1A1F; color: #EFE8CC; }
+.stat-jeu--plus-ou-moins { background: #F28AA6; color: #1B1D16; }
+.stat-jeu--frappe { background: #2F3134; color: #EFE8CC; }
+.historique { overflow-x: auto; border: var(--trait); background: var(--parchemin); color: var(--encre); }
+.historique table { width: 100%; min-width: 640px; border-collapse: collapse; }
+.historique thead tr { background: var(--encre); color: var(--parchemin); text-align: left; }
+.historique th, .historique td { padding: 10px 16px; }
+.historique tbody tr { border-top: 2px solid var(--papier-ombre); }
+.historique tbody tr:nth-child(even) { background: #E6DEBF; }
+
+/* Appui long 2 s pour supprimer le compte (lent quand on décide, rapide quand on lâche) */
+.maintenir { position: relative; overflow: hidden; }
+.maintenir__remplissage { position: absolute; inset: 0; background: #7A2414; clip-path: inset(0 100% 0 0); transition: clip-path 200ms var(--ease-out); }
+.maintenir:active .maintenir__remplissage, .maintenir.appui .maintenir__remplissage { clip-path: inset(0 0 0 0); transition: clip-path 2s linear; }
+.maintenir__texte { position: relative; }

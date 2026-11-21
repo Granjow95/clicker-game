@@ -1,163 +1,209 @@
-/* === main-menu.css — style cartoon === */
+/* ==========================================================================
+   Accueil (#/, #/jeux, #/nouveautes) + pied de page + 404
+   Remplace l'ancien main-menu.css. Référence : reference/html/Accueil.html,
+   Accueil-mobile.html, Erreur404.html
+   ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+.accueil { min-height: 100vh; }
+.accueil__entete { padding-top: 16px; }
 
-* {
-  box-sizing: border-box;
+/* --- Hero : titre géant + accroche --- */
+.hero { padding-top: 72px; display: flex; flex-direction: column; gap: 32px; }
+.hero__haut { display: flex; flex-wrap: wrap; gap: 24px 64px; align-items: end; justify-content: space-between; }
+.hero__texte { flex: 1 1 340px; max-width: 460px; display: flex; flex-direction: column; gap: 24px; padding-bottom: 12px; }
+.hero__accroche { margin: 0; font-size: 24px; line-height: 1.35; font-weight: 600; font-variation-settings: "opsz" 32; }
+.hero__sous { margin: 0; font-size: 17px; line-height: 1.55; color: var(--texte-doux-clair); }
+
+/* --- Étagère de cartouches (le moment fort de la page) --- */
+.etagere { position: relative; padding-top: 40px; }
+.etagere__liste { list-style: none; margin: 0; padding: 0 2%; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+.etagere__liste > li { flex: 1 1 180px; max-width: 228px; }
+.etagere__planche { height: 28px; background: var(--lichen-bord); border-top: 4px solid var(--sauge); margin-top: -6px; box-shadow: 0 10px 0 var(--encre); }
+/* Variables par cartouche (posées sur .cart) */
+.cart--imposteur { --cart-corps: #1E4D3B; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Special Elite", monospace; --cart-taille: 28px; --cart-angle: -5deg; }
+.cart--lyrics { --cart-corps: #2E63B8; --cart-etiquette: #F2B630; --cart-encre: #1B1D16; --cart-police: "Shrikhand", serif; --cart-taille: 34px; --cart-angle: 3deg; }
+.cart--karaoke { --cart-corps: #6E1A1F; --cart-etiquette: #F2B630; --cart-encre: #6E1A1F; --cart-police: "Bungee", sans-serif; --cart-taille: 26px; --cart-angle: -2deg; }
+.cart--plus-ou-moins { --cart-corps: #F28AA6; --cart-etiquette: #E4E0D4; --cart-encre: #1B1D16; --cart-police: "Anton", sans-serif; --cart-taille: 30px; --cart-angle: 4deg; }
+.cart--frappe { --cart-corps: #2F3134; --cart-etiquette: #F2B630; --cart-encre: #1B1D16; --cart-police: "VT323", monospace; --cart-taille: 38px; --cart-angle: -3deg; }
+
+/* Téléphone : étagère qui défile à l'horizontale avec aimantation */
+@media (max-width: 640px) {
+  .etagere__liste { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 24px 20px 0; gap: 14px; justify-content: flex-start; }
+  .etagere__liste > li { flex: 0 0 168px; scroll-snap-align: center; }
+  .etagere__liste .cart { height: 220px; }
 }
 
-body {
-  font-family: 'Nunito', 'Segoe UI', sans-serif;
-  background-color: #fff7d6;
-  background-image: radial-gradient(circle, #fcd34d 1.5px, transparent 1.5px);
-  background-size: 32px 32px;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  text-align: center;
+/* --- Bandeau "On t'a donné un code ?" --- */
+.rejoindre { margin-top: 88px; background: var(--bouton-dor); color: var(--encre); padding: 32px 40px; display: flex; flex-wrap: wrap; align-items: end; gap: 24px 40px; }
+.rejoindre__intro { flex: 1 1 300px; display: flex; flex-direction: column; gap: 8px; }
+.rejoindre__titre { margin: 0; font: 700 44px/1 var(--police-pixel); }
+.rejoindre .field__input--code { width: 180px; height: 56px; font-size: 30px; }
+.rejoindre .field__pseudo { width: 260px; height: 56px; }
+@media (max-width: 640px) {
+  .rejoindre { margin-top: 40px; padding: 24px 20px; flex-direction: column; align-items: stretch; gap: 14px; }
+  .rejoindre__titre { font-size: 34px; }
+  .rejoindre .field__input--code, .rejoindre .field__pseudo { width: 100%; }
 }
 
-#menu {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px 50px;
+/* --- Les jeux : grandes lignes typographiques --- */
+.jeux { padding-top: 96px; }
+.jeux__tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; padding-bottom: 28px; }
+.ligne-jeu { display: block; text-decoration: none; background: var(--ligne-fond); color: var(--ligne-texte); border-top: 4px solid var(--encre); transition: background-color 200ms ease; }
+.ligne-jeu__dedans { max-width: var(--largeur-max); margin: 0 auto; padding: 22px var(--e-5); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; }
+.ligne-jeu__nom { flex: 1 1 420px; font-family: var(--ligne-police); font-size: var(--ligne-taille); line-height: 1; color: var(--ligne-titre); }
+.ligne-jeu__regle { flex: 1 1 340px; max-width: 420px; font-size: 18px; line-height: 1.5; display: none; }
+.ligne-jeu__meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ligne-jeu__jouer { margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: var(--parchemin); color: var(--encre); border: var(--trait); border-radius: var(--rayon-touche); box-shadow: var(--epaisseur); font: 700 18px var(--police-pixel); }
+/* La ligne s'ouvre au survol (souris) ou au focus clavier */
+@media (hover: hover) and (pointer: fine) {
+  .ligne-jeu:hover .ligne-jeu__dedans { padding-block: 40px; }
+  .ligne-jeu:hover .ligne-jeu__regle { display: block; }
+  .ligne-jeu:hover .ligne-jeu__jouer { background: var(--bouton-dor); }
 }
+.ligne-jeu:focus-visible .ligne-jeu__regle { display: block; }
+@media (hover: none), (max-width: 640px) {
+  .ligne-jeu__dedans { flex-direction: column; align-items: flex-start; gap: 12px; padding: 22px 20px; }
+  .ligne-jeu__nom { flex: none; }
+  .ligne-jeu__regle { display: block; font-size: 16px; }
+  .ligne-jeu__jouer { margin-left: auto; height: 44px; }
+}
+.ligne-jeu--imposteur { --ligne-fond: #1E4D3B; --ligne-texte: #EFE8CC; --ligne-titre: #EFE8CC; --ligne-police: "Special Elite", monospace; --ligne-taille: clamp(54px, 7vw, 88px); }
+.ligne-jeu--lyrics { --ligne-fond: #2E63B8; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "Shrikhand", serif; --ligne-taille: clamp(56px, 6.5vw, 80px); }
+.ligne-jeu--karaoke { --ligne-fond: #6E1A1F; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "Bungee", sans-serif; --ligne-taille: clamp(44px, 6vw, 72px); }
+.ligne-jeu--plus-ou-moins { --ligne-fond: #F28AA6; --ligne-texte: #1B1D16; --ligne-titre: #1B1D16; --ligne-police: "Anton", sans-serif; --ligne-taille: clamp(54px, 7vw, 84px); }
+.ligne-jeu--frappe { --ligne-fond: #2F3134; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "VT323", monospace; --ligne-taille: clamp(60px, 8vw, 96px); }
 
-/* ── Titre ── */
-.menu-header {
-  margin-bottom: 56px;
-}
+/* --- Quoi de neuf + fiche de joueur --- */
+.neuf { padding-top: 96px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 48px; align-items: start; }
+.neuf__liste { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--parchemin); }
+.neuf__item { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid var(--lichen-bord); }
+.neuf__date { font-family: var(--police-pixel); font-size: 18px; color: var(--texte-doux); }
+@media (max-width: 640px) { .neuf__item { grid-template-columns: 1fr; gap: 6px; padding: 16px 0; } }
 
-#menu h1 {
-  font-family: 'Fredoka One', cursive;
-  font-size: 4rem;
-  color: #ffffff;
-  margin: 0 0 10px;
-  -webkit-text-stroke: 3px #1a1a1a;
-  text-shadow:
-    5px 5px 0 #1a1a1a,
-    -1px -1px 0 #1a1a1a;
-  letter-spacing: 1px;
-}
+/* --- Pied de page "GG" --- */
+.pied { margin-top: 120px; background: var(--encre); border-top: 4px solid var(--lichen-bord); }
+.pied__dedans { padding-block: 56px 40px; display: flex; flex-wrap: wrap; gap: 32px 64px; align-items: end; justify-content: space-between; }
+.pied__gg { font: 700 clamp(96px, 16vw, 220px)/.8 var(--police-pixel); color: var(--lichen); }
+.pied__liens { display: grid; grid-template-columns: repeat(2, minmax(160px, auto)); gap: 12px 48px; }
 
-.menu-tagline {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: #1a1a1a;
-  margin: 0;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
+/* --- 404 : cartouche coincée --- */
+.coincee { animation: coincee 3s var(--ease-in-out) infinite; transform-origin: 50% 100%; }
+@keyframes coincee { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(-5deg); } }
+@media (prefers-reduced-motion: reduce) { .coincee { animation: none; transform: rotate(-9deg); } .ligne-jeu { transition: none; } }
 
-/* ── Grille ── */
-.game-selection {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  flex-wrap: wrap;
-  max-width: 980px;
-  width: 100%;
-  margin: 0 auto;
-}
+/* ==========================================================================
+   Ajouts du câblage (classes à la place des style="" des maquettes)
+   ========================================================================== */
 
-/* ── Carte ── */
-.game-card {
-  flex: 1 1 250px;
-  max-width: 285px;
-  padding: 34px 26px 28px;
-  border: 4px solid #1a1a1a;
-  border-radius: 22px;
-  box-shadow: 7px 7px 0 #1a1a1a;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  position: relative;
-}
+/* Logo de la console (cartouche) */
+.logo__corps { fill: var(--bouton-dor); }
+.logo__fente { fill: var(--encre); }
+.icone-encre { fill: var(--encre); }
+.icone-doux { fill: var(--texte-doux-papier); }
+.accueil a.cart { color: var(--cart-encre); }
+.accueil a.ligne-jeu { color: var(--ligne-texte); }
 
-/* Couleurs de fond par carte */
-.game-card:nth-child(1) { background: #fce4ec; }
-.game-card:nth-child(2) { background: #e0f0ff; }
-.game-card:nth-child(3) { background: #e6fce4; }
+/* Illustrations des cartouches (décor de l'étiquette) */
+.cart__art { flex: 1; display: grid; place-items: center; }
+.art-corps { fill: var(--cart-corps); }
+.art-etiquette { fill: var(--cart-etiquette); }
+.art-brique { fill: var(--brique); }
+.art-encre { fill: var(--encre); }
+.art-barres { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.art-barres__ligne { display: flex; gap: 5px; }
+.barre { height: 10px; background: var(--encre); }
+.barre--bleue { background: var(--cart-corps); }
+.barre--1 { flex: 1; } .barre--2 { flex: 2; } .barre--3 { flex: 3; }
+.art-pm { display: flex; gap: 8px; align-items: center; font: 400 24px var(--cart-police); }
+.art-pm__case { width: 42px; height: 54px; display: grid; place-items: center; background: var(--cart-corps); border: 2px solid var(--encre); font-size: 26px; }
+.art-pm__case--sombre { background: var(--encre); color: var(--cart-etiquette); }
+.art-frappe { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.art-frappe__damier { height: 12px; background: repeating-linear-gradient(90deg, var(--encre) 0 12px, var(--parchemin) 12px 24px); }
+.art-frappe__texte { font: 400 26px/1 var(--cart-police); }
+.etagere__glisse { display: none; margin: 20px 20px 0; font-size: 14px; color: var(--texte-doux); }
 
-/* Hover : la carte "se lève" */
-.game-card:hover {
-  transform: translate(-3px, -4px);
-  box-shadow: 10px 11px 0 #1a1a1a;
-}
+/* Hero, titres de section */
+.titre-section { margin: 0; font: 700 var(--t-72)/1 var(--police-pixel); }
+.titre-section--moyen { font-size: 56px; }
+.rejoindre__texte { margin: 0; font-size: 17px; line-height: 1.5; }
+.jeux__compte { margin: 0; font-size: 17px; color: var(--texte-doux); }
+.field__input--code, .field__pseudo { background: var(--parchemin); }
+.rejoindre .field__erreur { color: var(--erreur-sur-clair); }
 
-/* Clic : la carte "s'enfonce" */
-.game-card:active {
-  transform: translate(5px, 5px);
-  box-shadow: 2px 2px 0 #1a1a1a;
-}
+/* Quoi de neuf */
+.neuf__colonne { display: flex; flex-direction: column; gap: 24px; }
+.neuf__corps { display: flex; flex-direction: column; gap: 6px; }
+.neuf__titre { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.neuf__nom { font-weight: 800; font-size: 20px; }
+.neuf__texte { font-size: 16px; line-height: 1.5; color: var(--texte-doux-clair); }
 
-/* ── Icône ── */
-.card-icon {
-  font-size: 3.4rem;
-  display: block;
-  margin-bottom: 16px;
-  line-height: 1;
-}
+/* Fiche de joueur */
+.fiche { background: var(--parchemin); color: var(--encre); padding: var(--e-6); display: flex; flex-direction: column; gap: 20px; }
+.fiche__tete { display: flex; gap: 20px; align-items: center; }
+.fiche__avatar { width: 88px; height: 88px; flex: 0 0 88px; background: var(--papier-ombre); border: var(--trait); display: grid; place-items: center; overflow: hidden; }
+.fiche__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.fiche__identite { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fiche__sur { font-size: 15px; color: var(--texte-doux-papier); }
+.fiche__nom { font: 700 var(--t-34)/1 var(--police-pixel); overflow-wrap: anywhere; }
+.fiche__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.fiche__stat { background: var(--papier-ombre); padding: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.fiche__valeur { font: 700 28px var(--police-pixel); color: var(--texte-doux-papier); }
+.fiche__texte { margin: 0 0 20px; font-size: 17px; line-height: 1.5; }
+.fiche__actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.fiche .key { min-height: 52px; font-size: 16px; }
+.fiche .key--principal { font-size: 18px; }
 
-/* ── Textes ── */
-.game-card h2 {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.35rem;
-  color: #1a1a1a;
-  margin: 0 0 8px;
-}
+/* Pied de page */
+.pied__gauche { display: flex; flex-direction: column; gap: 8px; }
+.pied__phrase { font-size: 18px; font-weight: 600; }
+.pied .pied__liens a { color: var(--bouton-dor); }
+.pied .pied__liens a:hover { color: var(--parchemin); }
 
-.game-card p {
-  font-size: 0.9rem;
-  color: #444;
-  margin: 0;
-  line-height: 1.55;
-  font-weight: 700;
-}
+/* 404 */
+.erreur404 { padding-block: 56px 72px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px 80px; min-height: 70vh; }
+.erreur404__scene { flex: 0 1 380px; position: relative; height: 480px; }
+.cart--vide { position: absolute; left: 60px; top: 0; width: 240px; height: 300px; --cart-corps: var(--papier-ombre); --cart-encre: var(--texte-doux-papier); transform-origin: 50% 100%; clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 0 100%); }
+.cart--vide .cart__stries { height: 22px; }
+.cart__etiquette--vide { margin: 12px 16px 30px; background: var(--parchemin); border: 3px dashed var(--texte-doux-papier); color: var(--texte-doux-papier); align-items: center; justify-content: center; font: 700 var(--t-120) var(--police-pixel); }
+.fente { position: absolute; left: 0; right: 0; top: 270px; height: 64px; background: var(--encre); border: 4px solid var(--lichen-bord); border-radius: var(--rayon-touche); }
+.fente__fond { position: absolute; left: 30px; right: 30px; top: 290px; height: 14px; background: var(--noir); }
+.erreur404__texte { flex: 1 1 420px; display: flex; flex-direction: column; gap: 24px; }
+.erreur404__code { margin: 0; font: 700 clamp(120px, 16vw, 240px)/.8 var(--police-pixel); color: var(--bouton-dor); }
+.erreur404__titre { margin: 0; font-size: 44px; line-height: 1.05; font-weight: 800; font-variation-settings: "opsz" 72; }
+.erreur404__aide { margin: 0; max-width: 520px; font-size: 18px; line-height: 1.55; color: var(--texte-doux-clair); }
+.erreur404__actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
-/* ── Badge "Bientôt" ── */
-.card-badge {
-  display: inline-block;
-  margin-top: 14px;
-  padding: 4px 14px;
-  border-radius: 50px;
-  background: #fcd34d;
-  color: #1a1a1a;
-  font-family: 'Fredoka One', cursive;
-  font-size: 0.8rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  border: 2.5px solid #1a1a1a;
-  box-shadow: 2px 2px 0 #1a1a1a;
+/* Téléphone */
+@media (max-width: 640px) {
+  .hero { padding-top: 40px; gap: 16px; }
+  .hero .titre-affiche { font-size: 104px; letter-spacing: -2px; }
+  .hero__accroche { font-size: 20px; }
+  .hero__sous { font-size: 16px; }
+  .etagere { padding-top: 16px; }
+  .etagere__planche { height: 20px; margin-top: -4px; box-shadow: 0 8px 0 var(--encre); }
+  .etagere__glisse { display: block; }
+  .cart__art { display: none; }
+  .cart__nom { font-size: calc(var(--cart-taille) - 4px); }
+  .cart__etiquette { padding: 12px; margin: 8px 12px 0; }
+  .cart__stries { height: 16px; }
+  .cart__contacts { height: 12px; margin: 8px 18px 0; }
+  .jeux { padding-top: 56px; }
+  .jeux__tete { padding-bottom: 20px; }
+  .titre-section { font-size: 52px; }
+  .titre-section--moyen { font-size: 44px; }
+  .jeux__compte { display: none; }
+  .neuf { padding-top: 56px; gap: 32px; }
+  .neuf__nom { font-size: 18px; }
+  .neuf__texte { font-size: 15px; }
+  .neuf__item { grid-template-columns: 1fr; }
+  .fiche { padding: 24px 20px; }
+  .fiche .key { width: 100%; }
+  .pied { margin-top: 64px; }
+  .pied__dedans { padding-block: 32px 40px; }
+  .pied__gg { font-size: 120px; }
+  .pied__liens { grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+  .erreur404 { padding-block: 32px 48px; }
+  .erreur404__scene { flex: 1 1 100%; height: 400px; }
+  .erreur404__titre { font-size: 34px; }
 }
-
-/* ── Responsive ── */
-@media screen and (max-width: 900px) {
-  #menu h1 { font-size: 3rem; }
-}
-
-@media screen and (max-width: 600px) {
-  #menu { padding: 40px 16px 36px; }
-  #menu h1 { font-size: 2.4rem; }
-  .menu-header { margin-bottom: 40px; }
-  .game-selection { gap: 18px; }
-  .game-card {
-    flex: 1 1 100%;
-    max-width: 88%;
-  }
-}
-
-/* Accessibilité : focus clavier visible, carte « bientôt » non interactive */
-.game-card:focus-visible {
-  outline: 3px solid #1a1a1a;
-  outline-offset: 3px;
-}
-.game-card-soon {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
+@media (prefers-reduced-motion: reduce) { .cart--vide { transform: rotate(-9deg); } }

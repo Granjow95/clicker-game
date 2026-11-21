@@ -1,4 +1,4 @@
-// ======= 📁 javascript/karaoke.js =======
+// ======= javascript/karaoke.js =======
 
 /* ── État global ── */
 const kk = {
@@ -39,6 +39,7 @@ function kkShow(id) {
     const el = document.getElementById(n);
     if (el) el.style.display = (n === id) ? (n === 'karaoke-game' ? 'flex' : 'block') : 'none';
   });
+  granUI.focusScreen(document.getElementById(id)); // le focus suit l'écran interne
 }
 
 function kkHideAll() {
@@ -49,9 +50,9 @@ function kkHideAll() {
 }
 
 /* ───────────────────────────────────────────────
-   ENTRÉE — appelé depuis navigation.js
+   ENTRÉE — appelé depuis app.js (routeur)
 ─────────────────────────────────────────────── */
-// startGame('karaoke') affiche directement karaoke-mode via navigation.js
+// Entrée : granRouter.register('karaoke') dans app.js affiche karaoke-mode
 
 /* ───────────────────────────────────────────────
    MODE SELECTION
@@ -70,12 +71,9 @@ window.karaokeShowRoom = function () {
   kkShow('karaoke-room');
 };
 
+// Retour à l'accueil : le routeur appelle leave() (voir app.js) qui libère salle, audio et lecteur.
 window.karaokeBackToMenu = function () {
-  kkCleanup();
-  kkHideAll();
-  document.getElementById('dynamic-style').href = 'styles/main-menu.css';
-  document.getElementById('menu').style.display = '';
-  granAuth.flushReconnect();
+  granRouter.navigate('/');
 };
 
 window.karaokeBackToMode = function () {
@@ -93,7 +91,7 @@ window.karaokeBackToMode = function () {
 ─────────────────────────────────────────────── */
 window.karaokeJoinRoom = function () {
   const username = document.getElementById('kk-username').value.trim();
-  let code = document.getElementById('kk-roomcode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let code = document.getElementById('kk-roomcode').value.trim().slice(0, 30); // casse conservée : le serveur est sensible à la casse
 
   if (!username) { kkJoinError('Entre ton pseudo !'); return; }
   if (!code) code = Math.random().toString(36).substr(2, 4).toUpperCase();
@@ -115,7 +113,7 @@ window.kk_copyCode = function () {
   const code = document.getElementById('kk-room-code-text')?.textContent || '';
   navigator.clipboard.writeText(code).then(() => {
     const btn = document.querySelector('.kk-copy-btn');
-    if (btn) { btn.textContent = '✅'; setTimeout(() => { btn.textContent = '📋'; }, 1500); }
+    if (btn) { btn.textContent = 'Copié'; setTimeout(() => { btn.textContent = 'Copier'; }, 1500); }
   }).catch(() => {});
 };
 
@@ -129,36 +127,60 @@ window.karaokeMultiStart = function () {
   socket.emit('karaoke_start', kk.roomId);
 };
 
+function kkBadge(text, cls) {
+  const b = document.createElement('span');
+  b.className = 'badge ' + cls;
+  b.textContent = text;
+  return b;
+}
+
+function kkHostName() {
+  const h = (kk.players || []).find(p => p.id === kk.hostId);
+  return h ? h.username : "l'hôte";
+}
+
 function kkRenderLobby(players, host, song) {
   const list = document.getElementById('kk-players-list');
   if (list) {
-    list.innerHTML = '';
-    (players || []).forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'kk-player-item' + (p.id === host ? ' kk-player-host' : '');
-      div.textContent = (p.id === host ? '👑 ' : '🎤 ') + p.username;
-      list.appendChild(div);
+    list.replaceChildren();
+    (players || []).forEach((p, i) => {
+      const li = document.createElement('li');
+      li.className = 'joueur' + (p.id === socket.id ? ' joueur--moi' : '');
+      const av = document.createElement('span');
+      av.className = 'joueur__avatar ' + granUI.avatarClass(i);
+      av.setAttribute('aria-hidden', 'true');
+      av.textContent = (p.username || '?').charAt(0).toUpperCase();
+      const nom = document.createElement('span');
+      nom.className = 'joueur__nom';
+      nom.textContent = p.username;
+      li.append(av, nom);
+      if (p.id === host) li.append(kkBadge('Hôte', 'badge--hote'));
+      if (p.id === socket.id) li.append(kkBadge('Toi', 'badge--moi'));
+      list.appendChild(li);
     });
   }
+  const count = document.getElementById('kk-players-title');
+  if (count) count.textContent = `Dans la salle (${(players || []).length})`;
+  if (host) kk.hostId = host;
 
   const hostPanel = document.getElementById('kk-host-panel');
   const guestPanel = document.getElementById('kk-guest-panel');
-  if (hostPanel) hostPanel.style.display = kk.isHost ? 'flex' : 'none';
+  if (hostPanel) hostPanel.style.display = kk.isHost ? 'flex' : 'none'; // masqué par défaut en CSS
   if (guestPanel) guestPanel.style.display = kk.isHost ? 'none' : 'block';
 
   if (song) {
-    const songLabel = `🎵 ${song.title} — ${song.artist}`;
+    const songLabel = `${song.title} — ${song.artist}`;
     const hostDisp = document.getElementById('kk-selected-song-display');
     if (hostDisp) { hostDisp.textContent = songLabel; hostDisp.style.display = 'block'; }
     const startBtn = document.getElementById('kk-start-btn');
-    if (startBtn && kk.isHost) startBtn.style.display = 'block';
+    if (startBtn && kk.isHost) startBtn.style.display = 'inline-flex';
     const guestDisp = document.getElementById('kk-guest-song-display');
-    if (guestDisp) guestDisp.textContent = songLabel + ' — En attente du démarrage…';
+    if (guestDisp) guestDisp.textContent = songLabel + '. En attente du démarrage…';
   } else {
     const hostDisp = document.getElementById('kk-selected-song-display');
     if (hostDisp) hostDisp.style.display = 'none';
     const guestDisp = document.getElementById('kk-guest-song-display');
-    if (guestDisp) guestDisp.textContent = 'En attente que l\'hôte choisisse une musique…';
+    if (guestDisp) guestDisp.textContent = `En attente que ${kkHostName()} choisisse une musique…`;
   }
 }
 
@@ -259,7 +281,7 @@ function kkSetBanner(msg) {
   const grid = document.getElementById('kk-songs-grid');
   if (!grid) return;
   if (msg) {
-    if (!b) { b = document.createElement('p'); b.id = 'kk-banner'; b.className = 'kk-banner'; grid.parentNode.insertBefore(b, grid); }
+    if (!b) { b = document.createElement('p'); b.id = 'kk-banner'; b.className = 'kk-banner'; b.setAttribute('role', 'status'); grid.parentNode.insertBefore(b, grid); }
     b.textContent = msg;
   } else if (b) { b.remove(); }
 }
@@ -267,51 +289,51 @@ function kkSetBanner(msg) {
 function kkRenderGrid() {
   const grid = document.getElementById('kk-songs-grid');
   if (!grid) return;
-  grid.innerHTML = '';
+  grid.replaceChildren();
 
   if (_kkSongs.length === 0) {
     const div = document.createElement('div');
     div.className = 'kk-empty';
-    div.textContent = _kkLoading ? '🎵 Chargement…' : 'Aucune chanson disponible.';
+    div.textContent = _kkLoading ? 'Chargement…' : 'Aucune chanson disponible.';
     grid.appendChild(div);
     return;
   }
 
   _kkSongs.forEach(song => {
     const card = document.createElement('button');
-    card.className = 'kk-song-card';
+    card.className = 'kar-chanson';
     card.type = 'button';
 
     if (song.cover) {
       const img = document.createElement('img');
-      img.src = song.cover;
+      if (/^https:\/\//i.test(song.cover)) { img.referrerPolicy = 'no-referrer'; img.src = song.cover; }
       img.alt = '';
-      img.className = 'kk-song-cover';
+      img.className = 'kar-chanson__pochette';
       img.onerror = () => img.remove();
       card.appendChild(img);
     } else {
       const ph = document.createElement('div');
-      ph.className = 'kk-song-cover kk-cover-ph';
-      ph.textContent = '🎵';
+      ph.className = 'kar-chanson__pochette kar-chanson__pochette--vide';
+      ph.setAttribute('aria-hidden', 'true');
+      const vin = document.createElement('span');
+      vin.className = 'kar-vinyle';
+      ph.appendChild(vin);
+      const col = granUI.pochetteColors(song.title || '');
+      Object.entries(col).forEach(([k, v]) => ph.style.setProperty(k, v));
       card.appendChild(ph);
     }
 
     const info = document.createElement('div');
-    info.className = 'kk-song-info';
+    info.className = 'kar-chanson__texte';
     const t = document.createElement('div');
-    t.className = 'kk-song-title';
+    t.className = 'kar-chanson__titre';
     t.textContent = song.title;
     const s = document.createElement('div');
-    s.className = 'kk-song-sub';
+    s.className = 'kar-chanson__artiste';
     s.textContent = [song.artist, song.year].filter(Boolean).join(' · ');
     info.appendChild(t);
     info.appendChild(s);
     card.appendChild(info);
-
-    const chip = document.createElement('span');
-    chip.className = 'kk-chip';
-    chip.textContent = '🎤';
-    card.appendChild(chip);
 
     card.onclick = () => kkPickSong(song);
     grid.appendChild(card);
@@ -341,7 +363,9 @@ async function kkPickSong(song) {
   if (kk.mode === 'solo') {
     kk.song = selected;
     // Choix audio : musique complète / instrumentale / sans musique
-    kk.audioMode = await kkAskAudioChoice();
+    const choice = await kkAskAudioChoice(selected);
+    if (!choice) return; // tiroir fermé : on reste sur le choix de la chanson
+    kk.audioMode = choice;
     kkLaunchGame(selected);
   } else {
     // En multijoueur, la lecture reste contrôlée manuellement par l'hôte (pas d'audio synchronisé inter-appareils)
@@ -356,40 +380,23 @@ async function kkPickSong(song) {
 /* ───────────────────────────────────────────────
    CHOIX AUDIO — modale affichée à la sélection (solo)
 ─────────────────────────────────────────────── */
-function kkAskAudioChoice() {
+function kkAskAudioChoice(song) {
   return new Promise(resolve => {
-    let modal = document.getElementById('kk-audio-modal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'kk-audio-modal';
-      modal.className = 'kk-audio-modal';
-      modal.innerHTML = `
-        <div class="kk-audio-box">
-          <h3>Comment veux-tu chanter ?</h3>
-          <button data-choice="full" class="kk-audio-opt">
-            <span class="kk-audio-emoji">🎶</span>
-            <span class="kk-audio-txt"><strong>Musique complète</strong><small>Chanson originale + paroles synchronisées</small></span>
-          </button>
-          <button data-choice="instrumental" class="kk-audio-opt">
-            <span class="kk-audio-emoji">🎸</span>
-            <span class="kk-audio-txt"><strong>Instrumentale</strong><small>Version sans voix (si trouvée) + paroles</small></span>
-          </button>
-          <button data-choice="none" class="kk-audio-opt kk-audio-opt-ghost">
-            <span class="kk-audio-emoji">🔇</span>
-            <span class="kk-audio-txt"><strong>Sans musique</strong><small>Paroles seules, défilement auto</small></span>
-          </button>
-        </div>`;
-      document.body.appendChild(modal);
-    }
-    modal.style.display = 'flex';
-    const onClick = e => {
-      const b = e.target.closest('[data-choice]');
-      if (!b) return;
-      modal.style.display = 'none';
-      modal.removeEventListener('click', onClick);
-      resolve(b.dataset.choice);
+    const dlg = document.getElementById('kk-audio-modal');
+    if (!dlg) { resolve('none'); return; }
+    document.getElementById('kk-audio-song').textContent = song.title;
+    document.getElementById('kk-audio-artist').textContent = song.artist;
+    dlg.querySelector('input[name="kk-audio"][value="full"]').checked = true;
+    const go = document.getElementById('kk-audio-go');
+    let choice = null; // reste null si la fenêtre est fermée sans choisir (Échap, voile, quitter)
+    const onGo = () => {
+      const r = dlg.querySelector('input[name="kk-audio"]:checked');
+      choice = r ? r.value : 'full';
+      granUI.closeDialog(dlg);
     };
-    modal.addEventListener('click', onClick);
+    go.addEventListener('click', onGo);
+    dlg.addEventListener('close', () => { go.removeEventListener('click', onGo); resolve(choice); }, { once: true });
+    granUI.openDialog(dlg);
   });
 }
 
@@ -458,14 +465,16 @@ function kkLaunchGame(song) {
   const ctrlEl = document.getElementById('kk-controls');
   const specMsg = document.getElementById('kk-spectator-msg');
   if (ctrlEl) ctrlEl.style.display = isSoloOrHost ? 'flex' : 'none';
-  if (specMsg) specMsg.style.display = isSoloOrHost ? 'none' : 'block';
+  if (specMsg) {
+    specMsg.textContent = `${kkHostName()} contrôle les paroles`;
+    specMsg.style.display = isSoloOrHost ? 'none' : 'block';
+  }
 
   // Bouton auto seulement en solo
   const playBtn = document.getElementById('kk-play-btn');
   if (playBtn) {
-    playBtn.style.display = kk.mode === 'solo' ? 'inline-block' : 'none';
-    playBtn.textContent = '▶ Auto';
-    playBtn.classList.remove('active');
+    playBtn.style.display = kk.mode === 'solo' ? 'inline-flex' : 'none';
+    kkSetPlayLabel(playBtn, 'Auto', false);
   }
 
   // Barre joueurs (multi)
@@ -503,7 +512,7 @@ function kkRenderLyrics() {
   animEl('kk-line-next', lines[currentLine + 1] || '', false);
 
   const counter = document.getElementById('kk-line-counter');
-  if (counter) counter.textContent = total ? `${currentLine + 1} / ${total}` : '';
+  if (counter) counter.textContent = total ? `Ligne ${currentLine + 1}/${total}` : '';
 
   const prevBtn = document.getElementById('kk-prev-btn');
   const nextBtn = document.getElementById('kk-next-btn');
@@ -519,6 +528,13 @@ function kkRenderLyrics() {
   }
 }
 
+// Libellé + état du bouton Auto (aria-pressed porte l'état ; l'icône est dessinée en CSS)
+function kkSetPlayLabel(btn, label, pressed) {
+  if (!btn) return;
+  btn.textContent = label;
+  btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+}
+
 function kkSetLine(idx) {
   kk.currentLine = Math.max(0, Math.min(idx, kk.lines.length - 1));
   kkRenderLyrics();
@@ -527,13 +543,20 @@ function kkSetLine(idx) {
 function kkUpdatePlayersBar() {
   const bar = document.getElementById('kk-players-bar');
   if (!bar) return;
-  bar.innerHTML = '';
-  if (kk.mode !== 'multi' || kk.players.length === 0) return;
-  kk.players.forEach(p => {
-    const badge = document.createElement('span');
-    badge.className = 'kk-pbadge';
-    badge.textContent = p.username;
-    bar.appendChild(badge);
+  bar.replaceChildren();
+  bar.hidden = kk.mode !== 'multi' || kk.players.length === 0;
+  if (bar.hidden) return;
+  kk.players.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.className = 'public__joueur' + (p.id === kk.hostId ? ' public__joueur--hote' : '');
+    const av = document.createElement('span');
+    av.className = 'public__avatar ' + granUI.avatarClass(i);
+    av.setAttribute('aria-hidden', 'true');
+    av.textContent = (p.username || '?').charAt(0).toUpperCase();
+    const nom = document.createElement('span');
+    nom.textContent = p.id === kk.hostId ? `${p.username} (hôte, au micro)` : p.username;
+    li.append(av, nom);
+    bar.appendChild(li);
   });
 }
 
@@ -588,7 +611,7 @@ window.karaokeToggleAutoPlay = function () {
 function kkPlayAuto() {
   kk.autoPlay = true;
   const btn = document.getElementById('kk-play-btn');
-  if (btn) { btn.textContent = '⏸ Pause'; btn.classList.add('active'); }
+  kkSetPlayLabel(btn, 'Pause', true);
 
   if (kk.lrcLines && kk.currentLine === 0) {
     // Départ au début : instant 0 = maintenant → l'intro de la chanson est respectée
@@ -604,7 +627,7 @@ function kkPauseAuto() {
   clearTimeout(kk.autoTimer);
   kkHideGap();
   const btn = document.getElementById('kk-play-btn');
-  if (btn) { btn.textContent = '▶ Auto'; btn.classList.remove('active'); }
+  kkSetPlayLabel(btn, 'Auto', false);
 }
 
 // Recale l'horloge pour que la ligne courante corresponde à « maintenant », puis programme la suite
@@ -652,7 +675,7 @@ function kkFinishAuto() {
   kk.autoPlay = false;
   kkHideGap();
   const btn = document.getElementById('kk-play-btn');
-  if (btn) { btn.textContent = '▶ Auto'; btn.classList.remove('active'); }
+  kkSetPlayLabel(btn, 'Auto', false);
   const overlay = document.getElementById('kk-end-overlay');
   if (overlay) overlay.style.display = 'flex';
 }
@@ -673,7 +696,14 @@ function kkEnsureGapEl() {
     g = document.createElement('div');
     g.id = 'kk-gap';
     g.className = 'kk-gap';
-    g.innerHTML = '<div class="kk-gap-pulse">🎵</div><div class="kk-gap-count"></div><div class="kk-gap-label"></div>';
+    const pulse = document.createElement('div');
+    pulse.className = 'kk-gap-pulse';
+    pulse.setAttribute('aria-hidden', 'true');
+    const count = document.createElement('div');
+    count.className = 'kk-gap-count';
+    const label = document.createElement('div');
+    label.className = 'kk-gap-label';
+    g.append(pulse, count, label);
     stage.appendChild(g);
   }
   return g;
@@ -753,7 +783,8 @@ async function kkFetchVideoIds(song, mode) {
     const r = await fetch(url);
     if (!r.ok) { console.warn('[karaoke] yt-search HTTP', r.status, url); return []; }
     const data = await r.json();
-    const ids = data.videoIds || (data.videoId ? [data.videoId] : []);
+    const ids = (data.videoIds || (data.videoId ? [data.videoId] : []))
+      .filter((v) => typeof v === 'string' && /^[\w-]{11}$/.test(v));
     if (!ids.length) console.warn('[karaoke] yt-search : aucune vidéo pour', q);
     return ids;
   } catch (e) {
@@ -765,9 +796,8 @@ async function kkFetchVideoIds(song, mode) {
 function kkSetPlayBtn(playing) {
   const btn = document.getElementById('kk-play-btn');
   if (!btn) return;
-  btn.style.display = 'inline-block';
-  btn.textContent = playing ? '⏸ Pause' : '▶ Lecture';
-  btn.classList.toggle('active', !!playing);
+  btn.style.display = 'inline-flex';
+  kkSetPlayLabel(btn, playing ? 'Pause' : 'Lecture', !!playing);
 }
 
 async function kkStartAudio(song, mode) {
@@ -834,12 +864,13 @@ function kkShowAudioStart() {
   if (!b) {
     b = document.createElement('button');
     b.id = 'kk-audio-start';
-    b.className = 'kk-audio-start';
-    b.innerHTML = '▶ Lancer la musique';
+    b.type = 'button';
+    b.className = 'key key--principal kk-audio-start';
+    b.textContent = 'Lancer la musique';
     b.onclick = () => { try { kk.ytPlayer && kk.ytPlayer.playVideo(); } catch {} };
     stage.appendChild(b);
   }
-  b.style.display = 'block';
+  b.style.display = 'inline-flex';
 }
 function kkHideAudioStart() {
   const b = document.getElementById('kk-audio-start');
@@ -929,9 +960,8 @@ function kkAudioFallback(msg) {
   if (msg && typeof showToast === 'function') showToast(msg, true);
   const btn = document.getElementById('kk-play-btn');
   if (btn) {
-    btn.style.display = kk.mode === 'solo' ? 'inline-block' : 'none';
-    btn.textContent = '▶ Auto';
-    btn.classList.remove('active');
+    btn.style.display = kk.mode === 'solo' ? 'inline-flex' : 'none';
+    kkSetPlayLabel(btn, 'Auto', false);
   }
 }
 
@@ -949,7 +979,7 @@ window.karaokeRestartSong = function () {
     return;
   }
   const btn = document.getElementById('kk-play-btn');
-  if (btn) { btn.textContent = '▶ Auto'; btn.classList.remove('active'); }
+  kkSetPlayLabel(btn, 'Auto', false);
   kkSetLine(0);
 };
 
@@ -964,7 +994,7 @@ window.karaokeExitGame = function () {
     kk.players = [];
   }
   kk.song = null;
-  kkShow(kk.mode === 'solo' ? 'karaoke-mode' : 'karaoke-mode');
+  kkShow('karaoke-mode');
 };
 
 /* ───────────────────────────────────────────────
@@ -996,6 +1026,7 @@ function kkWireSocket() {
   socket.on('karaoke_room_update', ({ players, host, song, currentLine, started }) => {
     kk.players = players;
     kk.isHost = (socket.id === host);
+    if (host) kk.hostId = host;
 
     const lobbyEl = document.getElementById('kk-lobby');
     const gameEl = document.getElementById('karaoke-game');
@@ -1033,6 +1064,8 @@ function kkWireSocket() {
    CLEANUP
 ─────────────────────────────────────────────── */
 function kkCleanup() {
+  const drawer = document.getElementById('kk-audio-modal');
+  if (drawer && drawer.open) drawer.close();
   clearTimeout(kk.autoTimer);
   kkHideGap();
   kkDestroyAudio();
@@ -1046,6 +1079,7 @@ function kkCleanup() {
   kk.roomId = null;
   kk.username = null;
   kk.isHost = false;
+  kk.hostId = null;
   kk.song = null;
   kk.lines = [];
   kk.lrcLines = null;

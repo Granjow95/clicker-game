@@ -1,0 +1,32 @@
+/* ==========================================================================
+   Lyrics : "Le carnet de paroles". Monde : <main data-monde="lyrics">
+   Référence : reference/html/Lyrics.html (téléphone), Lyrics-desktop.html
+   ========================================================================== */
+[data-monde="lyrics"] { --monde-barre: rgba(0,0,0,.2); background: #2E63B8; }
+.lyr-titre { margin: 0; font-family: "Shrikhand", serif; font-weight: 400; font-size: 56px; line-height: 1; color: #F2B630; }
+/* Pochette générée quand l'API n'en donne pas : vinyle + rond central coloré par hash du titre */
+.vinyle { border-radius: 50%; background: repeating-radial-gradient(#1B1D16 0 2px, #2A2C24 2px 5px); }
+.pochette { aspect-ratio: 1; position: relative; border-bottom: var(--trait); background: var(--pochette-fond, #F2B630); }
+.pochette .vinyle { position: absolute; inset: 14%; }
+.pochette__rond { position: absolute; inset: 40%; border-radius: 50%; background: var(--pochette-rond, #2E63B8); }
+.carte-chanson { background: #EFE8CC; color: #1B1D16; border: var(--trait); border-radius: 10px; box-shadow: var(--epaisseur); overflow: hidden; display: flex; flex-direction: column; text-decoration: none; transition: transform 220ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .carte-chanson:hover { transform: translateY(-4px); } .carte-chanson:hover .vinyle { transform: rotate(90deg); transition: transform 220ms var(--ease-out); } }
+.filtre { flex: 0 0 auto; height: 40px; padding: 0 12px; border-radius: 20px; border: 2px solid #EFE8CC; background: transparent; color: #EFE8CC; font-weight: 600; font-size: 14px; cursor: pointer; }
+.filtre[aria-pressed="true"] { background: #F2B630; color: #1B1D16; border-color: #1B1D16; }
+/* Barre collée en haut pendant la partie */
+.lyr-barre { position: sticky; top: 0; z-index: 5; background: #F2B630; color: #1B1D16; border-block: var(--trait); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.lyr-progression { flex: 1; height: 12px; background: #EFE8CC; border: 2px solid #1B1D16; position: relative; }
+.lyr-progression > span { position: absolute; inset: 0 auto 0 0; background: #2E63B8; }
+.lyr-message { font-size: 14px; font-weight: 600; color: #7A2414; }
+/* Cahier ligné + mots cachés */
+.cahier { background-color: #F6F0D8; background-image: repeating-linear-gradient(transparent 0 33px, #C9D6EE 33px 35px); color: #1B1D16; padding: 12px 16px; }
+.cahier__ligne { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 35px; }
+@media (min-width: 900px) { .cahier { columns: 2 300px; column-gap: 40px; background-image: repeating-linear-gradient(transparent 0 37px, #C9D6EE 37px 39px); } .cahier__ligne { min-height: 39px; break-inside: avoid; } }
+.mot { display: inline-block; height: 24px; line-height: 24px; font-weight: 800; font-size: 18px; border-radius: 3px; padding: 0 2px; perspective: 400px; }
+.mot--cache { background: #2E63B8; color: transparent; min-width: calc(var(--lettres) * .62em); } /* --lettres posé en JS */
+.mot--manquant { background: #B83A24; color: #EFE8CC; } /* fin de partie perdue */
+/* Révélation : la case se retourne (rotateX), 180 ms, décalage 30 ms, 12 max animées */
+.mot--revele { animation: retourne 180ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms); }
+@keyframes retourne { from { transform: rotateX(90deg); background: #F2B630; } to { transform: rotateX(0); } }
+.lyr-victoire { background: #F2B630; color: #1B1D16; }
+@media (prefers-reduced-motion: reduce) { .mot--revele { animation: none; } .carte-chanson { transition: none; } }

@@ -4,287 +4,856 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gran'Games</title>
-    <link rel="stylesheet" href="styles/account.css" />
-    <link id="dynamic-style" rel="stylesheet" href="styles/main-menu.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Pixelify+Sans:wght@400;600;700&family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/main-menu.css" />
+    <link rel="stylesheet" href="styles/compte.css" />
   </head>
-  <body>
-    <!-- Conteneur du menu -->
-    <div id="menu">
-      <button type="button" id="account-btn" class="account-btn" aria-haspopup="dialog">👤 Compte</button>
-      <div class="menu-header">
-        <h1>🎮 Gran'Games</h1>
-        <p class="menu-tagline">Choisis ton jeu et joue !</p>
-      </div>
-      <div class="game-selection">
-        <div class="game-card" role="button" tabindex="0" onclick="startGame('impostor')">
-          <span class="card-icon">🕵️</span>
-          <h2>Jeu de l'Imposteur</h2>
-          <p>Un mot est différent… Saurez-vous le trouver ?</p>
-        </div>
-        <div class="game-card" role="button" tabindex="0" onclick="startGame('lyrics')">
-          <span class="card-icon">🎤</span>
-          <h2>Lyrics</h2>
-          <p>Devine les paroles mot par mot.</p>
-        </div>
-        <div class="game-card" role="button" tabindex="0" onclick="startGame('karaoke')">
-          <span class="card-icon">🎵</span>
-          <h2>Karaoké</h2>
-          <p>Chante tes chansons préférées en solo ou avec tes amis !</p>
-        </div>
-        <div class="game-card game-card-soon" aria-disabled="true">
-          <span class="card-icon">🏃</span>
-          <h2>Infinite Runner</h2>
-          <p>Évite les obstacles et va le plus loin possible.</p>
-          <span class="card-badge">Bientôt</span>
-        </div>
-      </div>
+  <body class="damier">
+    <a class="lien-evitement" href="#contenu" id="lien-evitement">Aller au contenu</a>
+    <!-- En-tête de la console : commun à tous les écrans (version réduite en jeu, voir routeur) -->
+    <div class="conteneur conteneur--entete">
+      <header class="console">
+        <a class="key key--retour console__quitter" href="#/" hidden>
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"></path></svg>
+          Quitter
+        </a>
+        <nav class="console__ariane" aria-label="Fil d'Ariane" hidden></nav>
+        <a class="console__logo" href="#/">
+          <svg aria-hidden="true" width="26" height="30" viewBox="0 0 26 30"><path class="logo__corps" d="M0 0h19l7 7v23H0z"></path><g class="logo__fente"><rect x="4" y="9" width="18" height="12"></rect><rect x="5" y="25" width="3" height="5"></rect><rect x="11" y="25" width="3" height="5"></rect><rect x="17" y="25" width="3" height="5"></rect></g></svg>
+          <span>Gran'Games</span>
+        </a>
+        <nav class="console__nav" aria-label="Navigation principale">
+          <a href="#/">Accueil</a>
+          <a href="#/jeux">Jeux</a>
+          <a href="#/nouveautes">Nouveautés</a>
+        </nav>
+        <button type="button" id="account-btn" class="console__compte" aria-haspopup="dialog" aria-label="Compte, connexion ou inscription">
+          <svg class="console__compte-icone" aria-hidden="true" viewBox="0 0 9 9" shape-rendering="crispEdges"><path class="icone-encre" d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z"></path></svg>
+          <span class="console__compte-nom">Compte</span>
+        </button>
+      </header>
     </div>
 
-    <!-- Conteneur du jeu Impostor -->
-    <div id="impostor-game" class="game-container" style="display: none">
-      <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <h1 id="impostor-title">🕵️ Jeu de l'Imposteur</h1>
-      <div id="word-bar"></div>
-
-      <div id="players-inputs"></div>
-
-      <!-- Gabarit de joueur -->
-      <template id="player-template">
-        <div class="player-line">
-          <div class="player-name">Nom</div>
-          <div class="player-header">
-            <span class="player-timer"></span>
+    <main id="contenu" tabindex="-1">
+      <!-- ====== Accueil ====== -->
+      <section data-vue="accueil" class="accueil">
+        <div class="conteneur hero">
+          <div class="hero__haut">
+            <h1 class="titre-affiche">Gran'<br />Games</h1>
+            <div class="hero__texte">
+              <p class="hero__accroche">Des petits jeux pour se chamailler entre amis, directement dans le navigateur.</p>
+              <p class="hero__sous">Pas de pub. Pas de compte obligatoire : un pseudo suffit. Prends une cartouche.</p>
+            </div>
           </div>
-          <div class="hints"></div>
-        </div>
-      </template>
 
-      <!-- Gabarit de bouton de vote -->
-      <template id="vote-button-template">
-        <button class="vote-button"></button>
-      </template>
-
-      <!-- Bloc lobby côte à côte -->
-      <div id="lobby-container">
-        <div id="lobby-setup">
-          <input
-            type="text"
-            id="room-id"
-            placeholder="Nom de la salle (ex: room123)"
-            aria-label="Nom de la salle"
-            maxlength="30"
-            autocomplete="off"
-          />
-          <input type="text" id="username" placeholder="Ton pseudo" aria-label="Ton pseudo" maxlength="20" autocomplete="off" />
-          <button onclick="joinImpostorRoom()">Rejoindre la salle</button>
-
-          <div id="lobby-options" class="hidden">
-            <label for="round-count">Nombre de manches :</label>
-            <input type="number" id="round-count" min="1" max="10" value="3" />
-            <br />
-            <label for="round-timer">Durée par tour (s) :</label>
-            <input
-              type="number"
-              id="round-timer"
-              min="10"
-              max="120"
-              value="60"
-            />
+          <div class="etagere">
+            <ul class="etagere__liste" aria-label="Les jeux">
+              <li>
+                <a class="cart cart--imposteur" href="#/imposteur" aria-label="Jouer à Imposteur">
+                  <span class="cart__stries"></span>
+                  <span class="cart__etiquette">
+                    <span class="cart__nom">Imposteur</span>
+                    <span class="cart__art" aria-hidden="true">
+                      <svg width="120" height="56" viewBox="0 0 30 14" shape-rendering="crispEdges"><g class="art-corps"><rect x="1" y="4" width="4" height="5"></rect><rect x="7" y="4" width="4" height="5"></rect><rect x="13" y="4" width="4" height="5"></rect><rect x="25" y="4" width="4" height="5"></rect><rect x="1" y="10" width="4" height="4"></rect><rect x="7" y="10" width="4" height="4"></rect><rect x="13" y="10" width="4" height="4"></rect><rect x="25" y="10" width="4" height="4"></rect></g><g class="art-brique"><rect x="19" y="3" width="4" height="6"></rect><rect x="19" y="10" width="4" height="4"></rect></g><g class="art-encre"><rect x="18" y="2" width="6" height="1"></rect><rect x="2" y="6" width="1" height="1"></rect><rect x="8" y="6" width="1" height="1"></rect><rect x="14" y="6" width="1" height="1"></rect><rect x="26" y="6" width="1" height="1"></rect><rect x="21" y="5" width="1" height="1"></rect><rect x="22" y="5" width="1" height="1"></rect></g></svg>
+                    </span>
+                    <span class="cart__mode">En salle</span>
+                  </span>
+                  <span class="cart__contacts"></span>
+                </a>
+              </li>
+              <li>
+                <a class="cart cart--lyrics" href="#/lyrics" aria-label="Jouer à Lyrics">
+                  <span class="cart__stries"></span>
+                  <span class="cart__etiquette">
+                    <span class="cart__nom">Lyrics</span>
+                    <span class="cart__art" aria-hidden="true">
+                      <span class="art-barres">
+                        <span class="art-barres__ligne"><span class="barre barre--2"></span><span class="barre barre--1 barre--bleue"></span><span class="barre barre--3"></span></span>
+                        <span class="art-barres__ligne"><span class="barre barre--1"></span><span class="barre barre--3"></span><span class="barre barre--1 barre--bleue"></span></span>
+                        <span class="art-barres__ligne"><span class="barre barre--3 barre--bleue"></span><span class="barre barre--2"></span></span>
+                      </span>
+                    </span>
+                    <span class="cart__mode">Solo</span>
+                  </span>
+                  <span class="cart__contacts"></span>
+                </a>
+              </li>
+              <li>
+                <a class="cart cart--karaoke" href="#/karaoke" aria-label="Jouer à Karaoké">
+                  <span class="cart__stries"></span>
+                  <span class="cart__etiquette">
+                    <span class="cart__nom">Karaoké</span>
+                    <span class="cart__art" aria-hidden="true">
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><g class="art-corps"><rect x="6" y="1" width="4" height="7"></rect><rect x="4" y="6" width="1" height="3"></rect><rect x="11" y="6" width="1" height="3"></rect><rect x="5" y="9" width="6" height="1"></rect><rect x="7" y="10" width="2" height="4"></rect><rect x="5" y="14" width="6" height="1"></rect></g><rect class="art-etiquette" x="7" y="2" width="2" height="1"></rect></svg>
+                    </span>
+                    <span class="cart__mode">Solo ou en salle</span>
+                  </span>
+                  <span class="cart__contacts"></span>
+                </a>
+              </li>
+              <li>
+                <a class="cart cart--plus-ou-moins" href="#/plus-ou-moins" aria-label="Jouer à Plus ou Moins">
+                  <span class="cart__stries"></span>
+                  <span class="cart__etiquette">
+                    <span class="cart__nom">Plus ou Moins</span>
+                    <span class="cart__art" aria-hidden="true">
+                      <span class="art-pm"><span class="art-pm__case">?</span><span class="art-pm__ou">ou</span><span class="art-pm__case art-pm__case--sombre">?</span></span>
+                    </span>
+                    <span class="cart__mode">Solo</span>
+                  </span>
+                  <span class="cart__contacts"></span>
+                </a>
+              </li>
+              <li>
+                <a class="cart cart--frappe" href="#/frappe" aria-label="Jouer à Course de frappe">
+                  <span class="cart__stries"></span>
+                  <span class="cart__etiquette">
+                    <span class="cart__nom">Course de frappe</span>
+                    <span class="cart__art" aria-hidden="true">
+                      <span class="art-frappe"><span class="art-frappe__damier"></span><span class="art-frappe__texte">vite_</span></span>
+                    </span>
+                    <span class="cart__mode">Solo ou en salle</span>
+                  </span>
+                  <span class="cart__contacts"></span>
+                </a>
+              </li>
+            </ul>
+            <div class="etagere__planche" aria-hidden="true"></div>
+            <p class="etagere__glisse">Glisse pour voir les 5 cartouches.</p>
           </div>
         </div>
 
-        <div id="lobby-players" style="display: none"></div>
+        <section class="conteneur" aria-labelledby="h-salle">
+          <form class="rejoindre px" id="form-rejoindre" novalidate>
+            <div class="rejoindre__intro">
+              <h2 id="h-salle" class="rejoindre__titre">On t'a donné un code ?</h2>
+              <p class="rejoindre__texte">Tape-le ici, on t'emmène directement dans la bonne salle, quel que soit le jeu.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="h-code">Code de salle</label>
+              <input class="field__input field__input--code" id="h-code" maxlength="30" placeholder="KRAB" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+            </div>
+            <div class="field">
+              <label class="field__label" for="h-pseudo">Ton pseudo</label>
+              <input class="field__input field__pseudo" id="h-pseudo" maxlength="20" placeholder="Comme tes amis t'appellent" autocomplete="off" />
+            </div>
+            <button type="submit" class="key key--sombre">Rejoindre</button>
+          </form>
+        </section>
+
+        <section class="jeux" id="jeux" aria-labelledby="h-jeux">
+          <div class="conteneur jeux__tete">
+            <h2 id="h-jeux" class="titre-section">Les jeux</h2>
+            <p class="jeux__compte">5 jeux, dont 3 qui se jouent à plusieurs dans une salle.</p>
+          </div>
+
+          <a class="ligne-jeu ligne-jeu--imposteur" href="#/imposteur">
+            <span class="ligne-jeu__dedans">
+              <span class="ligne-jeu__nom">Imposteur</span>
+              <span class="ligne-jeu__regle">Tout le monde a le même mot. Sauf un. Donnez chacun un indice, puis votez pour démasquer l’imposteur.</span>
+              <span class="ligne-jeu__meta"><span class="chip">En salle</span><span class="chip">Jusqu’à 8 joueurs</span><span class="ligne-jeu__jouer">Jouer</span></span>
+            </span>
+          </a>
+          <a class="ligne-jeu ligne-jeu--lyrics" href="#/lyrics">
+            <span class="ligne-jeu__dedans">
+              <span class="ligne-jeu__nom">Lyrics</span>
+              <span class="ligne-jeu__regle">Tous les mots d’une chanson sont cachés. Tape ceux que tu connais.</span>
+              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="ligne-jeu__jouer">Jouer</span></span>
+            </span>
+          </a>
+          <a class="ligne-jeu ligne-jeu--karaoke" href="#/karaoke">
+            <span class="ligne-jeu__dedans">
+              <span class="ligne-jeu__nom">Karaoké</span>
+              <span class="ligne-jeu__regle">Les paroles défilent en rythme. Toi, tu chantes. Les autres subissent.</span>
+              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">En salle</span><span class="ligne-jeu__jouer">Jouer</span></span>
+            </span>
+          </a>
+          <a class="ligne-jeu ligne-jeu--plus-ou-moins" href="#/plus-ou-moins">
+            <span class="ligne-jeu__dedans">
+              <span class="ligne-jeu__nom">Plus ou Moins</span>
+              <span class="ligne-jeu__regle">Deux choses. Laquelle a le plus ? Une erreur et la série s’arrête.</span>
+              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">Nouveau</span><span class="ligne-jeu__jouer">Jouer</span></span>
+            </span>
+          </a>
+          <a class="ligne-jeu ligne-jeu--frappe" href="#/frappe">
+            <span class="ligne-jeu__dedans">
+              <span class="ligne-jeu__nom">Course de frappe</span>
+              <span class="ligne-jeu__regle">Une phrase, un chrono. Sans faute, et plus vite que les autres.</span>
+              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">En salle</span><span class="chip">Nouveau</span><span class="ligne-jeu__jouer">Jouer</span></span>
+            </span>
+          </a>
+        </section>
+
+        <section class="conteneur neuf" id="nouveautes" aria-labelledby="h-news">
+          <div class="neuf__colonne">
+            <h2 id="h-news" class="titre-section titre-section--moyen">Quoi de neuf</h2>
+            <ol class="neuf__liste">
+              <li class="neuf__item">
+                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
+                <span class="neuf__corps">
+                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Nouveau look</span></span>
+                  <span class="neuf__texte">Une console, des cartouches. Chaque jeu a désormais son monde, sa police et son décor.</span>
+                </span>
+              </li>
+              <li class="neuf__item">
+                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
+                <span class="neuf__corps">
+                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Plus ou Moins</span></span>
+                  <span class="neuf__texte">Deux choses. Laquelle a le plus ? Une erreur et la série s'arrête. Aperçu sur données fictives.</span>
+                </span>
+              </li>
+              <li class="neuf__item">
+                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
+                <span class="neuf__corps">
+                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Course de frappe</span></span>
+                  <span class="neuf__texte">Une phrase, un chrono. Sans faute, et plus vite que les autres. Aperçu sur données fictives.</span>
+                </span>
+              </li>
+              <li class="neuf__item">
+                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
+                <span class="neuf__corps">
+                  <span class="neuf__titre"><span class="badge badge--pret">Console</span><span class="neuf__nom">Le bouton retour marche enfin</span></span>
+                  <span class="neuf__texte">Chaque jeu et chaque salle a son adresse. Tu peux même envoyer le lien d’une salle.</span>
+                </span>
+              </li>
+            </ol>
+          </div>
+
+          <aside class="fiche px" id="fiche-joueur" aria-label="Fiche de joueur">
+            <div class="fiche__tete">
+              <span class="fiche__avatar" aria-hidden="true">
+                <svg width="56" height="56" viewBox="0 0 9 9" shape-rendering="crispEdges"><path class="icone-doux" d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z"></path></svg>
+              </span>
+              <div class="fiche__identite">
+                <span class="fiche__sur">Fiche de joueur</span>
+                <span class="fiche__nom" id="fiche-nom">Invité</span>
+              </div>
+            </div>
+            <div class="fiche__stats">
+              <span class="fiche__stat"><span class="fiche__valeur" id="fiche-parties">?</span><span>parties</span></span>
+              <span class="fiche__stat"><span class="fiche__valeur" id="fiche-victoires">?</span><span>victoires</span></span>
+              <span class="fiche__stat"><span class="fiche__valeur" id="fiche-record">?</span><span>record</span></span>
+            </div>
+            <div class="fiche__invite" id="fiche-invite">
+              <p class="fiche__texte">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores, tes séries et tes 20 dernières parties.</p>
+              <div class="fiche__actions">
+                <button type="button" class="key key--principal" id="fiche-creer">Créer mon compte</button>
+                <button type="button" class="key" id="fiche-connexion">J'ai déjà un compte</button>
+              </div>
+            </div>
+            <div class="fiche__actions" id="fiche-connecte" hidden>
+              <a class="key key--principal" href="#/profil">Voir ma fiche complète</a>
+            </div>
+          </aside>
+        </section>
+
+        <footer class="pied">
+          <div class="conteneur pied__dedans">
+            <div class="pied__gauche">
+              <span class="pied__gg" aria-hidden="true">GG</span>
+              <span class="pied__phrase">Bien joué. Reviens quand tu veux.</span>
+            </div>
+            <nav class="pied__liens" aria-label="Pied de page">
+              <a href="#/jeux">Règles des jeux</a>
+              <a href="#/profil">Mon profil</a>
+              <a href="#/nouveautes">Nouveautés</a>
+            </nav>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ====== Profil (#/profil) ====== -->
+      <section data-vue="profil" hidden>
+        <div class="conteneur profil">
+          <aside class="profil__fiche">
+            <div class="panneau px profil__carte">
+              <span class="profil__avatar" id="profil-avatar" aria-hidden="true"></span>
+              <h1 class="profil__nom" id="profil-nom">…</h1>
+              <p class="profil__depuis" id="profil-depuis"></p>
+              <form class="profil__form sur-papier" id="profil-form" novalidate>
+                <div class="field">
+                  <label class="field__label" for="p-pseudo">Pseudo</label>
+                  <input class="field__input" id="p-pseudo" type="text" maxlength="20" autocomplete="nickname" required />
+                  <span class="field__erreur" id="p-pseudo-err" hidden></span>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="p-avatar">Avatar (adresse d'une image)</label>
+                  <input class="field__input" id="p-avatar" type="url" inputmode="url" maxlength="500" placeholder="https://…" aria-describedby="p-avatar-aide p-avatar-err" />
+                  <span class="field__aide" id="p-avatar-aide">Vide : on garde ta lettre sur fond bonbon.</span>
+                  <span class="field__erreur" id="p-avatar-err" hidden></span>
+                </div>
+                <button type="submit" class="key key--principal key--bloc" id="p-enregistrer">Enregistrer</button>
+                <p class="profil__statut" id="p-statut" role="status"></p>
+              </form>
+            </div>
+            <div class="profil__compte">
+              <button type="button" class="key key--fantome key--bloc" id="p-deconnexion">Me déconnecter</button>
+              <div class="zone-danger">
+                <p class="zone-danger__titre">Supprimer mon compte</p>
+                <p class="zone-danger__texte">Stats et historique effacés pour de bon. Garde le bouton appuyé 2 secondes pour confirmer.</p>
+                <button type="button" class="key key--danger key--bloc maintenir" id="p-supprimer"><span class="maintenir__remplissage" aria-hidden="true"></span><span class="maintenir__texte">Maintenir pour supprimer</span></button>
+                <p class="profil__statut profil__statut--clair" id="p-suppr-statut" role="status"></p>
+              </div>
+            </div>
+          </aside>
+          <div class="profil__contenu">
+            <section aria-labelledby="h-stats" class="profil__bloc">
+              <h2 id="h-stats" class="titre-section titre-section--profil">Tes stats</h2>
+              <div class="stats" id="p-stats" aria-live="polite"></div>
+            </section>
+            <section aria-labelledby="h-hist" class="profil__bloc">
+              <div class="profil__tete-hist">
+                <h2 id="h-hist" class="titre-section titre-section--profil">Tes 20 dernières parties</h2>
+                <label class="filtre-jeu" for="p-filtre">Jeu
+                  <select class="filtre-jeu__select" id="p-filtre">
+                    <option value="">Tous</option>
+                    <option value="imposteur">Imposteur</option>
+                    <option value="lyrics">Lyrics</option>
+                    <option value="karaoke">Karaoké</option>
+                  </select>
+                </label>
+              </div>
+              <div class="historique" id="p-historique" aria-live="polite"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 404 ====== -->
+      <section data-vue="404" hidden>
+        <div class="conteneur erreur404">
+          <div class="erreur404__scene" aria-hidden="true">
+            <div class="cart cart--vide coincee">
+              <div class="cart__stries"></div>
+              <div class="cart__etiquette cart__etiquette--vide">?</div>
+            </div>
+            <div class="fente"></div>
+            <div class="fente__fond"></div>
+          </div>
+          <div class="erreur404__texte">
+            <p class="erreur404__code">404</p>
+            <h1 class="erreur404__titre">Cette cartouche n'est pas dans le coffre.</h1>
+            <p class="erreur404__aide">L'adresse est peut-être mal tapée, ou la page a été rangée ailleurs. Si quelqu'un t'a envoyé un lien de salle, la salle est sans doute fermée.</p>
+            <div class="erreur404__actions">
+              <a class="key key--principal" href="#/">Retour à l'accueil</a>
+              <a class="key" href="#/imposteur" id="jeu-hasard">Un jeu au hasard</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== Jeux (habillage final aux étapes 4 à 6) ====== -->
+      <section data-vue="imposteur" hidden>
+        <div id="impostor-game" class="imp">
+          <p id="round-info" class="imp-manche hidden" aria-live="polite"></p>
+          <div id="word-bar" class="imp-mot hidden"></div>
+          <ol id="players-inputs" class="imp-tours"></ol>
+
+          <template id="player-template">
+            <li class="imp-tour">
+              <span class="imp-tour__tete">
+                <span class="imp-avatar imp-avatar--petit" aria-hidden="true"></span>
+                <span class="imp-tour__nom"></span>
+                <span class="imp-tour__etat"></span>
+                <span class="imp-tour__timer hidden"></span>
+              </span>
+              <span class="imp-tour__indices"></span>
+            </li>
+          </template>
+
+          <template id="vote-button-template">
+            <button type="button" role="radio" aria-checked="false" class="key imp-vote">
+              <span class="imp-avatar imp-avatar--grand" aria-hidden="true"></span>
+              <span class="imp-vote__nom"></span>
+            </button>
+          </template>
+
+          <div id="lobby-container" class="imp-zone">
+            <div id="lobby-setup" class="imp-entree ecran">
+              <div class="imp-dossier" aria-hidden="true">Dossier n° 1</div>
+              <h1 id="impostor-title" class="imp-titre">Imposteur</h1>
+              <p class="imp-intro">Tout le monde a le même mot. Sauf un. À toi de le trouver, ou de ne pas te faire prendre.</p>
+              <div class="field">
+                <label class="field__label" for="room-id">Code de salle</label>
+                <input class="field__input field__input--code" type="text" id="room-id" maxlength="30" placeholder="KRAB" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="room-id-err" />
+                <p class="field__erreur hidden" id="room-id-err" role="alert"></p>
+              </div>
+              <div class="field">
+                <label class="field__label" for="username">Ton pseudo</label>
+                <input class="field__input" type="text" id="username" maxlength="20" autocomplete="off" aria-describedby="username-err" />
+                <p class="field__erreur hidden" id="username-err" role="alert"></p>
+              </div>
+              <button type="button" id="join-button" class="key key--principal key--bloc">Rejoindre la salle</button>
+              <button type="button" id="create-button" class="key key--fantome key--bloc">Créer une nouvelle salle</button>
+            </div>
+
+            <div id="lobby-salon" class="imp-salon ecran hidden">
+              <div class="imp-fiche imp-fiche--code">
+                <div class="imp-fiche__code">
+                  <span class="imp-fiche__etiquette">Code de la salle</span>
+                  <span class="imp-code" id="room-code-text"></span>
+                </div>
+                <button type="button" id="copy-link" class="key key--principal key--compact">Copier le lien</button>
+              </div>
+
+              <div id="lobby-players" class="imp-joueurs hidden">
+                <div class="imp-joueurs__tete">
+                  <h2 class="imp-h2">Joueurs</h2>
+                  <span class="imp-compte" id="lobby-count">0/8</span>
+                </div>
+                <ul class="imp-liste" id="lobby-list"></ul>
+              </div>
+
+              <div id="lobby-options" class="imp-reglages hidden">
+                <div class="imp-reglage">
+                  <span class="imp-reglage__nom" id="lbl-rounds">Manches</span>
+                  <div class="stepper imp-stepper" role="group" aria-labelledby="lbl-rounds">
+                    <button type="button" data-step-for="round-count" data-step="-1" aria-label="Une manche de moins">-</button>
+                    <span class="imp-stepper__valeur"><input type="number" id="round-count" min="1" max="10" step="1" value="3" aria-labelledby="lbl-rounds" /></span>
+                    <button type="button" data-step-for="round-count" data-step="1" aria-label="Une manche de plus">+</button>
+                  </div>
+                </div>
+                <div class="imp-reglage">
+                  <span class="imp-reglage__nom" id="lbl-timer">Temps par tour</span>
+                  <div class="stepper imp-stepper" role="group" aria-labelledby="lbl-timer">
+                    <button type="button" data-step-for="round-timer" data-step="-10" aria-label="10 secondes de moins">-</button>
+                    <span class="imp-stepper__valeur"><input type="number" id="round-timer" min="10" max="120" step="10" value="60" aria-labelledby="lbl-timer" /><span aria-hidden="true">s</span></span>
+                    <button type="button" data-step-for="round-timer" data-step="10" aria-label="10 secondes de plus">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="start-button-container" class="imp-lancer">
+                <button type="button" id="new-game" class="key key--principal key--bloc hidden">Lancer la partie</button>
+                <p id="lobby-wait" class="imp-attente hidden" role="status"></p>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" id="end-round" class="key key--secondaire key--bloc hidden">Passer aux votes</button>
+
+          <div id="hint-phase"></div>
+          <div id="reveal-phase"></div>
+
+          <dialog class="fenetre" id="imp-quitter" aria-labelledby="imp-quitter-titre">
+            <div class="fenetre__tete">
+              <h2 class="fenetre__titre" id="imp-quitter-titre">Quitter la partie ?</h2>
+            </div>
+            <div class="fenetre__corps">
+              <p class="imp-quitter__texte">La manche est en cours. Si tu pars, les autres continuent sans toi.</p>
+              <button type="button" class="key key--principal key--bloc" id="imp-rester">Rester</button>
+              <button type="button" class="key key--danger key--bloc" id="imp-partir">Quitter la partie</button>
+            </div>
+          </dialog>
+        </div>
+      </section>
+
+      <section data-vue="lyrics" hidden>
+      <!-- ====== Lyrics : choix de la chanson ====== -->
+      <div id="lyrics-select" class="ly-choix" hidden>
+        <h1 class="ly-titre">Lyrics</h1>
+
+        <div class="ly-recherche">
+          <label class="sr-only" for="ls-search">Chercher un titre ou un artiste</label>
+          <svg class="ly-recherche__loupe" aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 10 10" shape-rendering="crispEdges"><path fill="#1B1D16" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM1 5h1v1H1zM5 5h1v1H5zM2 6h3v1H2zM6 6h1v1H6zM7 7h1v1H7zM8 8h1v1H8z"/></svg>
+          <input id="ls-search" class="field__input ly-recherche__champ" type="search" autocomplete="off" placeholder="Titre ou artiste" />
+        </div>
+
+        <div class="ly-filtres">
+          <select id="ls-genre" class="ly-filtre" aria-label="Genre">
+            <option value="">Tous genres</option>
+          </select>
+          <select id="ls-artist" class="ly-filtre" aria-label="Artiste">
+            <option value="">Tous artistes</option>
+          </select>
+          <select id="ls-year" class="ly-filtre" aria-label="Année">
+            <option value="">Toutes années</option>
+          </select>
+          <select id="ls-sort" class="ly-filtre" aria-label="Trier par">
+            <option value="title-asc">Tri : titre, A à Z</option>
+            <option value="title-desc">Tri : titre, Z à A</option>
+            <option value="artist-asc">Tri : artiste, A à Z</option>
+            <option value="artist-desc">Tri : artiste, Z à A</option>
+            <option value="year-desc">Tri : récentes d'abord</option>
+            <option value="year-asc">Tri : anciennes d'abord</option>
+          </select>
+        </div>
+
+        <div id="ls-grid" class="ls-grid" aria-live="polite"></div>
       </div>
 
-      <!-- Bouton centré sous le bloc lobby -->
-      <div id="start-button-container">
-        <button
-          id="new-game"
-          onclick="startImpostorGame()"
-          style="display: none"
-        >
-          Nouvelle manche
+      <!-- ====== Lyrics : partie ====== -->
+      <div id="lyrics-game" class="ly-partie" hidden>
+        <button id="lyrics-back-select" class="key key--secondaire key--retour ly-retour" type="button" aria-label="Retour aux chansons">
+          <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"/></svg>
+          <span class="ly-retour__texte">Chansons</span>
         </button>
-      </div>
 
-      <button id="end-round" class="hidden">Passer aux votes</button>
+        <div id="lyrics-song-info" class="ly-pochette"></div>
 
-      <div id="hint-phase"></div>
-      <div id="reveal-phase"></div>
-    </div>
+        <button id="lyrics-submit" class="key key--fantome key--compact ly-abandon" type="button">Abandonner</button>
 
-    <!-- ====== Page intermédiaire Lyrics : sélection de musique ====== -->
-    <div id="lyrics-select" class="game-container" style="display: none">
-      <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <h1>🎤 Choisis une musique</h1>
-
-      <div class="ls-toolbar">
-        <input
-          id="ls-search"
-          aria-label="Rechercher un titre ou un artiste"
-          type="search"
-          placeholder="Rechercher titre, artiste..."
-        />
-        <select id="ls-genre" aria-label="Genre">
-          <option value="">Tous les genres</option>
-        </select>
-        <select id="ls-artist" aria-label="Artiste">
-          <option value="">Tous les artistes</option>
-        </select>
-        <select id="ls-year" aria-label="Année">
-          <option value="">Toutes années</option>
-        </select>
-        <select id="ls-sort" aria-label="Trier par">
-          <option value="title-asc">Titre (A→Z)</option>
-          <option value="title-desc">Titre (Z→A)</option>
-          <option value="artist-asc">Artiste (A→Z)</option>
-          <option value="artist-desc">Artiste (Z→A)</option>
-          <option value="year-desc">Année (récent→ancien)</option>
-          <option value="year-asc">Année (ancien→récent)</option>
-        </select>
-      </div>
-
-      <div id="ls-grid" class="ls-grid" aria-live="polite"></div>
-    </div>
-
-    <!-- ====== Page du jeu Lyrics ====== -->
-    <div id="lyrics-game" class="game-container" style="display: none">
-      <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <div class="lyrics-topbar">
-        <button id="lyrics-back-select">Retour</button>
-        <h1 style="margin: 0">🎤 Lyrics</h1>
-      </div>
-
-      <div id="lyrics-song-info" class="lyrics-song-info"></div>
-
-      <!-- Stats + saisie (barre sticky) -->
-      <div class="lyrics-sticky-bar">
-        <div class="lyrics-stats">
-          Progression : <span id="lyrics-progress">0/0</span>
+        <!-- Score + saisie (barre or, collée en haut sur téléphone) -->
+        <div class="lyrics-sticky-bar ly-barre">
+          <div class="lyrics-stats ly-barre__score">
+            <span class="ly-barre__libelle">Mots trouvés</span>
+            <span id="lyrics-progress" class="ly-barre__nombre">0/0</span>
+            <span id="lyrics-bar" class="ly-progres" role="progressbar" aria-label="Mots trouvés" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span class="ly-progres__rempli"></span></span>
+          </div>
+          <label class="ly-barre__label" for="lyrics-guess">Tape un mot</label>
+          <div class="lyrics-input ly-saisie">
+            <input id="lyrics-guess" class="field__input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="lyrics-feedback" />
+            <button id="lyrics-clear" class="key key--secondaire key--icone ly-saisie__effacer" type="button" aria-label="Effacer le mot">
+              <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M2 2l10 10M12 2 2 12"/></svg>
+            </button>
+          </div>
+          <p id="lyrics-feedback" class="lyrics-feedback" role="status" hidden></p>
         </div>
-        <div class="lyrics-input">
-          <input
-            id="lyrics-guess"
-            aria-label="Tape un mot"
-            type="text"
-            placeholder="Tape un mot (accents/majuscules ignorés)"
-          />
-          <button id="lyrics-submit">Abandonner</button>
-          <button id="lyrics-clear" title="Effacer la saisie" aria-label="Effacer la saisie">✖</button>
+
+        <div id="lyrics-board" class="lyrics-board ly-cahier"></div>
+      </div>
+
+      <!-- ====== Lyrics : victoire ====== -->
+      <div id="lyrics-win" class="ly-fin ly-fin--victoire" hidden>
+        <div class="ly-confettis" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="ly-disque" aria-hidden="true"></span>
+        <h1 class="ly-fin__titre">Disque d'or</h1>
+        <p class="ly-fin__texte">Tu as retrouvé les <b id="lyrics-win-count"></b> de <span id="lyrics-win-title"></span>.</p>
+        <div class="ly-stats">
+          <p class="ly-stat"><span id="lyrics-win-time" class="ly-stat__valeur">0:00</span><span>temps</span></p>
+          <p class="ly-stat"><span id="lyrics-win-wrong" class="ly-stat__valeur">0</span><span>mots tapés pour rien</span></p>
+        </div>
+        <div class="ly-fin__actions">
+          <button id="lyrics-win-next" class="key key--sombre key--bloc" type="button">Une autre chanson</button>
+          <button id="lyrics-win-review" class="key key--secondaire key--bloc" type="button">Revoir les paroles</button>
         </div>
       </div>
 
-      <div id="lyrics-board" class="lyrics-board" aria-live="polite"></div>
-      <p class="lyrics-legend">
-        Les répétitions d’un mot se révèlent d’un coup. Accents, ponctuation et
-        majuscules ignorés.
-      </p>
-    </div>
-
-    <!-- Conteneur du jeu Runner -->
-    <div id="runner-game" class="game-container" style="display: none">
-      <button onclick="goBack()" class="back-button">Gran.Menu</button>
-      <h1>🏃 Infinite Runner</h1>
-      <p>Le jeu de course arrive bientôt...</p>
-    </div>
-
-    <!-- ====== KARAOKÉ : sélection du mode ====== -->
-    <div id="karaoke-mode" class="game-container" style="display:none">
-      <button onclick="karaokeBackToMenu()" class="back-button">Gran.Menu</button>
-      <h1>🎵 Karaoké</h1>
-      <div class="kk-mode-grid">
-        <button class="kk-mode-card" onclick="karaokeStartSolo()">
-          <span class="kk-mode-icon">🎤</span>
-          <strong>Solo</strong>
-          <p>Chante seul(e) à ton rythme</p>
-        </button>
-        <button class="kk-mode-card" onclick="karaokeShowRoom()">
-          <span class="kk-mode-icon">👥</span>
-          <strong>Multijoueur</strong>
-          <p>Crée une salle et chante avec tes amis</p>
-        </button>
-      </div>
-    </div>
-
-    <!-- ====== KARAOKÉ : lobby multijoueur ====== -->
-    <div id="karaoke-room" class="game-container" style="display:none">
-      <button onclick="karaokeBackToMode()" class="back-button">Retour</button>
-      <h1>👥 Salle Karaoké</h1>
-
-      <div id="kk-join-form" class="kk-join-form">
-        <input id="kk-username" aria-label="Ton pseudo" type="text" placeholder="Ton pseudo" maxlength="20" autocomplete="off" />
-        <input id="kk-roomcode" aria-label="Code de salle" type="text" placeholder="Code de salle (laisser vide pour créer)" maxlength="6" autocomplete="off" />
-        <button onclick="karaokeJoinRoom()" class="kk-btn-primary">Rejoindre / Créer</button>
-        <p id="kk-join-error" class="kk-join-error" style="display:none"></p>
-      </div>
-
-      <div id="kk-lobby" style="display:none">
-        <div class="kk-room-code-display">
-          Code de la salle : <strong id="kk-room-code-text"></strong>
-          <button onclick="kk_copyCode()" class="kk-copy-btn" title="Copier le code">📋</button>
-        </div>
-        <div id="kk-players-list" class="kk-players-list"></div>
-
-        <!-- Panneau hôte -->
-        <div id="kk-host-panel" class="kk-host-panel" style="display:none">
-          <div id="kk-selected-song-display" class="kk-selected-song-display" style="display:none"></div>
-          <button onclick="karaokeGoSelectSong()" class="kk-btn-secondary">🎵 Choisir une musique</button>
-          <button id="kk-start-btn" onclick="karaokeMultiStart()" class="kk-btn-start" style="display:none">▶ Démarrer le karaoké !</button>
-        </div>
-
-        <!-- Message invité -->
-        <div id="kk-guest-panel" class="kk-guest-panel" style="display:none">
-          <div id="kk-guest-song-display" class="kk-guest-song-display">En attente que l'hôte choisisse une musique…</div>
+      <!-- ====== Lyrics : défaite ====== -->
+      <div id="lyrics-lose" class="ly-fin ly-fin--defaite" hidden>
+        <h1 class="ly-fin__titre">Rayé.</h1>
+        <p id="lyrics-lose-text" class="ly-fin__texte"></p>
+        <div id="lyrics-lose-board" class="ly-cahier"></div>
+        <div class="ly-fin__actions">
+          <button id="lyrics-lose-retry" class="key key--principal key--bloc" type="button">Retenter cette chanson</button>
+          <button id="lyrics-lose-other" class="key key--fantome key--bloc" type="button">Choisir une autre chanson</button>
         </div>
       </div>
-    </div>
 
-    <!-- ====== KARAOKÉ : sélection de musique ====== -->
-    <div id="karaoke-select" class="game-container" style="display:none">
-      <button onclick="karaokeBackFromSelect()" class="back-button">Retour</button>
-      <h1>🎵 Choisir une musique</h1>
-      <div class="kk-search-bar">
-        <input id="kk-search" aria-label="Rechercher une chanson" type="search" placeholder="Titre, artiste…" autocomplete="off" />
-      </div>
-      <div id="kk-songs-grid" class="kk-songs-grid"></div>
-    </div>
+      </section>
 
-    <!-- ====== KARAOKÉ : jeu ====== -->
-    <div id="karaoke-game" style="display:none">
-      <div class="kk-topbar">
-        <button onclick="karaokeExitGame()" class="kk-exit-btn">✕ Quitter</button>
-        <span id="kk-song-title-bar" class="kk-song-title-bar"></span>
-        <span id="kk-line-counter" class="kk-line-counter"></span>
-      </div>
-
-      <div class="kk-stage">
-        <div id="kk-line-prev" class="kk-lyric kk-lyric-prev"></div>
-        <div id="kk-line-curr" class="kk-lyric kk-lyric-curr"></div>
-        <div id="kk-line-next" class="kk-lyric kk-lyric-next"></div>
-      </div>
-
-      <div class="kk-footer">
-        <div id="kk-controls" class="kk-controls">
-          <button id="kk-prev-btn" onclick="karaokeAdvance('prev')" class="kk-ctrl-btn">◀ Préc.</button>
-          <button id="kk-play-btn" onclick="karaokeToggleAutoPlay()" class="kk-ctrl-btn kk-ctrl-auto">▶ Auto</button>
-          <button id="kk-next-btn" onclick="karaokeAdvance('next')" class="kk-ctrl-btn">Suiv. ▶</button>
-        </div>
-        <div id="kk-spectator-msg" class="kk-spectator-msg" style="display:none">🎤 L'hôte contrôle les paroles</div>
-        <div id="kk-players-bar" class="kk-players-bar"></div>
-      </div>
-
-      <div id="kk-end-overlay" class="kk-end-overlay" style="display:none">
-        <div class="kk-end-box">
-          <div class="kk-end-icon">🎤</div>
-          <h2>Fin de la chanson !</h2>
-          <button onclick="karaokeRestartSong()" class="kk-btn-primary">Recommencer</button>
-          <button onclick="karaokeExitGame()" class="kk-btn-secondary">Changer de musique</button>
+      <section data-vue="karaoke" hidden>
+      <!-- ====== KARAOKÉ : sélection du mode ====== -->
+      <!-- Les 4 écrans ci-dessous gardent leur display:none inline : karaoke.js (kkShow), app.js (show/hide) et
+           le raccourci clavier de la scène lisent style.display pour savoir quel écran est affiché. -->
+      <div id="karaoke-mode" class="kar-ecran" style="display:none">
+        <div class="ampoules ampoules--clignote" aria-hidden="true"></div>
+        <h1 class="kar-titre">Karaoké</h1>
+        <p class="kar-intro">Les paroles défilent en rythme. Toi, tu chantes. Les autres subissent.</p>
+        <div class="kar-billets">
+          <button type="button" class="key billet billet--solo" onclick="karaokeStartSolo()">
+            <span class="billet__nom">Solo</span>
+            <span class="billet__texte">Toi et ta salle de bain. Musique complète, instrumentale ou a cappella.</span>
+          </button>
+          <button type="button" class="key billet billet--salle" onclick="karaokeShowRoom()">
+            <span class="billet__nom">Salle</span>
+            <span class="billet__texte">Un code, des amis, un seul micro. L'hôte choisit la chanson et fait défiler.</span>
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Chargement des scripts JavaScript -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+      <!-- ====== KARAOKÉ : lobby multijoueur ====== -->
+      <div id="karaoke-room" class="kar-ecran" style="display:none">
+        <div class="kar-barre">
+          <button type="button" class="key key--retour" onclick="karaokeBackToMode()">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"></path></svg>
+            Modes
+          </button>
+        </div>
+        <h1 class="kar-titre kar-titre--moyen">Salle</h1>
+
+        <div id="kk-join-form" class="kar-formulaire">
+          <div class="field">
+            <label class="field__label" for="kk-username">Ton pseudo</label>
+            <input class="field__input" id="kk-username" type="text" maxlength="20" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label class="field__label" for="kk-roomcode">Code de la salle</label>
+            <input class="field__input" id="kk-roomcode" type="text" maxlength="6" autocomplete="off" aria-describedby="kk-roomcode-aide" />
+            <span class="field__aide" id="kk-roomcode-aide">Laisse vide pour créer une salle.</span>
+          </div>
+          <p id="kk-join-error" class="field__erreur" role="alert"></p>
+          <button type="button" class="key key--principal" onclick="karaokeJoinRoom()">Rejoindre la salle</button>
+        </div>
+
+        <div id="kk-lobby" class="kar-salon">
+          <div class="kar-code">
+            <div class="kar-code__bloc">
+              <span class="kar-code__label">Code de la salle</span>
+              <strong id="kk-room-code-text" class="kar-code__valeur"></strong>
+            </div>
+            <button type="button" class="key key--compact key--principal kk-copy-btn" onclick="kk_copyCode()">Copier</button>
+          </div>
+          <h2 id="kk-players-title" class="kar-sous-titre">Dans la salle</h2>
+          <ul id="kk-players-list" class="joueurs kar-joueurs" aria-labelledby="kk-players-title"></ul>
+
+          <!-- Panneau hôte -->
+          <div id="kk-host-panel" class="kar-hote">
+            <p id="kk-selected-song-display" class="kar-chanson-choisie"></p>
+            <button type="button" class="key key--secondaire" onclick="karaokeGoSelectSong()">Choisir une musique</button>
+            <button type="button" id="kk-start-btn" class="key key--principal" onclick="karaokeMultiStart()">Démarrer le karaoké</button>
+          </div>
+
+          <!-- Message invité : projecteur + micro pixel -->
+          <div id="kk-guest-panel" class="kar-invite" role="status">
+            <span class="projecteur kar-invite__faisceau" aria-hidden="true"></span>
+            <svg class="kar-invite__micro" aria-hidden="true" width="72" height="72" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect fill="#F2B630" x="6" y="1" width="4" height="7"></rect><rect fill="#F2B630" x="4" y="6" width="1" height="3"></rect><rect fill="#F2B630" x="11" y="6" width="1" height="3"></rect><rect fill="#F2B630" x="5" y="9" width="6" height="1"></rect><rect fill="#F2B630" x="7" y="10" width="2" height="4"></rect><rect fill="#F2B630" x="5" y="14" width="6" height="1"></rect></svg>
+            <p id="kk-guest-song-display" class="kar-invite__texte">En attente que l'hôte choisisse une musique…</p>
+            <p class="kar-invite__aide">Échauffe ta voix. Discrètement.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== KARAOKÉ : sélection de musique ====== -->
+      <div id="karaoke-select" class="kar-ecran" style="display:none">
+        <div class="kar-barre">
+          <button type="button" class="key key--retour" onclick="karaokeBackFromSelect()">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"></path></svg>
+            Retour
+          </button>
+        </div>
+        <h1 class="kar-titre kar-titre--moyen">Quelle chanson ?</h1>
+        <div class="field kar-recherche">
+          <label class="sr-only" for="kk-search">Rechercher une chanson</label>
+          <input class="field__input" id="kk-search" type="search" placeholder="Titre, artiste…" autocomplete="off" />
+        </div>
+        <div id="kk-songs-grid" class="kar-grille"></div>
+
+        <!-- Tiroir solo : « Tu chantes avec quoi ? » (kkAskAudioChoice) -->
+        <dialog id="kk-audio-modal" class="fenetre kar-tiroir" aria-labelledby="kk-audio-song">
+          <div class="fenetre__corps">
+            <div class="kar-tiroir__chanson">
+              <span class="kar-vinyle kar-vinyle--petit" aria-hidden="true"></span>
+              <div>
+                <h2 id="kk-audio-song" class="kar-tiroir__titre"></h2>
+                <span id="kk-audio-artist" class="kar-tiroir__artiste"></span>
+              </div>
+            </div>
+            <fieldset class="kar-options">
+              <legend class="kar-options__legende">Tu chantes avec quoi ?</legend>
+              <label class="kar-option">
+                <input class="sr-only" type="radio" name="kk-audio" value="full" checked />
+                <span class="kar-option__pastille" aria-hidden="true"></span>
+                <span class="kar-option__texte"><b>Musique complète</b><span>Avec la voix d'origine, pour te cacher derrière.</span></span>
+              </label>
+              <label class="kar-option">
+                <input class="sr-only" type="radio" name="kk-audio" value="instrumental" />
+                <span class="kar-option__pastille" aria-hidden="true"></span>
+                <span class="kar-option__texte"><b>Instrumentale</b><span>Juste la musique. Le vrai karaoké.</span></span>
+              </label>
+              <label class="kar-option">
+                <input class="sr-only" type="radio" name="kk-audio" value="none" />
+                <span class="kar-option__pastille" aria-hidden="true"></span>
+                <span class="kar-option__texte"><b>Sans musique</b><span>A cappella. Courage.</span></span>
+              </label>
+            </fieldset>
+            <button type="button" id="kk-audio-go" class="key kar-en-scene">En scène</button>
+          </div>
+        </dialog>
+      </div>
+
+      <!-- ====== KARAOKÉ : jeu ====== -->
+      <!-- #kk-yt-host est ajouté ici par karaoke.js (lecteur YouTube) : ne pas le déplacer. -->
+      <div id="karaoke-game" class="scene" style="display:none">
+        <div class="scene__rideau scene__rideau--g" aria-hidden="true"></div>
+        <div class="scene__rideau scene__rideau--d" aria-hidden="true"></div>
+        <div class="scene__fronton" aria-hidden="true"></div>
+        <div class="ampoules ampoules--clignote scene__ampoules" aria-hidden="true"></div>
+        <div class="projecteur scene__faisceau" aria-hidden="true"></div>
+
+        <header class="scene__tete">
+          <button type="button" onclick="karaokeExitGame()" class="key key--compact">
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M2 2l10 10M12 2 2 12"></path></svg>
+            Quitter
+          </button>
+          <h1 id="kk-song-title-bar" class="scene__titre"></h1>
+          <span id="kk-line-counter" class="scene__compteur"></span>
+        </header>
+
+        <div class="kk-stage scene__paroles" aria-live="polite">
+          <p id="kk-line-prev" class="kk-lyric kk-lyric-prev ligne-prec"></p>
+          <p id="kk-line-curr" class="kk-lyric kk-lyric-curr ligne-cour"></p>
+          <p id="kk-line-next" class="kk-lyric kk-lyric-next ligne-suiv"></p>
+        </div>
+
+        <footer class="scene__pied">
+          <div id="kk-controls" class="scene__controles">
+            <button type="button" id="kk-prev-btn" onclick="karaokeAdvance('prev')" class="key kar-ctrl">
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M5 0h1v7H5V6H4V5H3V4H2V3h1V2h1V1h1z" fill="currentColor"></path></svg>
+              Précédente
+            </button>
+            <button type="button" id="kk-play-btn" onclick="karaokeToggleAutoPlay()" class="key key--principal kar-ctrl kar-ctrl--auto" aria-pressed="false">Auto</button>
+            <button type="button" id="kk-next-btn" onclick="karaokeAdvance('next')" class="key kar-ctrl">
+              Suivante
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M1 0h1v1h1v1h1v1h1v1H4v1H3v1H2v1H1z" fill="currentColor"></path></svg>
+            </button>
+          </div>
+          <p id="kk-spectator-msg" class="scene__aide"></p>
+          <ul id="kk-players-bar" class="public" aria-label="Dans la salle" hidden></ul>
+        </footer>
+
+        <!-- Fin de la chanson -->
+        <div id="kk-end-overlay" class="kar-fin" role="status">
+          <div class="ampoules ampoules--clignote kar-fin__ampoules" aria-hidden="true"></div>
+          <div class="projecteur kar-fin__faisceau" aria-hidden="true"></div>
+          <div class="kar-fin__corps">
+            <h2 class="kar-titre kar-titre--fin">Fin de<br />la chanson</h2>
+            <p class="kar-fin__texte">Le public est encore sous le choc. Dans le bon sens, on suppose.</p>
+            <div class="kar-fin__barres" aria-hidden="true"><span></span><span></span><span></span></div>
+          </div>
+          <div class="kar-fin__actions">
+            <button type="button" onclick="karaokeRestartSong()" class="key key--principal">Recommencer</button>
+            <button type="button" onclick="karaokeExitGame()" class="key key--secondaire">Changer de musique</button>
+          </div>
+        </div>
+      </div>
+
+      </section>
+
+      <!-- ====== Plus ou Moins : « La Une » (aperçu sur données fictives, voir javascript/demo-data.js) ====== -->
+      <section data-vue="plus-ou-moins" class="pom" hidden>
+        <div class="pom__ecran pom__depart" data-ecran="depart">
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
+          <div class="pom__une"><span>Édition du jour</span><span>Prix : gratuit</span></div>
+          <h1 class="pom-titre">Plus<br><mark>ou</mark><br>Moins</h1>
+          <p class="pom__regle">Deux choses du quotidien. Laquelle a le plus ? Une bonne réponse prolonge la série, une erreur la termine.</p>
+          <div class="pom__cases">
+            <div class="pom__case pom__case--papier"><span class="pom__case-lib">Ton record</span><span class="pom__case-val" id="pom-record-depart">0</span></div>
+            <div class="pom__case"><span class="pom__case-lib">Thèmes</span><span class="pom__case-txt" id="pom-themes">Population, prix, durée, taille</span></div>
+          </div>
+          <button type="button" class="key key--pom key--pom-sombre pom__lancer" id="pom-lancer">Lancer une série</button>
+        </div>
+
+        <div class="pom__ecran pom__jeu" data-ecran="jeu" hidden>
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
+          <div class="pom__entete">
+            <span class="pom-serie" id="pom-serie">Série 0</span>
+            <span class="pom__record">Record : <span id="pom-record-jeu">0</span></span>
+          </div>
+          <h1 class="pom__question" id="pom-question">Laquelle a le plus ?</h1>
+          <div class="duel" id="pom-duel">
+            <article class="duel__panneau" id="pom-a">
+              <span class="duel__cat" data-champ="cat"></span>
+              <h2 class="duel__nom" data-champ="nom"></h2>
+              <p class="duel__valeur" data-champ="valeur"></p>
+              <span class="duel__source" data-champ="source"></span>
+            </article>
+            <article class="duel__panneau" id="pom-b">
+              <span class="duel__cat" data-champ="cat"></span>
+              <h2 class="duel__nom" data-champ="nom"></h2>
+              <p class="duel__valeur duel__valeur--inconnue" data-champ="valeur">?</p>
+              <div class="duel__choix">
+                <button type="button" class="key key--pom key--pom-sombre" id="pom-plus"><svg class="pom__fleche" aria-hidden="true" width="16" height="16" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M3 0h1v1h1v1h1v1h1v1H5v3H2V4H0V3h1V2h1V1h1z" fill="currentColor"></path></svg><span data-champ="plus">Plus</span></button>
+                <button type="button" class="key key--pom" id="pom-moins"><svg class="pom__fleche" aria-hidden="true" width="16" height="16" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M2 0h3v3h2v1H6v1H5v1H4v1H3V6H2V5H1V4H0V3h2z" fill="currentColor"></path></svg><span data-champ="moins">Moins</span></button>
+              </div>
+              <span class="duel__source">Clavier : flèche haut pour plus, flèche bas pour moins.</span>
+            </article>
+            <span class="duel__ou" aria-hidden="true">ou</span>
+          </div>
+          <p class="sr-only" id="pom-annonce" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="pom__ecran pom__fin" data-ecran="fin" hidden>
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
+          <div class="pom__une"><span>Dernière minute</span><span>Plus ou Moins</span></div>
+          <h1 class="pom__fin-titre" id="pom-fin-titre">La série s'arrête à 0</h1>
+          <p class="pom__explication" id="pom-explication"></p>
+          <div class="pom__cases pom__cases--score">
+            <div class="pom__case pom__case--bonbon"><span class="pom__case-lib">Cette série</span><span class="pom__case-score" id="pom-fin-serie">0</span></div>
+            <div class="pom__case pom__case--papier" id="pom-fin-record-bloc"><span class="pom__case-lib">Ton record</span><span class="pom__case-score"><s id="pom-fin-ancien" hidden></s> <span id="pom-fin-record">0</span></span></div>
+          </div>
+          <p class="pom__note" id="pom-note-record" hidden>Record battu.</p>
+          <div class="pom__actions">
+            <button type="button" class="key key--pom key--pom-sombre" id="pom-rejouer">Rejouer</button>
+            <a class="key" href="#/">Autre jeu</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== Course de frappe : « Le circuit » (aperçu sur données fictives, voir javascript/demo-data.js) ====== -->
+      <section data-vue="frappe" class="fra" hidden>
+        <div class="fra__ecran fra__depart" data-ecran="depart">
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
+          <div class="damier-course fra__damier" aria-hidden="true"></div>
+          <h1 class="fra-titre">Course<br>de frappe_</h1>
+          <div class="onglets fra__onglets" role="tablist" aria-label="Mode">
+            <button type="button" role="tab" id="fra-tab-solo" aria-selected="false" aria-controls="fra-panneau">Solo</button>
+            <button type="button" role="tab" id="fra-tab-salle" aria-selected="true" aria-controls="fra-panneau">En salle</button>
+          </div>
+          <div id="fra-panneau" role="tabpanel" class="fra__panneau">
+            <div class="fra__code" id="fra-code-bloc">
+              <div><span class="fra__code-lib">Code</span><span class="fra__code-val" id="fra-code">ZOOM</span></div>
+              <button type="button" class="key key--compact" id="fra-copier">Copier</button>
+            </div>
+            <ol class="couloirs" id="fra-couloirs" aria-label="Joueurs"></ol>
+          </div>
+          <button type="button" class="key key--fra" id="fra-pret">Je suis prêt</button>
+          <p class="fra__aide" id="fra-aide">Départ automatique quand tout le monde est prêt.</p>
+        </div>
+
+        <div class="fra__ecran fra__decompte" data-ecran="decompte" hidden>
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
+          <h1 class="sr-only">Compte à rebours</h1>
+          <div class="feux" id="fra-feux" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p class="decompte" id="fra-chiffre" role="timer" aria-live="polite">3</p>
+          <p class="fra__doigts">Doigts sur le clavier.</p>
+          <div class="damier-course fra__damier fra__damier--bas" aria-hidden="true"></div>
+        </div>
+
+        <div class="fra__ecran fra__course" data-ecran="course" hidden>
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
+          <h1 class="sr-only">Course en cours</h1>
+          <section class="piste" id="fra-piste" aria-label="Piste"></section>
+          <section class="fra__phrase-bloc" aria-label="Phrase à taper">
+            <p class="phrase" id="fra-phrase" aria-hidden="true"></p>
+            <label class="sr-only" for="fra-saisie">Tape la phrase</label>
+            <input class="fra__saisie" id="fra-saisie" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="fra-aide-course">
+            <p class="fra__aide" id="fra-aide-course">Une faute bloque la voiture : efface et corrige pour avancer.</p>
+            <p class="sr-only" id="fra-annonce" role="status" aria-live="polite"></p>
+          </section>
+          <section class="fra__chiffres" aria-label="Tes chiffres">
+            <div class="fra__chiffre fra__chiffre--or"><span class="fra__chiffre-lib">Vitesse</span><span class="fra__chiffre-val"><span id="fra-mpm">0</span> mpm</span></div>
+            <div class="fra__chiffre"><span class="fra__chiffre-lib">Précision</span><span class="fra__chiffre-val"><span id="fra-precision">100</span> %</span></div>
+            <div class="fra__chiffre"><span class="fra__chiffre-lib">Position</span><span class="fra__chiffre-val" id="fra-position">1er</span></div>
+          </section>
+        </div>
+
+        <div class="fra__ecran fra__resultats" data-ecran="resultats" hidden>
+          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
+          <div class="damier-course fra__damier" aria-hidden="true"></div>
+          <h1 class="fra-titre fra-titre--arrivee">Arrivée_</h1>
+          <div class="podium" id="fra-podium" aria-hidden="true"></div>
+          <ol class="fra__classement" id="fra-classement" aria-label="Classement"></ol>
+          <p class="fra__aide">Vitesse en mots par minute, puis précision.</p>
+          <div class="fra__actions">
+            <button type="button" class="key key--fra" id="fra-revanche">Revanche</button>
+            <a class="key key--fantome" href="#/" id="fra-quitter">Quitter la salle</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Fenêtre de compte : contenu construit par javascript/account.js -->
+    <dialog id="fenetre-compte" class="fenetre fenetre-compte sur-papier" aria-labelledby="compte-titre"></dialog>
+
+    <!-- Toasts (granUI.toast) -->
+    <div class="toasts" aria-live="polite"></div>
+
+    <!-- Chargement des scripts JavaScript (l'ordre compte : voir eslint.config.js) -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"
       integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ"
@@ -292,10 +861,15 @@
     ></script>
     <script src="javascript/config.js"></script>
     <script src="javascript/auth.js"></script>
+    <script src="javascript/ui.js"></script>
+    <script src="javascript/router.js"></script>
     <script src="javascript/imposteur.js"></script>
-    <script src="javascript/navigation.js"></script>
     <script src="javascript/lyrics.js"></script>
     <script src="javascript/karaoke.js"></script>
     <script src="javascript/account.js"></script>
+    <script src="javascript/demo-data.js"></script>
+    <script src="javascript/plus-ou-moins.js"></script>
+    <script src="javascript/frappe.js"></script>
+    <script src="javascript/app.js"></script>
   </body>
 </html>

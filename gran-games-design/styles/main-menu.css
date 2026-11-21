@@ -1,0 +1,92 @@
+/* ==========================================================================
+   Accueil (#/, #/jeux, #/nouveautes) + pied de page + 404
+   Remplace l'ancien main-menu.css. Référence : reference/html/Accueil.html,
+   Accueil-mobile.html, Erreur404.html
+   ========================================================================== */
+
+.accueil { min-height: 100vh; }
+.accueil__entete { padding-top: 16px; }
+
+/* --- Hero : titre géant + accroche --- */
+.hero { padding-top: 72px; display: flex; flex-direction: column; gap: 32px; }
+.hero__haut { display: flex; flex-wrap: wrap; gap: 24px 64px; align-items: end; justify-content: space-between; }
+.hero__texte { flex: 1 1 340px; max-width: 460px; display: flex; flex-direction: column; gap: 24px; padding-bottom: 12px; }
+.hero__accroche { margin: 0; font-size: 24px; line-height: 1.35; font-weight: 600; font-variation-settings: "opsz" 32; }
+.hero__sous { margin: 0; font-size: 17px; line-height: 1.55; color: var(--texte-doux-clair); }
+
+/* --- Étagère de cartouches (le moment fort de la page) --- */
+.etagere { position: relative; padding-top: 40px; }
+.etagere__liste { list-style: none; margin: 0; padding: 0 2%; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+.etagere__liste > li { flex: 1 1 180px; max-width: 228px; }
+.etagere__planche { height: 28px; background: var(--lichen-bord); border-top: 4px solid var(--sauge); margin-top: -6px; box-shadow: 0 10px 0 var(--encre); }
+/* Variables par cartouche (posées sur .cart) */
+.cart--imposteur { --cart-corps: #1E4D3B; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Special Elite", monospace; --cart-taille: 28px; --cart-angle: -5deg; }
+.cart--lyrics { --cart-corps: #2E63B8; --cart-etiquette: #F2B630; --cart-encre: #1B1D16; --cart-police: "Shrikhand", serif; --cart-taille: 34px; --cart-angle: 3deg; }
+.cart--karaoke { --cart-corps: #6E1A1F; --cart-etiquette: #F2B630; --cart-encre: #6E1A1F; --cart-police: "Bungee", sans-serif; --cart-taille: 26px; --cart-angle: -2deg; }
+.cart--plus-ou-moins { --cart-corps: #F28AA6; --cart-etiquette: #E4E0D4; --cart-encre: #1B1D16; --cart-police: "Anton", sans-serif; --cart-taille: 30px; --cart-angle: 4deg; }
+.cart--frappe { --cart-corps: #2F3134; --cart-etiquette: #F2B630; --cart-encre: #1B1D16; --cart-police: "VT323", monospace; --cart-taille: 38px; --cart-angle: -3deg; }
+
+/* Téléphone : étagère qui défile à l'horizontale avec aimantation */
+@media (max-width: 640px) {
+  .etagere__liste { flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 24px 20px 0; gap: 14px; justify-content: flex-start; }
+  .etagere__liste > li { flex: 0 0 168px; scroll-snap-align: center; }
+  .etagere__liste .cart { height: 220px; }
+}
+
+/* --- Bandeau "On t'a donné un code ?" --- */
+.rejoindre { margin-top: 88px; background: var(--bouton-dor); color: var(--encre); padding: 32px 40px; display: flex; flex-wrap: wrap; align-items: end; gap: 24px 40px; }
+.rejoindre__intro { flex: 1 1 300px; display: flex; flex-direction: column; gap: 8px; }
+.rejoindre__titre { margin: 0; font: 700 44px/1 var(--police-pixel); }
+.rejoindre .field__input--code { width: 180px; height: 56px; font-size: 30px; }
+.rejoindre .field__pseudo { width: 260px; height: 56px; }
+@media (max-width: 640px) {
+  .rejoindre { margin-top: 40px; padding: 24px 20px; flex-direction: column; align-items: stretch; gap: 14px; }
+  .rejoindre__titre { font-size: 34px; }
+  .rejoindre .field__input--code, .rejoindre .field__pseudo { width: 100%; }
+}
+
+/* --- Les jeux : grandes lignes typographiques --- */
+.jeux { padding-top: 96px; }
+.jeux__tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px; padding-bottom: 28px; }
+.ligne-jeu { display: block; text-decoration: none; background: var(--ligne-fond); color: var(--ligne-texte); border-top: 4px solid var(--encre); transition: background-color 200ms ease; }
+.ligne-jeu__dedans { max-width: var(--largeur-max); margin: 0 auto; padding: 22px var(--e-5); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; }
+.ligne-jeu__nom { flex: 1 1 420px; font-family: var(--ligne-police); font-size: var(--ligne-taille); line-height: 1; color: var(--ligne-titre); }
+.ligne-jeu__regle { flex: 1 1 340px; max-width: 420px; font-size: 18px; line-height: 1.5; display: none; }
+.ligne-jeu__meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ligne-jeu__jouer { margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: var(--parchemin); color: var(--encre); border: var(--trait); border-radius: var(--rayon-touche); box-shadow: var(--epaisseur); font: 700 18px var(--police-pixel); }
+/* La ligne s'ouvre au survol (souris) ou au focus clavier */
+@media (hover: hover) and (pointer: fine) {
+  .ligne-jeu:hover .ligne-jeu__dedans { padding-block: 40px; }
+  .ligne-jeu:hover .ligne-jeu__regle { display: block; }
+  .ligne-jeu:hover .ligne-jeu__jouer { background: var(--bouton-dor); }
+}
+.ligne-jeu:focus-visible .ligne-jeu__regle { display: block; }
+@media (hover: none), (max-width: 640px) {
+  .ligne-jeu__dedans { flex-direction: column; align-items: flex-start; gap: 12px; padding: 22px 20px; }
+  .ligne-jeu__nom { flex: none; }
+  .ligne-jeu__regle { display: block; font-size: 16px; }
+  .ligne-jeu__jouer { margin-left: auto; height: 44px; }
+}
+.ligne-jeu--imposteur { --ligne-fond: #1E4D3B; --ligne-texte: #EFE8CC; --ligne-titre: #EFE8CC; --ligne-police: "Special Elite", monospace; --ligne-taille: clamp(54px, 7vw, 88px); }
+.ligne-jeu--lyrics { --ligne-fond: #2E63B8; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "Shrikhand", serif; --ligne-taille: clamp(56px, 6.5vw, 80px); }
+.ligne-jeu--karaoke { --ligne-fond: #6E1A1F; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "Bungee", sans-serif; --ligne-taille: clamp(44px, 6vw, 72px); }
+.ligne-jeu--plus-ou-moins { --ligne-fond: #F28AA6; --ligne-texte: #1B1D16; --ligne-titre: #1B1D16; --ligne-police: "Anton", sans-serif; --ligne-taille: clamp(54px, 7vw, 84px); }
+.ligne-jeu--frappe { --ligne-fond: #2F3134; --ligne-texte: #EFE8CC; --ligne-titre: #F2B630; --ligne-police: "VT323", monospace; --ligne-taille: clamp(60px, 8vw, 96px); }
+
+/* --- Quoi de neuf + fiche de joueur --- */
+.neuf { padding-top: 96px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 48px; align-items: start; }
+.neuf__liste { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--parchemin); }
+.neuf__item { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid var(--lichen-bord); }
+.neuf__date { font-family: var(--police-pixel); font-size: 18px; color: var(--texte-doux); }
+@media (max-width: 640px) { .neuf__item { grid-template-columns: 1fr; gap: 6px; padding: 16px 0; } }
+
+/* --- Pied de page "GG" --- */
+.pied { margin-top: 120px; background: var(--encre); border-top: 4px solid var(--lichen-bord); }
+.pied__dedans { padding-block: 56px 40px; display: flex; flex-wrap: wrap; gap: 32px 64px; align-items: end; justify-content: space-between; }
+.pied__gg { font: 700 clamp(96px, 16vw, 220px)/.8 var(--police-pixel); color: var(--lichen); }
+.pied__liens { display: grid; grid-template-columns: repeat(2, minmax(160px, auto)); gap: 12px 48px; }
+
+/* --- 404 : cartouche coincée --- */
+.coincee { animation: coincee 3s var(--ease-in-out) infinite; transform-origin: 50% 100%; }
+@keyframes coincee { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(-5deg); } }
+@media (prefers-reduced-motion: reduce) { .coincee { animation: none; transform: rotate(-9deg); } .ligne-jeu { transition: none; } }

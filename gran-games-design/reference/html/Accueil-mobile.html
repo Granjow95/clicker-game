@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gran'Games, accueil téléphone</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Special+Elite&amp;family=Shrikhand&amp;family=Bungee&amp;family=Anton&amp;family=VT323&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.cart{clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%)}
+.ridges{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 5px,transparent 5px 10px)}
+.pins{background-image:repeating-linear-gradient(90deg,#C9A64A 0 8px,transparent 8px 13px)}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.shelf{scroll-snap-type:x mandatory;scrollbar-width:none}
+.shelf>*{scroll-snap-align:center}
+</style>
+</head>
+<body>
+<div class="ground" style="width: 390px; min-height: 3500px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; overflow: hidden">
+<header style="padding: 12px 12px 0; display: flex; flex-direction: column; gap: 10px">
+<div style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 14px; padding: 6px 6px 6px 14px; display: flex; align-items: center; justify-content: space-between">
+<a href="#/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #EFE8CC">
+<svg aria-hidden="true" height="24" viewbox="0 0 26 30" width="20"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"></path><rect fill="#1B1D16" height="12" width="18" x="4" y="9"></rect></svg>
+<span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">Gran'Games</span>
+</a>
+<button aria-label="Compte" class="key" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; display: grid; place-items: center" type="button">
+<svg aria-hidden="true" height="18" shape-rendering="crispEdges" viewbox="0 0 9 9" width="18"><path d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z" fill="#1B1D16"></path></svg>
+</button>
+</div>
+<nav aria-label="Navigation principale" style="display: flex; gap: 4px; background: #333828; border-radius: 10px; padding: 4px">
+<a aria-current="page" href="#/" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; background: #EFE8CC; color: #1B1D16; text-decoration: none; font-weight: 600; font-size: 15px">Accueil</a>
+<a href="#/jeux" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 15px">Jeux</a>
+<a href="#/nouveautes" style="flex: 1; text-align: center; padding: 10px 0; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600; font-size: 15px">Nouveautés</a>
+</nav>
+</header>
+<main>
+<section style="padding: 40px 20px 0; display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 104px; line-height: 0.82; letter-spacing: -2px">Gran'<br/>Games</h1>
+<p style="margin: 0; font-size: 20px; line-height: 1.35; font-weight: 600">Des petits jeux pour se chamailler entre amis, dans le navigateur.</p>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #D8CFAC">Pas de pub. Pas de compte obligatoire : un pseudo suffit.</p>
+</section>
+<section aria-label="Les jeux en cartouches" style="padding-top: 32px">
+<ul class="shelf" style="list-style: none; margin: 0; padding: 24px 20px 0; display: flex; gap: 14px; overflow-x: auto">
+
+<li style="flex: 0 0 168px">
+<a aria-label="Jouer à Imposteur" class="cart" href="#/imposteur" style="display: flex; flex-direction: column; height: 220px; background: #1E4D3B; transform: rotate(-4deg); text-decoration: none; color: #1B1D16">
+<span class="ridges" style="height: 16px; display: block"></span>
+<span style="margin: 8px 12px 0; flex: 1; background: #EFE8CC; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-family: 'Special Elite', monospace; font-size: 24px; line-height: 1">Imposteur</span>
+<span style="font-size: 12px; font-weight: 600">En salle</span>
+</span>
+<span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 0 0 168px">
+<a aria-label="Jouer à Lyrics" class="cart" href="#/lyrics" style="display: flex; flex-direction: column; height: 220px; background: #2E63B8; transform: rotate(3deg); text-decoration: none; color: #1B1D16">
+<span class="ridges" style="height: 16px; display: block"></span>
+<span style="margin: 8px 12px 0; flex: 1; background: #F2B630; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-family: 'Shrikhand', serif; font-size: 28px; line-height: 1">Lyrics</span>
+<span style="font-size: 12px; font-weight: 600">Solo</span>
+</span>
+<span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 0 0 168px">
+<a aria-label="Jouer à Karaoké" class="cart" href="#/karaoke" style="display: flex; flex-direction: column; height: 220px; background: #6E1A1F; transform: rotate(-2deg); text-decoration: none; color: #6E1A1F">
+<span class="ridges" style="height: 16px; display: block"></span>
+<span style="margin: 8px 12px 0; flex: 1; background: #F2B630; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-family: 'Bungee', sans-serif; font-size: 22px; line-height: 1">Karaoké</span>
+<span style="font-size: 12px; font-weight: 600">Solo ou salle</span>
+</span>
+<span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 0 0 168px">
+<a aria-label="Jouer à Plus ou Moins" class="cart" href="#/plus-ou-moins" style="display: flex; flex-direction: column; height: 220px; background: #F28AA6; transform: rotate(4deg); text-decoration: none; color: #1B1D16">
+<span class="ridges" style="height: 16px; display: block"></span>
+<span style="margin: 8px 12px 0; flex: 1; background: #E4E0D4; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-family: 'Anton', sans-serif; font-size: 26px; line-height: 1">Plus ou Moins</span>
+<span style="font-size: 12px; font-weight: 600">Solo</span>
+</span>
+<span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 0 0 168px">
+<a aria-label="Jouer à Course de frappe" class="cart" href="#/frappe" style="display: flex; flex-direction: column; height: 220px; background: #2F3134; transform: rotate(-3deg); text-decoration: none; color: #1B1D16">
+<span class="ridges" style="height: 16px; display: block"></span>
+<span style="margin: 8px 12px 0; flex: 1; background: #F2B630; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-family: 'VT323', monospace; font-size: 30px; line-height: 1">Course de frappe</span>
+<span style="font-size: 12px; font-weight: 600">Solo ou salle</span>
+</span>
+<span class="pins" style="height: 12px; margin: 8px 18px 0; display: block"></span>
+</a>
+</li>
+
+</ul>
+<div aria-hidden="true" style="height: 20px; margin: -4px 0 0; background: #4A5139; border-top: 4px solid #6E7A55; box-shadow: 0 8px 0 #1B1D16"></div>
+<p style="margin: 20px 20px 0; font-size: 14px; color: #B9B596">Glisse pour voir les 5 cartouches.</p>
+</section>
+<section aria-labelledby="m-salle" style="padding: 40px 12px 0">
+<div class="px" style="background: #F2B630; color: #1B1D16; padding: 24px 20px; display: flex; flex-direction: column; gap: 14px">
+<h2 id="m-salle" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 34px; line-height: 1; font-weight: 700">On t'a donné un code ?</h2>
+<div style="display: flex; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px; width: 120px">
+<label for="m-code" style="font-weight: 600; font-size: 14px">Code</label>
+<input class="fld" id="m-code" maxlength="4" placeholder="KRAB" style="width: 100%; height: 52px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 10px; font: 700 24px 'Pixelify Sans', monospace; letter-spacing: 0.15em; color: #1B1D16"/>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0">
+<label for="m-pseudo" style="font-weight: 600; font-size: 14px">Ton pseudo</label>
+<input class="fld" id="m-pseudo" placeholder="Ton pseudo" style="width: 100%; height: 52px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 12px; font: 400 17px 'Bricolage Grotesque', sans-serif; color: #1B1D16"/>
+</div>
+</div>
+<button class="key" style="background: #1B1D16; color: #F2B630; border: 3px solid #1B1D16; border-radius: 10px; height: 56px; box-shadow: 0 4px 0 #6E5310; font: 700 20px 'Pixelify Sans', monospace" type="button">Rejoindre</button>
+</div>
+</section>
+<section aria-labelledby="m-jeux" style="padding-top: 56px">
+<h2 id="m-jeux" style="margin: 0 20px 20px; font-family: 'Pixelify Sans', monospace; font-size: 52px; line-height: 1; font-weight: 700">Les jeux</h2>
+
+<a href="#/imposteur" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: #1E4D3B; color: #EFE8CC; border-top: 4px solid #1B1D16; text-decoration: none">
+<span style="font-family: 'Special Elite', monospace; font-size: 54px; line-height: 1; color: #EFE8CC">Imposteur</span>
+<span style="font-size: 16px; line-height: 1.45">Tout le monde a le même mot. Sauf un. Indices, vote, démasquage.</span>
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">Jusqu’à 8</span>
+
+<span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</a>
+
+<a href="#/lyrics" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: #2E63B8; color: #EFE8CC; border-top: 4px solid #1B1D16; text-decoration: none">
+<span style="font-family: 'Shrikhand', serif; font-size: 56px; line-height: 1; color: #F2B630">Lyrics</span>
+<span style="font-size: 16px; line-height: 1.45">Tous les mots d’une chanson sont cachés. Tape ceux que tu connais.</span>
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</a>
+
+<a href="#/karaoke" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: #6E1A1F; color: #EFE8CC; border-top: 4px solid #1B1D16; text-decoration: none">
+<span style="font-family: 'Bungee', sans-serif; font-size: 44px; line-height: 1; color: #F2B630">Karaoké</span>
+<span style="font-size: 16px; line-height: 1.45">Les paroles défilent en rythme. Toi, tu chantes. Les autres subissent.</span>
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</a>
+
+<a href="#/plus-ou-moins" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: #F28AA6; color: #1B1D16; border-top: 4px solid #1B1D16; text-decoration: none">
+<span style="font-family: 'Anton', sans-serif; font-size: 54px; line-height: 1; color: #1B1D16">Plus ou Moins</span>
+<span style="font-size: 16px; line-height: 1.45">Deux choses. Laquelle a le plus ? Une erreur et la série s’arrête.</span>
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #1B1D16">Solo</span>
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #1B1D16">Nouveau</span>
+
+<span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</a>
+
+<a href="#/frappe" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; background: #2F3134; color: #EFE8CC; border-top: 4px solid #1B1D16; text-decoration: none">
+<span style="font-family: 'VT323', monospace; font-size: 60px; line-height: 1; color: #F2B630">Course de frappe</span>
+<span style="font-size: 16px; line-height: 1.45">Une phrase, un chrono. Sans faute, et plus vite que les autres.</span>
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span style="font-size: 13px; font-weight: 600; padding: 5px 9px; border-radius: 6px; border: 2px solid #EFE8CC">Nouveau</span>
+
+<span style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 17px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</a>
+
+</section>
+<section aria-labelledby="m-news" style="padding: 56px 20px 0; display: flex; flex-direction: column; gap: 16px">
+<h2 id="m-news" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 44px; line-height: 1; font-weight: 700">Quoi de neuf</h2>
+<ol style="list-style: none; margin: 0; padding: 0; border-top: 3px solid #EFE8CC">
+
+<li style="padding: 16px 0; border-bottom: 2px solid #4A5139; display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 8px; align-items: center">
+<span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F28AA6; color: #1B1D16">Nouveau jeu</span>
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 14px; color: #B9B596">[date]</span>
+</span>
+<span style="font-weight: 800; font-size: 18px">Plus ou Moins</span>
+<span style="font-size: 15px; line-height: 1.5; color: #D8CFAC">Une erreur et ta série s’arrête.</span>
+</li>
+
+<li style="padding: 16px 0; border-bottom: 2px solid #4A5139; display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 8px; align-items: center">
+<span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F2B630; color: #1B1D16">Nouveau jeu</span>
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 14px; color: #B9B596">[date]</span>
+</span>
+<span style="font-weight: 800; font-size: 18px">Course de frappe</span>
+<span style="font-size: 15px; line-height: 1.5; color: #D8CFAC">Seul ou à plusieurs sur la même piste.</span>
+</li>
+
+<li style="padding: 16px 0; border-bottom: 2px solid #4A5139; display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 8px; align-items: center">
+<span style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #7FB342; color: #1B1D16">Console</span>
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 14px; color: #B9B596">[date]</span>
+</span>
+<span style="font-weight: 800; font-size: 18px">Le bouton retour marche enfin</span>
+<span style="font-size: 15px; line-height: 1.5; color: #D8CFAC">Chaque jeu et chaque salle a son adresse.</span>
+</li>
+
+</ol>
+</section>
+<section style="padding: 48px 12px 0">
+<div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px">
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 28px; font-weight: 700; line-height: 1">Ta fiche de joueur</span>
+<p style="margin: 0; font-size: 16px; line-height: 1.5">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores et tes 20 dernières parties.</p>
+<button class="key" style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace" type="button">Créer mon compte</button>
+<button class="key" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">J'ai déjà un compte</button>
+</div>
+</section>
+</main>
+<footer style="margin-top: 64px; background: #1B1D16; border-top: 4px solid #4A5139; padding: 32px 20px 40px; display: flex; flex-direction: column; gap: 24px">
+<span aria-hidden="true" style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 120px; line-height: 0.8; color: #333828">GG</span>
+<span style="font-size: 17px; font-weight: 600">Bien joué. Reviens quand tu veux.</span>
+<nav aria-label="Pied de page" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; font-size: 16px">
+<a href="#/regles/imposteur">Règles des jeux</a>
+<a href="#/profil">Mon profil</a>
+<a href="#/confidentialite">Confidentialité</a>
+<a href="#/credits">Crédits</a>
+</nav>
+</footer>
+</div>
+</body>
+</html>

@@ -91,6 +91,11 @@ const granAuth = (() => {
       if (error) return fail(error);
       return { needsConfirm: !data.session };
     },
+    async resend(email) {
+      if (!sb) return { error: 'Comptes indisponibles.' };
+      const { error } = await sb.auth.resend({ type: 'signup', email, options: { emailRedirectTo: redirectTo() } });
+      return fail(error);
+    },
     async signIn(email, password) {
       if (!sb) return { error: 'Comptes indisponibles.' };
       const { error } = await sb.auth.signInWithPassword({ email, password });

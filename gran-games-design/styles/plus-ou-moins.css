@@ -1,0 +1,29 @@
+/* ==========================================================================
+   Plus ou Moins : "La Une". Monde : <main data-monde="plus-ou-moins">
+   Référence : reference/html/PlusOuMoins.html (téléphone), PlusOuMoins-desktop.html
+   ========================================================================== */
+[data-monde="plus-ou-moins"] {
+  --monde-barre: #EFE8CC;
+  background-color: #E4E0D4;
+  background-image: radial-gradient(rgba(27,29,22,.08) 1px, transparent 1.2px); background-size: 5px 5px; /* trame de journal */
+}
+.pom-titre { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: 92px; line-height: .9; }
+.pom-titre mark { background: #F28AA6; color: inherit; padding: 0 8px; }
+.pom-serie { background: #F28AA6; border: var(--trait); border-radius: 8px; padding: 2px 12px; font: 400 24px "Anton", sans-serif; }
+/* Deux panneaux face à face : empilés sur téléphone, côte à côte sur ordinateur */
+.duel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); border: 4px solid #1B1D16; position: relative; min-height: 600px; }
+.duel__panneau { padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 10px; background: #EFE8CC; }
+.duel__panneau + .duel__panneau { background: #F28AA6; border-left: 4px solid #1B1D16; }
+@media (max-width: 899px) { .duel__panneau + .duel__panneau { border-left: 0; border-top: 3px solid #1B1D16; } .duel__panneau { padding: 16px 18px; } }
+.duel__nom { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(38px, 4.2vw, 60px); line-height: 1; }
+.duel__valeur { margin: 12px 0 0; font-family: "Anton", sans-serif; font-size: clamp(84px, 11vw, 168px); line-height: .9; font-variant-numeric: tabular-nums; }
+.duel__source { font-size: 13px; color: #4A4A38; }
+.duel__ou { position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; background: #1B1D16; color: #F28AA6; border-radius: 50%; border: 6px solid #E4E0D4; display: grid; place-items: center; font: 400 34px "Anton", sans-serif; }
+.duel__panneau.juste { background: #7FB342; transition: background-color 200ms ease; }
+.duel__panneau.faux { background: #B83A24; color: #EFE8CC; transition: background-color 200ms ease; }
+/* Après une bonne réponse : le panneau de droite glisse à gauche, 320 ms */
+.duel.glisse .duel__panneau { animation: glisse 320ms var(--ease-in-out) both; }
+@keyframes glisse { from { transform: translateX(100%); } }
+.key--pom { font: 400 22px "Anton", sans-serif; box-shadow: 0 4px 0 #8A3C55; min-height: 64px; }
+.key--pom-noir { background: #1B1D16; color: #EFE8CC; }
+@media (prefers-reduced-motion: reduce) { .duel.glisse .duel__panneau { animation: none; } }

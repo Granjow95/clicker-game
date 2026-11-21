@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gran'Games, profil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E63B8}a:hover{color:#1B1D16}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.fld{height:52px;box-sizing:border-box;width:100%;background:#FFFDF4;color:#1B1D16;border:3px solid #1B1D16;border-radius:6px;padding:0 14px;font:400 17px 'Bricolage Grotesque',sans-serif}
+.hold{position:relative;overflow:hidden}
+.hold .fill{position:absolute;inset:0;background:#7A2414;clip-path:inset(0 100% 0 0);transition:clip-path 200ms cubic-bezier(.23,1,.32,1)}
+.hold:active .fill{clip-path:inset(0 0 0 0);transition:clip-path 2s linear}
+</style>
+</helmet>
+<div class="ground" style="min-height: 1900px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif">
+  <div style="max-width: 1320px; margin: 0 auto; padding: 16px 24px 0">
+    <header style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 16px; padding: 10px 12px 10px 18px; display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap">
+      <a href="#/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #EFE8CC">
+        <svg width="26" height="30" viewBox="0 0 26 30" aria-hidden="true"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"/><rect x="4" y="9" width="18" height="12" fill="#1B1D16"/></svg>
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 26px">Gran'Games</span>
+      </a>
+      <nav aria-label="Navigation principale" style="display: flex; gap: 4px; background: #333828; border-radius: 10px; padding: 4px; margin-left: auto">
+        <a href="#/" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600">Accueil</a>
+        <a href="#/jeux" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600">Jeux</a>
+        <a href="#/nouveautes" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600">Nouveautés</a>
+      </nav>
+      <a href="#/profil" aria-current="page" class="key" style="display: flex; align-items: center; gap: 10px; background: #F28AA6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 14px 0 8px; height: 48px; box-shadow: 0 4px 0 #000; font-weight: 600; text-decoration: none"><span aria-hidden="true" style="width: 28px; height: 28px; background: #1B1D16; color: #F28AA6; display: grid; place-items: center; font: 700 16px 'Pixelify Sans', monospace; border-radius: 4px">A</span>Amir</a>
+    </header>
+  </div>
+
+  <main style="max-width: 1320px; margin: 0 auto; padding: 48px 24px 96px; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+
+    <aside style="flex: 1 1 320px; max-width: 400px; display: flex; flex-direction: column; gap: 24px">
+      <div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 28px; display: flex; flex-direction: column; gap: 20px">
+        <span aria-hidden="true" style="width: 140px; height: 140px; background: #F28AA6; border: 4px solid #1B1D16; display: grid; place-items: center; font: 700 80px 'Pixelify Sans', monospace">A</span>
+        <h1 style="margin: 0; font: 700 56px 'Pixelify Sans', monospace; line-height: 0.9">Amir</h1>
+        <p style="margin: 0; font-size: 15px; color: #5A5A45">Joueur depuis [date d'inscription]</p>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="p1" style="font-weight: 600; font-size: 15px">Pseudo</label><input id="p1" class="fld" value="Amir"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="p2" style="font-weight: 600; font-size: 15px">Avatar (adresse d'une image)</label><input id="p2" class="fld" placeholder="https://…" aria-describedby="p2h"><span id="p2h" style="font-size: 13px; color: #5A5A45">Vide : on garde ta lettre sur fond bonbon.</span></div>
+        <button class="key" type="button" style="height: 52px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Enregistrer</button>
+      </div>
+      <div style="border: 2px solid #4A5139; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <button class="key" type="button" style="height: 48px; background: transparent; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; font: 600 16px 'Bricolage Grotesque', sans-serif">Me déconnecter</button>
+        <div style="background: #3A1F18; border: 2px solid #B83A24; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <p style="margin: 0; font-weight: 800; font-size: 17px">Supprimer mon compte</p>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #EBC9BF">Stats et historique effacés pour de bon. Garde le bouton appuyé 2 secondes pour confirmer.</p>
+          <button class="key hold" type="button" style="height: 52px; background: #B83A24; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif"><span class="fill" aria-hidden="true"></span><span style="position: relative">Maintenir pour supprimer</span></button>
+        </div>
+      </div>
+    </aside>
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 40px">
+      <section aria-labelledby="h-stats" style="display: flex; flex-direction: column; gap: 16px">
+        <h2 id="h-stats" style="margin: 0; font: 700 48px 'Pixelify Sans', monospace">Tes stats</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px">
+          <sc-for list="{{stats}}" as="s" hint-placeholder-count="5">
+            <div style="background: {{s.bg}}; color: {{s.fg}}; border: 3px solid #1B1D16; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+              <span style="font-family: {{s.font}}; font-size: {{s.size}}; line-height: 1; color: {{s.accent}}">{{s.name}}</span>
+              <dl style="margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px">
+                <div><dt style="font-size: 13px">Parties</dt><dd style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">[n]</dd></div>
+                <div><dt style="font-size: 13px">Victoires</dt><dd style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">[n]</dd></div>
+                <div><dt style="font-size: 13px">Score total</dt><dd style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">[n]</dd></div>
+                <div><dt style="font-size: 13px">{{s.best}}</dt><dd style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">[n]</dd></div>
+              </dl>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-hist" style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap">
+          <h2 id="h-hist" style="margin: 0; font: 700 48px 'Pixelify Sans', monospace">Tes 20 dernières parties</h2>
+          <label style="display: flex; align-items: center; gap: 10px; font-weight: 600">Jeu
+            <select class="fld" style="width: 200px; height: 44px; background: #EFE8CC"><option>Tous</option><option>Imposteur</option><option>Lyrics</option><option>Karaoké</option><option>Plus ou Moins</option><option>Course de frappe</option></select>
+          </label>
+        </div>
+        <div style="overflow-x: auto; border: 3px solid #1B1D16; background: #EFE8CC; color: #1B1D16">
+          <table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 16px">
+            <thead><tr style="background: #1B1D16; color: #EFE8CC; text-align: left">
+              <th scope="col" style="padding: 12px 16px">Jeu</th><th scope="col" style="padding: 12px 16px">Résultat</th><th scope="col" style="padding: 12px 16px">Score</th><th scope="col" style="padding: 12px 16px">Quand</th><th scope="col" style="padding: 12px 16px"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Actions</span></th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{hist}}" as="h" hint-placeholder-count="6">
+                <tr style="border-top: 2px solid #D8CFAC; background: {{h.row}}">
+                  <th scope="row" style="padding: 10px 16px; text-align: left; font-weight: 600"><span style="display: inline-flex; align-items: center; gap: 10px"><span aria-hidden="true" style="width: 14px; height: 14px; background: {{h.c}}; border: 2px solid #1B1D16"></span>{{h.g}}</span></th>
+                  <td style="padding: 10px 16px"><span style="font-size: 14px; font-weight: 600; padding: 3px 8px; border-radius: 6px; border: 2px solid #1B1D16; background: {{h.rbg}}">{{h.r}}</span></td>
+                  <td style="padding: 10px 16px; font: 700 18px 'Pixelify Sans', monospace">[score]</td>
+                  <td style="padding: 10px 16px; color: #4A4A38">[date]</td>
+                  <td style="padding: 6px 12px; text-align: right"><button type="button" aria-label="Supprimer cette partie ({{h.g}})" style="width: 44px; height: 44px; background: transparent; border: 2px solid transparent; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center"><svg width="18" height="18" viewBox="0 0 10 10" aria-hidden="true" shape-rendering="crispEdges"><path d="M3 0h4v1H3zM1 1h8v1H1zM2 2h6v8H2z" fill="#5A5A45"/><path d="M3 3h1v6H3zM6 3h1v6H6z" fill="#EFE8CC"/></svg></button></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div role="status" style="align-self: flex-start; display: flex; align-items: center; gap: 14px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 10px 12px 10px 16px; box-shadow: 0 4px 0 #000">
+          <span>Partie supprimée.</span>
+          <button class="key" type="button" style="height: 44px; padding: 0 14px; background: #F2B630; border: 2px solid #1B1D16; border-radius: 8px; box-shadow: 0 3px 0 #1B1D16; font: 600 15px 'Bricolage Grotesque', sans-serif">Annuler</button>
+        </div>
+        <p style="margin: 0; font-size: 14px; color: #B9B596">Supprimer une partie ne demande pas de confirmation : un toast « Annuler » reste 6 s. Supprimer le compte, si (appui long).</p>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var stats = [
+      { name: 'Imposteur', bg: '#1E4D3B', fg: '#EFE8CC', accent: '#EFE8CC', font: "'Special Elite', monospace", size: '26px', best: 'Meilleur score' },
+      { name: 'Lyrics', bg: '#2E63B8', fg: '#FFFFFF', accent: '#F2B630', font: "'Shrikhand', serif", size: '30px', best: 'Meilleur score' },
+      { name: 'Karaoké', bg: '#6E1A1F', fg: '#EFE8CC', accent: '#F2B630', font: "'Bungee', sans-serif", size: '24px', best: 'Meilleur score' },
+      { name: 'Plus ou Moins', bg: '#F28AA6', fg: '#1B1D16', accent: '#1B1D16', font: "'Anton', sans-serif", size: '28px', best: 'Meilleure série' },
+      { name: 'Course de frappe', bg: '#2F3134', fg: '#EFE8CC', accent: '#F2B630', font: "'VT323', monospace", size: '34px', best: 'Record (mots/min)' }
+    ];
+    var W = { r: 'Gagné', rbg: '#7FB342' }, L = { r: 'Perdu', rbg: '#D8CFAC' };
+    var hist = [
+      { g: 'Imposteur', c: '#1E4D3B', r: 'Démasqué', rbg: '#7FB342', row: 'transparent' },
+      { g: 'Course de frappe', c: '#2F3134', r: '2e sur 4', rbg: '#F2B630', row: '#E6DEBF' },
+      { g: 'Lyrics', c: '#2E63B8', r: W.r, rbg: W.rbg, row: 'transparent' },
+      { g: 'Plus ou Moins', c: '#F28AA6', r: 'Série de [n]', rbg: '#F28AA6', row: '#E6DEBF' },
+      { g: 'Lyrics', c: '#2E63B8', r: L.r, rbg: L.rbg, row: 'transparent' },
+      { g: 'Karaoké', c: '#6E1A1F', r: 'Chanté', rbg: '#EFE8CC', row: '#E6DEBF' }
+    ];
+    return { stats: stats, hist: hist };
+  }
+}
+</script>
+</body>
+</html>

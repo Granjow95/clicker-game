@@ -1,0 +1,91 @@
+/* ==========================================================================
+   Plus ou Moins : "La Une". Monde : <body data-monde="plus-ou-moins">
+   Référence : reference/html/PlusOuMoins.html (téléphone), PlusOuMoins-desktop.html
+   Aucun style en ligne : tout passe par ces classes. Variables --monde-* : base.css.
+   ========================================================================== */
+[data-monde="plus-ou-moins"] {
+  --monde-barre: #EFE8CC;
+  background-image: radial-gradient(rgba(27, 29, 22, .08) 1px, transparent 1.2px);
+  background-size: 5px 5px; /* trame de journal */
+}
+.pom { max-width: var(--largeur-max); margin-inline: auto; padding: var(--e-4) var(--e-4) var(--e-7); color: var(--encre); }
+.pom a { color: var(--encre); }
+.pom a:hover { color: var(--brique); }
+.pom__ecran { display: flex; flex-direction: column; gap: var(--e-4); }
+.pom__ecran[hidden] { display: none; }
+
+/* Bandeau « données fictives » */
+.bandeau-demo { margin: 0; padding: 6px 12px; border: 2px dashed var(--encre); background: var(--parchemin); font-size: 13px; font-weight: 600; }
+
+/* Titre et chapeau */
+.pom-titre { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(80px, 13vw, 208px); line-height: .9; }
+.pom-titre mark { background: var(--bonbon); color: inherit; padding: 0 8px; }
+.pom__une { display: flex; justify-content: space-between; gap: var(--e-3); font-size: 13px; font-weight: 600; border-bottom: 2px solid var(--encre); padding-bottom: 8px; }
+.pom__regle { margin: 0; max-width: 40ch; font-size: 19px; line-height: 1.4; font-weight: 600; border-top: 3px solid var(--encre); padding-top: 12px; }
+.pom__depart { max-width: 720px; margin-inline: auto; width: 100%; }
+
+/* Cases de score */
+.pom__cases { display: flex; gap: 10px; }
+.pom__case { flex: 1; border: var(--trait); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.pom__case--papier { background: var(--parchemin); }
+.pom__case--bonbon { background: var(--bonbon); }
+.pom__case--or { background: var(--bouton-dor); }
+.pom__case-lib { font-size: 13px; font-weight: 600; }
+.pom__case-val { font: 400 40px "Anton", sans-serif; line-height: 1.1; }
+.pom__case-score { font: 400 52px "Anton", sans-serif; line-height: 1; }
+.pom__case-score s { font-size: .6em; color: var(--texte-doux-papier); }
+.pom__case-txt { font-size: 15px; line-height: 1.3; }
+
+/* Touches du monde */
+.key--pom { font: 400 22px "Anton", sans-serif; box-shadow: 0 4px 0 #8A3C55; min-height: 64px; }
+.key--pom-sombre { background: var(--encre); color: var(--parchemin); }
+.pom__lancer, .pom__actions .key--pom { min-height: 60px; font-size: 26px; color: var(--bonbon); }
+.pom__lancer { margin-top: var(--e-2); }
+.pom__actions { display: flex; flex-direction: column; gap: 10px; max-width: 520px; }
+.pom__actions a.key { min-height: 52px; font-size: 16px; box-shadow: var(--epaisseur); }
+.pom a:focus-visible, .pom button:focus-visible { outline: 3px solid var(--faience); outline-offset: 3px; }
+
+/* En-tête de jeu */
+.pom__entete { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
+.pom-serie { background: var(--bonbon); border: var(--trait); border-radius: 8px; padding: 2px 12px; font: 400 24px "Anton", sans-serif; }
+.pom__record { font-size: 15px; font-weight: 600; }
+.pom__question { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: 34px; border-bottom: 3px solid var(--encre); padding-bottom: 10px; }
+
+/* Deux panneaux face à face : empilés sur téléphone, côte à côte sur ordinateur */
+.duel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); border: 4px solid var(--encre); position: relative; min-height: 520px; overflow: hidden; }
+.duel__panneau { padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 10px; background: var(--parchemin); }
+.duel__panneau + .duel__panneau { background: var(--bonbon); border-left: 4px solid var(--encre); }
+@media (max-width: 899px) {
+  .duel { min-height: 0; }
+  .duel__panneau { padding: 28px 18px 24px; }
+  .duel__panneau + .duel__panneau { border-left: 0; border-top: 4px solid var(--encre); }
+  .pom__question { font-size: 26px; }
+}
+.duel__cat { font-size: 16px; font-weight: 600; }
+.duel__nom { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(32px, 4.2vw, 60px); line-height: 1; }
+.duel__valeur { margin: 12px 0 0; font-family: "Anton", sans-serif; font-size: clamp(64px, 11vw, 168px); line-height: .95; font-variant-numeric: tabular-nums; }
+.duel__valeur--inconnue { font-size: clamp(56px, 7vw, 96px); }
+.duel__source { font-size: 13px; color: var(--texte-corps-papier); }
+.duel__panneau + .duel__panneau .duel__source { color: var(--encre); }
+.duel__choix { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 900px) { .duel__choix { display: flex; flex-wrap: wrap; gap: 14px; } .duel__choix .key--pom { min-height: 72px; padding: 0 28px; font-size: 28px; box-shadow: 0 5px 0 #8A3C55; } }
+.duel__ou { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; background: var(--encre); color: var(--bonbon); border-radius: 50%; border: 6px solid #E4E0D4; display: grid; place-items: center; font: 400 28px "Anton", sans-serif; pointer-events: none; }
+@media (min-width: 900px) { .duel__ou { width: 96px; height: 96px; margin: -48px 0 0 -48px; font-size: 34px; } }
+.duel__panneau.juste { background: var(--pomme); transition: background-color 200ms var(--ease-out); }
+.duel__panneau.faux { background: var(--brique); color: var(--parchemin); transition: background-color 200ms var(--ease-out); }
+.duel__panneau.faux .duel__source { color: var(--parchemin); }
+/* Après une bonne réponse : les panneaux glissent, 320 ms */
+.duel.glisse .duel__panneau { animation: pom-glisse 320ms var(--ease-in-out) both; }
+@keyframes pom-glisse { from { transform: translateX(40px); opacity: 0; } }
+
+/* Fin de série */
+.pom__fin { max-width: 720px; margin-inline: auto; width: 100%; }
+.pom__fin-titre { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(56px, 8vw, 96px); line-height: .95; }
+.pom__explication { margin: 0; font-size: 17px; line-height: 1.45; border-left: 6px solid var(--brique); padding-left: 12px; }
+.pom__cases--score .pom__case { padding: 12px; }
+.pom__note { margin: 0; font-size: 15px; color: var(--texte-corps-papier); }
+
+@media (prefers-reduced-motion: reduce) {
+  .duel.glisse .duel__panneau { animation: none; }
+  .duel__panneau.juste, .duel__panneau.faux { transition: none; }
+}

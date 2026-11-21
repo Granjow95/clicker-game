@@ -1,0 +1,38 @@
+/* ==========================================================================
+   Course de frappe : "Le circuit". Monde : <main data-monde="frappe">
+   Référence : reference/html/Frappe.html (téléphone), Frappe-desktop.html
+   ========================================================================== */
+[data-monde="frappe"] {
+  --monde-barre: #1F2022;
+  background-color: #2F3134;
+  background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px), radial-gradient(rgba(0,0,0,.18) 1px, transparent 1.4px);
+  background-size: 7px 7px, 11px 11px; /* asphalte */
+}
+.fra-titre { margin: 0; font-family: "VT323", monospace; font-weight: 400; font-size: 64px; line-height: .85; color: #F2B630; }
+.damier-course { background: repeating-conic-gradient(#1B1D16 0 25%, #EFE8CC 0 50%) 0 0 / 16px 16px; }
+.couloirs { list-style: none; margin: 0; padding: 0; border-top: 2px dashed #F2B630; }
+.couloirs li { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 2px dashed #F2B630; }
+/* Piste en direct */
+.piste { background: #26282B; border: var(--trait); border-radius: 12px; overflow: hidden; }
+.piste__couloir { position: relative; height: 64px; border-bottom: 3px dashed #F2B630; }
+.piste__voiture { position: absolute; top: 12px; height: 40px; left: var(--avance, 0%); transform: translateX(-100%); padding: 0 10px 0 6px; display: flex; align-items: center; gap: 8px; border: var(--trait); border-radius: 8px 14px 14px 8px; color: #1B1D16; font-weight: 700; white-space: nowrap; transition: left 300ms linear; }
+.piste__voiture--moi { box-shadow: 0 0 0 3px #EFE8CC; }
+/* Feux et compte à rebours */
+.feux { display: flex; gap: 14px; background: #1B1D16; padding: 14px 18px; border-radius: 14px; border: 3px solid #000; }
+.feux span { width: 44px; height: 44px; border-radius: 50%; background: #3A3A3A; }
+.feux span.on { background: #B83A24; box-shadow: 0 0 0 4px #3A1F18; }
+.feux.vert span { background: #7FB342; }
+.decompte { margin: 0; font-family: "VT323", monospace; font-size: 340px; line-height: .7; color: #F2B630; animation: decompte 400ms var(--ease-out) both; }
+@keyframes decompte { from { transform: scale(1.15); opacity: 0; } }
+/* Phrase : couleur seulement, AUCUNE animation sur la frappe */
+.phrase { margin: 0; font-family: "VT323", monospace; font-size: 46px; line-height: 1.35; }
+.phrase span { white-space: pre; }
+.phrase .ok { color: #9FD36A; }
+.phrase .faute { color: #EFE8CC; background: #B83A24; }
+.phrase .curseur { color: #1B1D16; background: #F2B630; animation: curseur 1s steps(1, end) infinite; }
+.phrase .reste { color: #A9ACB2; }
+@keyframes curseur { 50% { opacity: 0; } }
+@media (max-width: 640px) { .phrase { font-size: 30px; } .decompte { font-size: 240px; } }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; height: 190px; }
+.podium__marche { width: 96px; border: var(--trait); display: grid; place-items: center; color: #1B1D16; font-family: "VT323", monospace; }
+@media (prefers-reduced-motion: reduce) { .decompte, .phrase .curseur { animation: none; } .piste__voiture { transition: none; } }

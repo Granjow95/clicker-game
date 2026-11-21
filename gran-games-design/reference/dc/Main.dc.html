@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Gran'Games, direction artistique</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Special+Elite&amp;family=Shrikhand&amp;family=Bungee&amp;family=Anton&amp;family=VT323&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.cart{clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%)}
+.ridges{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 6px,transparent 6px 12px)}
+.pins{background-image:repeating-linear-gradient(90deg,#C9A64A 0 10px,transparent 10px 16px)}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1)}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16}
+.key:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+</style>
+</helmet>
+<div class="ground" style="width: 1440px; min-height: 3400px; box-sizing: border-box; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column">
+
+  <section style="padding: 72px 80px 96px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; align-items: end">
+    <div style="display: flex; flex-direction: column; gap: 28px">
+      <p style="margin: 0; font-size: 16px; color: #B9B596">Direction artistique, version 1, novembre 2026</p>
+      <h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 176px; line-height: 0.86; letter-spacing: -2px; color: #EFE8CC">Gran'<br>Games</h1>
+      <p style="margin: 0; max-width: 620px; font-size: 30px; line-height: 1.25; font-weight: 600; font-variation-settings: 'opsz' 48">Le coffre à cartouches.</p>
+      <p style="margin: 0; max-width: 600px; font-size: 19px; line-height: 1.55; color: #D8CFAC">Chaque jeu est une cartouche : une étiquette, une palette, une police et un décor à lui. Le site, c'est la console qui les fait tourner : même en-tête, mêmes touches, même façon d'entrer et de sortir. Titres en pixels, panneaux en papier, couleurs de jouet imprimé. Ludique pour les grands, jamais pour les tout-petits.</p>
+    </div>
+    <div style="position: relative; height: 520px" aria-hidden="true">
+      <sc-for list="{{carts}}" as="c" hint-placeholder-count="5">
+        <div class="cart" style="position: absolute; width: 200px; height: 250px; left: {{c.left}}; top: {{c.top}}; transform: rotate({{c.rot}}); background: {{c.body}}; display: flex; flex-direction: column">
+          <div class="ridges" style="height: 20px"></div>
+          <div style="margin: 10px 14px 0; flex: 1; background: {{c.label}}; padding: 12px; display: flex; flex-direction: column; justify-content: space-between">
+            <span style="font-family: {{c.font}}; font-size: {{c.size}}; line-height: 1; color: {{c.ink}}">{{c.name}}</span>
+            <span style="font-size: 12px; font-weight: 600; color: {{c.ink}}">{{c.mode}}</span>
+          </div>
+          <div class="pins" style="height: 16px; margin: 10px 24px 0"></div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="background: #EFE8CC; color: #1B1D16; padding: 80px; display: flex; flex-direction: column; gap: 40px">
+    <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; font-weight: 700">Trois règles de maison</h2>
+    <div style="display: flex; flex-direction: column">
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 48px; padding: 28px 0; border-top: 3px solid #1B1D16">
+        <p style="margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1">La console ne change jamais.</p>
+        <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #4A4A38">En-tête, touches, champs, fenêtres, toasts, espacements et transitions sont communs. Un joueur qui sait utiliser un jeu sait utiliser tous les autres. Les couleurs de la console : mousse, parchemin, bouton d'or.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 48px; padding: 28px 0; border-top: 3px solid #1B1D16">
+        <p style="margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1">La cartouche décide de l'ambiance.</p>
+        <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #4A4A38">Chaque jeu remplace le fond, ajoute une police d'accent et un motif de décor. Il n'a pas le droit de toucher aux touches ni à l'en-tête : c'est ce qui garde la famille unie.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 48px; padding: 28px 0; border-top: 3px solid #1B1D16; border-bottom: 3px solid #1B1D16">
+        <p style="margin: 0; font-size: 34px; font-weight: 800; line-height: 1.1">Tout se touche comme un jouet.</p>
+        <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #4A4A38">Les boutons ont une épaisseur et s'enfoncent. Les cartouches se soulèvent. Les panneaux ont des coins en escalier de pixels. Pas de dégradé décoratif, pas de néon, pas de violet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 80px; display: flex; flex-direction: column; gap: 32px">
+    <div style="display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap">
+      <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; font-weight: 700">Palette de la console</h2>
+      <p style="margin: 0; max-width: 520px; font-size: 16px; line-height: 1.5; color: #B9B596">Largeur des pastilles = part de surface à l'écran. Contrastes mesurés pour du texte normal (AA demande 4,5:1).</p>
+    </div>
+    <div style="display: flex; gap: 12px; height: 300px">
+      <sc-for list="{{swatches}}" as="s" hint-placeholder-count="10">
+        <div style="flex: {{s.flex}} 1 0; min-width: 0; background: {{s.hex}}; color: {{s.on}}; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid #4A5139">
+          <span style="font-weight: 800; font-size: 18px; line-height: 1.15">{{s.name}}</span>
+          <span style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.35">
+            <span style="font-family: 'Pixelify Sans', monospace; font-size: 16px">{{s.code}}</span>
+            <span>{{s.role}}</span>
+            <span style="font-weight: 600">{{s.ratio}}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding: 0 80px 80px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px">
+    <div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 40px; display: flex; flex-direction: column; gap: 20px">
+      <p style="margin: 0; font-size: 15px; color: #5A5A45">Titres, chiffres, noms de jeux, touches</p>
+      <p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 120px; line-height: 0.9">Pixelify Sans</p>
+      <p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 34px; line-height: 1.15">Aa Bb Cc 0123456789 ! ? %</p>
+      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4A4A38">Graisses 400, 600, 700. Jamais en dessous de 16 px, jamais pour un paragraphe. Elle donne le grain « écran de jeu » sans tomber dans le 8 bits illisible.</p>
+    </div>
+    <div class="px" style="background: #333828; padding: 40px; display: flex; flex-direction: column; gap: 20px">
+      <p style="margin: 0; font-size: 15px; color: #B9B596">Texte courant, formulaires, interface</p>
+      <p style="margin: 0; font-weight: 800; font-size: 96px; line-height: 0.95; font-variation-settings: 'opsz' 96; letter-spacing: -2px">Bricolage Grotesque</p>
+      <p style="margin: 0; font-size: 22px; line-height: 1.5; font-variation-settings: 'opsz' 14">Tu joues sans compte, avec un pseudo. Le compte sert juste à garder tes victoires, et tes défaites aussi, désolé.</p>
+      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #D8CFAC">Graisses 400, 600, 800 et axe optique (opsz) : serré et dramatique en grand, ouvert et lisible en petit.</p>
+    </div>
+    <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px; align-items: end; border-top: 2px solid #4A5139; padding-top: 28px">
+      <sc-for list="{{scale}}" as="t" hint-placeholder-count="9">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-family: {{t.font}}; font-size: {{t.px}}; line-height: 1; font-weight: 700">Ag</span>
+          <span style="font-size: 13px; color: #B9B596">{{t.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="background: #333828; padding: 80px; display: flex; flex-direction: column; gap: 40px">
+    <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; font-weight: 700">Formes, épaisseurs, motifs</h2>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <button class="key" type="button" style="font-family: 'Pixelify Sans', monospace; font-size: 22px; font-weight: 600; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 14px 24px; box-shadow: 0 4px 0 #1B1D16; cursor: pointer; min-height: 56px">Appuie-moi</button>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D8CFAC">La touche. Bord 3 px encre, rayon 10 px, épaisseur 4 px en dessous. À l'appui elle descend de 3 px en 120 ms : on sent le clic.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div class="px" style="height: 120px; background: #EFE8CC; display: flex; align-items: center; justify-content: center; color: #1B1D16; font-family: 'Pixelify Sans', monospace; font-size: 20px">coins en escalier</div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D8CFAC">Le panneau. Coins taillés en marches de 4 px (clip-path). Réservé aux grands panneaux et aux pastilles, jamais aux champs.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div class="ground" style="height: 120px; border: 2px solid #4A5139"></div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D8CFAC">Le damier. Fond de console : damier 8 px à 2 % de contraste. On le devine plus qu'on ne le voit.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="height: 120px; display: flex; gap: 8px; align-items: flex-end">
+          <div style="flex: 1; height: 40px; background: #F2B630; border: 3px solid #1B1D16; border-radius: 6px"></div>
+          <div style="flex: 1; height: 72px; background: #2E63B8; border: 3px solid #1B1D16; border-radius: 6px"></div>
+          <div style="flex: 1; height: 104px; background: #F28AA6; border: 3px solid #1B1D16; border-radius: 6px"></div>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D8CFAC">Rayons : 6 px (champs, pastilles), 10 px (touches), 16 px (fenêtres), 28 px de coin coupé (cartouches). Espacement sur une grille de 4 px : 4, 8, 12, 16, 24, 32, 48, 64, 96.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 80px; display: flex; flex-direction: column; gap: 40px">
+    <div style="display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap">
+      <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; font-weight: 700">Cinq cartouches, cinq mondes</h2>
+      <p style="margin: 0; max-width: 520px; font-size: 16px; line-height: 1.5; color: #B9B596">Chaque monde garde la console (en-tête, touches, Bricolage Grotesque) et change le fond, une police d'accent et un décor.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px">
+      <sc-for list="{{carts}}" as="c" hint-placeholder-count="5">
+        <div style="background: {{c.body}}; border: 2px solid #4A5139; padding: 24px; display: flex; flex-direction: column; gap: 18px; min-height: 520px">
+          <span style="font-family: {{c.font}}; font-size: {{c.bigSize}}; line-height: 1; color: {{c.title}}">{{c.name}}</span>
+          <span style="font-size: 20px; font-weight: 800; color: {{c.text}}">{{c.world}}</span>
+          <div style="display: flex; gap: 6px">
+            <sc-for list="{{c.chips}}" as="h" hint-placeholder-count="4">
+              <span style="width: 36px; height: 36px; background: {{h}}; border: 2px solid {{c.text}}"></span>
+            </sc-for>
+          </div>
+          <span style="font-size: 15px; line-height: 1.5; color: {{c.text}}"><b>Police d'accent :</b> {{c.fontName}}</span>
+          <span style="font-size: 15px; line-height: 1.5; color: {{c.text}}"><b>Décor :</b> {{c.decor}}</span>
+          <span style="font-size: 15px; line-height: 1.5; color: {{c.text}}"><b>Moment fort :</b> {{c.moment}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="background: #EFE8CC; color: #1B1D16; padding: 80px; display: flex; flex-direction: column; gap: 32px">
+    <h2 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; font-weight: 700">Le ton : complice, un peu moqueur</h2>
+    <p style="margin: 0; max-width: 760px; font-size: 18px; line-height: 1.6; color: #4A4A38">On tutoie. Phrases courtes, verbes simples, pas d'emoji. Une pique de temps en temps, jamais sur une erreur technique : là, on dit ce qui s'est passé et quoi faire.</p>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 3px solid #1B1D16">
+      <div style="padding: 16px 24px; background: #1B1D16; color: #EFE8CC; font-weight: 800">Plutôt</div>
+      <div style="padding: 16px 24px; background: #1B1D16; color: #EFE8CC; font-weight: 800; border-left: 3px solid #EFE8CC">Plutôt pas</div>
+      <sc-for list="{{tone}}" as="r" hint-placeholder-count="5">
+        <div style="padding: 18px 24px; border-top: 2px solid #1B1D16; font-size: 18px; line-height: 1.45">{{r.yes}}</div>
+        <div style="padding: 18px 24px; border-top: 2px solid #1B1D16; border-left: 3px solid #1B1D16; font-size: 18px; line-height: 1.45; color: #5A5A45">{{r.no}}</div>
+      </sc-for>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var carts = [
+      { name: 'Imposteur', mode: 'En salle, jusqu\u2019à 8', world: 'Le salon des soupçons', text: '#EFE8CC', body: '#1E4D3B', label: '#EFE8CC', ink: '#1B1D16', title: '#EFE8CC', font: "'Special Elite', monospace", size: '26px', bigSize: '34px', fontName: 'Special Elite (machine à écrire)', chips: ['#1E4D3B', '#EFE8CC', '#B83A24', '#C9A64A'], decor: 'tapis de feutre, dossiers tamponnés, ficelle rouge', moment: 'le tampon « Démasqué » qui claque', left: '0px', top: '150px', rot: '-8deg' },
+      { name: 'Lyrics', mode: 'Solo', world: 'Le carnet de paroles', text: '#EFE8CC', body: '#2E63B8', label: '#F2B630', ink: '#1B1D16', title: '#F2B630', font: "'Shrikhand', serif", size: '30px', bigSize: '40px', fontName: 'Shrikhand (pochette de disque 70s)', chips: ['#2E63B8', '#F2B630', '#EFE8CC', '#1B3E7A'], decor: 'pochette, sillons de vinyle, lignes de cahier', moment: 'un mot trouvé se retourne partout dans le texte', left: '110px', top: '70px', rot: '5deg' },
+      { name: 'Karaoké', mode: 'Solo ou salle', world: 'La scène', text: '#EFE8CC', body: '#6E1A1F', label: '#F2B630', ink: '#6E1A1F', title: '#F2B630', font: "'Bungee', sans-serif", size: '24px', bigSize: '30px', fontName: 'Bungee (enseigne de cabaret)', chips: ['#6E1A1F', '#F2B630', '#FFF4D6', '#2A0B0D'], decor: 'rideau de velours, rampe d’ampoules, projecteur', moment: 'la ligne courante en énorme sous le projecteur', left: '220px', top: '0px', rot: '-3deg' },
+      { name: 'Plus ou Moins', mode: 'Solo', world: 'La Une', text: '#1B1D16', body: '#F28AA6', label: '#E4E0D4', ink: '#1B1D16', title: '#1B1D16', font: "'Anton', sans-serif", size: '28px', bigSize: '38px', fontName: 'Anton (gros titre de tabloïd)', chips: ['#F28AA6', '#E4E0D4', '#1B1D16', '#F2B630'], decor: 'papier journal, colonnes, gros chiffres', moment: 'le chiffre qui se compte sous tes yeux', left: '40px', top: '270px', rot: '7deg' },
+      { name: 'Course de frappe', mode: 'Solo ou salle', world: 'Le circuit', text: '#EFE8CC', body: '#2F3134', label: '#F2B630', ink: '#1B1D16', title: '#F2B630', font: "'VT323', monospace", size: '34px', bigSize: '44px', fontName: 'VT323 (terminal)', chips: ['#2F3134', '#F2B630', '#EFE8CC', '#7FB342'], decor: 'asphalte, couloirs numérotés, drapeau à damier', moment: 'le départ 3, 2, 1 et la ligne d’arrivée', left: '230px', top: '250px', rot: '-5deg' }
+    ];
+    var swatches = [
+      { name: 'Mousse', code: '#22261C', hex: '#22261C', on: '#EFE8CC', role: 'Fond de console', ratio: 'Parchemin dessus : 12,5:1', flex: 5 },
+      { name: 'Lichen', code: '#333828', hex: '#333828', on: '#EFE8CC', role: 'Surfaces sombres', ratio: 'Parchemin dessus : 9,8:1', flex: 3 },
+      { name: 'Parchemin', code: '#EFE8CC', hex: '#EFE8CC', on: '#1B1D16', role: 'Panneaux, texte clair', ratio: 'Encre dessus : 13,9:1', flex: 4 },
+      { name: 'Papier ombré', code: '#D8CFAC', hex: '#D8CFAC', on: '#1B1D16', role: 'Bords, zones calmes', ratio: 'Encre dessus : 10,9:1', flex: 2 },
+      { name: 'Encre', code: '#1B1D16', hex: '#1B1D16', on: '#EFE8CC', role: 'Texte, bords, épaisseurs', ratio: '', flex: 2 },
+      { name: 'Bouton d’or', code: '#F2B630', hex: '#F2B630', on: '#1B1D16', role: 'Action principale', ratio: 'Encre dessus : 9,3:1', flex: 2 },
+      { name: 'Faïence', code: '#2E63B8', hex: '#2E63B8', on: '#FFFFFF', role: 'Focus, liens, info', ratio: 'Blanc dessus : 5,8:1', flex: 1.4 },
+      { name: 'Bonbon', code: '#F28AA6', hex: '#F28AA6', on: '#1B1D16', role: 'Toi, nouveautés', ratio: 'Encre dessus : 7,3:1', flex: 1.4 },
+      { name: 'Pomme', code: '#7FB342', hex: '#7FB342', on: '#1B1D16', role: 'Juste, gagné, prêt', ratio: 'Encre dessus : 6,8:1', flex: 1.4 },
+      { name: 'Brique', code: '#B83A24', hex: '#B83A24', on: '#EFE8CC', role: 'Faux, danger, imposteur', ratio: 'Parchemin dessus : 4,7:1', flex: 1.4 }
+    ];
+    var scale = [
+      { px: '12px', label: '12 note', font: "'Bricolage Grotesque', sans-serif" },
+      { px: '14px', label: '14 petit', font: "'Bricolage Grotesque', sans-serif" },
+      { px: '16px', label: '16 texte', font: "'Bricolage Grotesque', sans-serif" },
+      { px: '20px', label: '20 accroche', font: "'Bricolage Grotesque', sans-serif" },
+      { px: '26px', label: '26 titre 4', font: "'Bricolage Grotesque', sans-serif" },
+      { px: '34px', label: '34 titre 3', font: "'Pixelify Sans', monospace" },
+      { px: '48px', label: '48 titre 2', font: "'Pixelify Sans', monospace" },
+      { px: '72px', label: '72 titre 1', font: "'Pixelify Sans', monospace" },
+      { px: '120px', label: '120 affiche', font: "'Pixelify Sans', monospace" }
+    ];
+    var tone = [
+      { yes: 'Choisis ton jeu. On ne juge pas. Enfin, un peu.', no: 'Bienvenue sur notre plateforme de divertissement !' },
+      { yes: 'Ce code de salle n’existe pas. Vérifie les 4 lettres avec l’hôte.', no: 'Oups ! Une erreur est survenue.' },
+      { yes: 'Démasqué. Léa avait « Pain au chocolat ».', no: 'Félicitations !!! Vous avez gagné 🎉' },
+      { yes: 'Raté. Il te manquait 23 mots, on te les montre.', no: '💔 Dommage !' },
+      { yes: 'Aucune chanson pour « zzz ». Essaie un artiste ou un mot du titre.', no: 'Aucun résultat.' }
+    ];
+    return { carts: carts, swatches: swatches, scale: scale, tone: tone };
+  }
+}
+</script>
+</body>
+</html>

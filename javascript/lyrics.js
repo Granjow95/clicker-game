@@ -1,4 +1,4 @@
-// ======= 📁 javascript/lyrics.js =======
+// ======= javascript/lyrics.js =======
 
 window.LYRICS_SONGS = [];
 
@@ -408,19 +408,22 @@ function normalizeLyricsWord(str) {
 /* ============================================================
    TOAST
 ============================================================ */
+// Alias conservé pour les appelants existants (lyrics, karaoke, account) : délègue à granUI.toast.
 function showToast(msg, isError = true) {
-  let t = document.getElementById('ls-toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'ls-toast';
-    t.className = 'ls-toast';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.className   = `ls-toast${isError ? ' ls-toast-error' : ''} show`;
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), 3500);
+  granUI.toast(msg, { type: isError ? 'erreur' : 'succes' });
 }
+
+/* ============================================================
+   ÉCRANS : un seul visible à la fois (choix, partie, victoire, défaite).
+   Appelé par app.js (routeur) : lyricsShowPage(null) les masque tous.
+============================================================ */
+window.lyricsShowPage = id => {
+  ['lyrics-select', 'lyrics-game', 'lyrics-win', 'lyrics-lose'].forEach(p => {
+    const n = document.getElementById(p);
+    if (n) n.hidden = p !== id;
+  });
+  if (id) granUI.focusScreen(document.getElementById(id));
+};
 
 /* ============================================================
    PAGE SÉLECTION
@@ -443,6 +446,7 @@ function showToast(msg, isError = true) {
   let _debounce = null;
   let _gen      = 0;
   let _loading  = false;
+  let _error    = false; // le chargement des tendances n'a rien renvoyé (réseau)
   let _topSongs = []; // chansons du top chargées au démarrage → recherche locale instantanée
 
   /* ---- COVER LAZY : iTunes en fallback pour les chansons sans image ---- */
@@ -474,12 +478,11 @@ function showToast(msg, isError = true) {
     if (!wrap) return;
     const img = document.createElement('img');
     img.className = 'ls-cover';
-    img.src = url;
+    if (/^https:\/\//i.test(url)) { img.referrerPolicy = 'no-referrer'; img.src = url; }
     img.alt = '';
     img.onerror = () => { img.remove(); wrap.classList.add('ls-cover-empty'); };
     wrap.classList.remove('ls-cover-empty');
-    wrap.innerHTML = '';
-    wrap.appendChild(img);
+    wrap.replaceChildren(img);
   }
 
   /* ---- BANNIÈRE ---- */
@@ -490,6 +493,7 @@ function showToast(msg, isError = true) {
         b = document.createElement('p');
         b.id = 'ls-loading-banner';
         b.className = 'ls-loading-banner';
+        b.setAttribute('role', 'status');
         els.grid.parentNode.insertBefore(b, els.grid);
       }
       b.textContent = msg;
@@ -516,8 +520,8 @@ function showToast(msg, isError = true) {
       if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
     }
 
-    fill(els.genre,  genres,  'Tous les genres');
-    fill(els.artist, artists, 'Tous les artistes');
+    fill(els.genre,  genres,  'Tous genres');
+    fill(els.artist, artists, 'Tous artistes');
 
     const prev = els.year.value;
     els.year.innerHTML = '';
@@ -548,25 +552,64 @@ function showToast(msg, isError = true) {
     return list;
   }
 
+  /* État vide de la grille : titre, texte, action facultative (.etat du design) */
+  function etat(titre, texte, actionLabel, onAction) {
+    const box = document.createElement('div');
+    box.className = 'etat ls-etat';
+    const h = document.createElement('p');
+    h.className = 'etat__titre';
+    h.textContent = titre;
+    const t = document.createElement('p');
+    t.className = 'etat__texte';
+    t.textContent = texte;
+    box.append(h, t);
+    if (actionLabel) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'key key--secondaire key--compact ls-etat__action';
+      btn.textContent = actionLabel;
+      btn.addEventListener('click', onAction);
+      box.appendChild(btn);
+    }
+    return box;
+  }
+
   function renderGrid() {
     initFilters();
     const data = getFiltered();
-    els.grid.innerHTML = '';
+    els.grid.replaceChildren();
+    els.grid.setAttribute('aria-busy', _loading ? 'true' : 'false');
 
     if (data.length === 0) {
-      const div = document.createElement('div');
-      div.className = 'ls-empty';
+      els.grid.classList.add('ls-grid--vide');
       if (_loading) {
-        div.textContent = '🎵 Chargement en cours…';
-      } else {
-        const q = els.search.value.trim();
-        div.textContent = q
-          ? 'Aucune chanson avec paroles disponibles pour cette recherche.'
-          : 'Tape un titre ou un artiste pour commencer.';
+        // Pochettes fantômes à la place de la grille
+        for (let i = 0; i < 6; i++) {
+          const f = document.createElement('span');
+          f.className = 'ls-fantome skel';
+          f.setAttribute('aria-hidden', 'true');
+          els.grid.appendChild(f);
+        }
+        els.grid.classList.remove('ls-grid--vide');
+        return;
       }
-      els.grid.appendChild(div);
+      if (_error) {
+        els.grid.appendChild(etat('Erreur réseau', 'Impossible de charger les chansons. Vérifie ta connexion.', 'Réessayer', () => doLoadTop()));
+        return;
+      }
+      const q = els.search.value.trim();
+      if (q) {
+        els.grid.appendChild(etat('Aucun résultat', `Aucune chanson pour « ${q} ». Essaie un artiste ou un mot du titre.`, 'Effacer la recherche', () => {
+          els.search.value = '';
+          els.search.dispatchEvent(new Event('input'));
+          els.search.focus();
+        }));
+      } else {
+        els.grid.appendChild(etat('Aucune chanson', 'Tape un titre ou un artiste pour commencer.'));
+      }
       return;
     }
+    els.grid.classList.remove('ls-grid--vide');
 
     data.forEach(s => {
       const card = document.createElement('button');
@@ -575,12 +618,15 @@ function showToast(msg, isError = true) {
       card.dataset.id = s.id;
       card.onclick = () => handleCardClick(s);
 
-      const coverWrap = document.createElement('div');
+      // Pochette réelle, ou vinyle généré (couleurs stables tirées du titre)
+      const coverWrap = document.createElement('span');
       coverWrap.className = 'ls-cover-wrap';
+      coverWrap.setAttribute('aria-hidden', 'true');
+      Object.entries(granUI.pochetteColors(s.title || '')).forEach(([k, v]) => coverWrap.style.setProperty(k, v));
       if (s.cover) {
         const img = document.createElement('img');
         img.className = 'ls-cover';
-        img.src = s.cover;
+        if (/^https:\/\//i.test(s.cover)) { img.referrerPolicy = 'no-referrer'; img.src = s.cover; }
         img.alt = '';
         img.onerror = () => { img.remove(); coverWrap.classList.add('ls-cover-empty'); };
         coverWrap.appendChild(img);
@@ -588,28 +634,19 @@ function showToast(msg, isError = true) {
         coverWrap.classList.add('ls-cover-empty');
       }
 
-      const mid = document.createElement('div');
+      const mid = document.createElement('span');
       mid.className = 'ls-mid';
 
-      const title = document.createElement('div');
+      const title = document.createElement('span');
       title.className = 'ls-title';
       title.textContent = s.title;
 
-      const sub = document.createElement('div');
+      const sub = document.createElement('span');
       sub.className = 'ls-sub';
-      const parts = [s.artist, s.genre, s.year].filter(Boolean);
-      sub.textContent = parts.join(' • ');
+      sub.textContent = [s.artist, s.year].filter(Boolean).join(' · ');
 
-      mid.appendChild(title); mid.appendChild(sub);
-
-      const right = document.createElement('div');
-      right.className = 'ls-right';
-      const chip = document.createElement('span');
-      chip.className = 'ls-chip';
-      chip.textContent = 'Jouer';
-      right.appendChild(chip);
-
-      card.appendChild(coverWrap); card.appendChild(mid); card.appendChild(right);
+      mid.append(title, sub);
+      card.append(coverWrap, mid);
       els.grid.appendChild(card);
 
       // Fetch cover en arrière-plan si manquante (lrclib n'en fournit pas)
@@ -620,9 +657,8 @@ function showToast(msg, isError = true) {
   /* ---- CLIC : paroles déjà en mémoire, démarrage instantané ---- */
   function handleCardClick(song) {
     const lyrics = song._lyrics;
-    if (!lyrics) { showToast(`Paroles indisponibles pour "${song.title}"`); return; }
-    document.getElementById('lyrics-select').style.display = 'none';
-    document.getElementById('lyrics-game').style.display   = 'block';
+    if (!lyrics) { showToast(`Paroles introuvables pour « ${song.title} ». Choisis-en une autre.`); return; }
+    window.lyricsShowPage('lyrics-game');
     if (typeof window.loadLyricsDirectly === 'function')
       window.loadLyricsDirectly(lyrics, song.title, song.artist);
   }
@@ -674,8 +710,6 @@ function showToast(msg, isError = true) {
     if (gen !== _gen) return;
     _loading = false;
     setBanner(null);
-    if (window.LYRICS_SONGS.length === 0)
-      setBanner('Aucune chanson avec paroles trouvée. Essaie un autre terme.');
     renderGrid();
   }
 
@@ -684,6 +718,7 @@ function showToast(msg, isError = true) {
     const gen = ++_gen;
     const ql  = query.toLowerCase();
     _loading  = true;
+    _error    = false;
 
     // 1. Résultats locaux immédiats : filtre sur les chansons déjà en mémoire (0ms)
     const local = _topSongs.filter(s =>
@@ -707,8 +742,6 @@ function showToast(msg, isError = true) {
 
     _loading = false;
     setBanner(null);
-    if (window.LYRICS_SONGS.length === 0)
-      setBanner('Aucune chanson avec paroles trouvée. Essaie un autre terme.');
     renderGrid();
   }
 
@@ -716,11 +749,19 @@ function showToast(msg, isError = true) {
     const gen = ++_gen;
     window.LYRICS_SONGS = [];
     _loading = true;
+    _error = false;
     setBanner('Chargement des tendances…');
     renderGrid();
 
     const songs = await topSongsWithCache();
     if (gen !== _gen) return;
+    if (!songs || songs.length === 0) {
+      _loading = false;
+      _error = true;
+      setBanner(null);
+      renderGrid();
+      return;
+    }
     _topSongs = songs; // Stockage pour la recherche locale instantanée
     await loadWithLyrics(songs, gen);
   }
@@ -745,7 +786,6 @@ function showToast(msg, isError = true) {
   }
 
   function wire() {
-    els.search.placeholder = 'Titre, artiste… (virgule pour plusieurs)';
     els.search.addEventListener('input', onSearchInput);
     els.genre.addEventListener('change',  renderGrid);
     els.artist.addEventListener('change', renderGrid);
@@ -758,11 +798,11 @@ function showToast(msg, isError = true) {
     if (!els.root) return;
     let wired = false;
     new MutationObserver(() => {
-      if (els.root.style.display !== 'none' && !wired) { wire(); wired = true; }
-    }).observe(els.root, { attributes: true, attributeFilter: ['style'] });
+      if (!els.root.hidden && !wired) { wire(); wired = true; }
+    }).observe(els.root, { attributes: true, attributeFilter: ['hidden'] });
   })();
 
-  // Appelé par navigation.js à chaque ouverture de la page Lyrics
+  // Appelé par app.js (routeur) à chaque ouverture de la page Lyrics
   window.renderLyricsSelection = () => {
     if (window.LYRICS_SONGS.length === 0 && !_loading) doLoadTop();
     else renderGrid();
@@ -770,15 +810,16 @@ function showToast(msg, isError = true) {
 })();
 
 /* ============================================================
-   PAGE JEU + FEUX D'ARTIFICES
+   PAGE JEU, VICTOIRE, DÉFAITE
 ============================================================ */
 (function gameModule() {
-  const $ = q => document.querySelector(q);
+  const byId = id => document.getElementById(id);
 
   let st = {
     tokens: [], isWord: [], revealed: [], map: new Map(),
-    totalWords: 0, title: '', artist: '',
+    totalWords: 0, title: '', artist: '', raw: '',
     finishedCelebrated: false, wasAbandoned: false,
+    wrong: 0, fresh: new Set(), missed: new Set(), startedAt: 0,
   };
 
   function safeFocus(el) {
@@ -786,9 +827,18 @@ function showToast(msg, isError = true) {
     try { el.focus({ preventScroll: true }); } catch (_) {}
   }
 
+  function focusTitle(page) {
+    const h = page && page.querySelector('h1');
+    if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  }
+
+  const countFound = () => st.revealed.reduce((n, v, i) => n + (v && st.isWord[i] ? 1 : 0), 0);
+
   function revealAllLyrics() {
     if (st.wasAbandoned) return;
     if (!st.finishedCelebrated) sendResult(false);
+    st.missed = new Set();
+    st.isWord.forEach((w, i) => { if (w && !st.revealed[i]) st.missed.add(i); });
     st.wasAbandoned = true;
     st.finishedCelebrated = true;
     for (let i = 0; i < st.revealed.length; i++) if (st.isWord[i]) st.revealed[i] = true;
@@ -798,24 +848,35 @@ function showToast(msg, isError = true) {
   // Résultat envoyé au serveur (joueurs connectés seulement ; le serveur ignore l'identité du client).
   function sendResult(won) {
     if (!granAuth.user() || !socket.connected) return;
-    const found = st.revealed.reduce((n, v, i) => n + (v && st.isWord[i] ? 1 : 0), 0);
+    const found = countFound();
     socket.emit('lyrics_result', {
       score: found, won, rounds: 1,
       durationS: Math.max(0, Math.round((Date.now() - (st.startedAt || Date.now())) / 1000)),
     });
   }
 
-  function showDefeatAnimation() {
-    if (document.getElementById('lyrics-defeat-overlay')) return;
-    const overlay = document.createElement('div');
-    overlay.id = 'lyrics-defeat-overlay';
-    overlay.innerHTML = `<div class="ld-center"><div class="ld-icon">💔</div><div class="ld-title">Dommage !</div><div class="ld-sub">Tu peux réessayer ou changer de chanson.</div></div>`;
-    document.body.appendChild(overlay);
-    const board = $('#lyrics-board');
-    board?.classList.add('ld-shake');
-    setTimeout(() => board?.classList.remove('ld-shake'), 700);
-    setTimeout(() => overlay.classList.add('out'), 1800);
-    setTimeout(() => overlay.remove(), 2400);
+  /* ---- Victoire : fond or, disque, temps et mots tapés pour rien ---- */
+  function showWin() {
+    const s = Math.max(0, Math.round((Date.now() - (st.startedAt || Date.now())) / 1000));
+    byId('lyrics-win-count').textContent = `${st.totalWords} mot${st.totalWords > 1 ? 's' : ''}`;
+    byId('lyrics-win-title').textContent = st.title || 'cette chanson';
+    byId('lyrics-win-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    byId('lyrics-win-wrong').textContent = String(st.wrong);
+    window.lyricsShowPage('lyrics-win');
+    focusTitle(byId('lyrics-win'));
+  }
+
+  /* ---- Défaite : paroles complètes, mots manquants en brique ---- */
+  function showDefeat() {
+    const miss = st.missed.size;
+    const found = st.totalWords - miss;
+    const p = byId('lyrics-lose-text');
+    const b = document.createElement('b');
+    b.textContent = `${found} sur ${st.totalWords}`;
+    p.replaceChildren('Tu en as trouvé ', b, miss > 1 ? `. Les ${miss} manquants sont en brique.` : '. Le mot manquant est en brique.');
+    renderTokens(byId('lyrics-lose-board'), true);
+    window.lyricsShowPage('lyrics-lose');
+    focusTitle(byId('lyrics-lose'));
   }
 
   function tokenize(text) {
@@ -850,118 +911,173 @@ function showToast(msg, isError = true) {
   }
 
   function updateProgress() {
-    const found = st.revealed.reduce((n, v, i) => n + (v && st.isWord[i] ? 1 : 0), 0);
-    const el    = document.getElementById('lyrics-progress');
+    const found = countFound();
+    const el    = byId('lyrics-progress');
     if (el) el.textContent = `${found}/${st.totalWords}`;
+    const bar = byId('lyrics-bar');
+    if (bar) {
+      bar.setAttribute('aria-valuemax', String(st.totalWords));
+      bar.setAttribute('aria-valuenow', String(found));
+      bar.style.setProperty('--ly-part', st.totalWords ? `${Math.round((found / st.totalWords) * 100)}%` : '0%');
+    }
     if (st.totalWords > 0 && found === st.totalWords && !st.finishedCelebrated && !st.wasAbandoned) {
       st.finishedCelebrated = true;
-      launchFireworks(2500);
       sendResult(true);
+      // Laisse voir le dernier mot se retourner avant l'écran de victoire
+      setTimeout(() => {
+        const g = byId('lyrics-game');
+        if (g && !g.hidden && st.finishedCelebrated && !st.wasAbandoned) showWin();
+      }, granUI.reducedMotion() ? 0 : 700);
     }
+  }
+
+  /* Une ligne de paroles = un bloc ; mots cachés = barres bleues de la longueur du mot */
+  function renderTokens(container, showMissed) {
+    if (!container) return;
+    const frag = document.createDocumentFragment();
+    const fresh = [];
+    const newLine = () => { const d = document.createElement('div'); d.className = 'ly-ligne'; return d; };
+    let ligne = newLine();
+    st.tokens.forEach((tok, i) => {
+      if (tok === '\n') { frag.appendChild(ligne); ligne = newLine(); return; }
+      if (tok === ' ') { ligne.appendChild(document.createTextNode(' ')); return; }
+      const span = document.createElement('span');
+      span.className = 'lyrics-token ly-mot';
+      if (st.revealed[i] && !(showMissed && st.missed.has(i)) && !st.fresh.has(i)) {
+        span.textContent = tok;
+      } else if (showMissed && st.missed.has(i)) {
+        span.classList.add('ly-mot--manque');
+        span.textContent = tok;
+      } else if (st.revealed[i]) { // mot qui vient d'être trouvé : se retourne
+        span.classList.add('mot--cache');
+        span.dataset.mot = tok;
+        span.style.setProperty('--n', Math.max(1, tok.replace(/'/g, '').length));
+        fresh.push(span);
+      } else if (st.isWord[i]) {
+        const len = tok.replace(/'/g, '').length;
+        span.classList.add('mot--cache');
+        span.style.setProperty('--n', Math.max(1, len));
+        span.title = `${len} lettre${len > 1 ? 's' : ''}`;
+        span.dataset.nword = normalizeLyricsWord(tok);
+      } else { span.textContent = tok; }
+      ligne.appendChild(span);
+    });
+    frag.appendChild(ligne);
+    container.replaceChildren(frag);
+    if (fresh.length) granUI.revealWords(fresh);
   }
 
   function renderBoard() {
-    const container = document.getElementById('lyrics-board');
-    if (!container) return;
-    container.innerHTML = '';
-    st.tokens.forEach((tok, i) => {
-      if (tok === '\n') { container.appendChild(document.createElement('br')); return; }
-      const span = document.createElement('span');
-      span.className = 'lyrics-token';
-      if (st.revealed[i]) {
-        span.classList.add('revealed'); span.textContent = tok;
-      } else if (st.isWord[i]) {
-        const len = tok.replace(/'/g, '').length;
-        span.classList.add('hidden');
-        span.textContent = '_'.repeat(Math.max(1, len));
-        span.title = `${len} lettre(s)`;
-        span.dataset.nword = normalizeLyricsWord(tok);
-      } else { span.textContent = tok; }
-      container.appendChild(span);
-    });
+    renderTokens(byId('lyrics-board'), false);
+    st.fresh.clear();
   }
 
-  function setError(msg) {
-    let fb = document.getElementById('lyrics-feedback');
-    if (!fb) {
-      fb = document.createElement('div');
-      fb.id = 'lyrics-feedback';
-      fb.className = 'lyrics-feedback hidden';
-      document.querySelector('.lyrics-input')?.parentNode?.insertBefore(fb, document.querySelector('.lyrics-input')?.nextSibling);
+  /* Message sous le champ : kind = 'erreur' (mot absent) ou 'info' (déjà trouvé) */
+  function setFeedback(msg, kind) {
+    const fb = byId('lyrics-feedback');
+    const input = byId('lyrics-guess');
+    if (fb) { fb.textContent = msg || ''; fb.hidden = !msg; fb.dataset.type = msg ? (kind || 'info') : ''; }
+    if (input) {
+      if (kind === 'erreur' && msg) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
     }
-    if (!msg) { fb.textContent = ''; fb.classList.add('hidden'); }
-    else       { fb.textContent = msg; fb.classList.remove('hidden'); }
   }
 
   function revealWordNormalized(nWord) {
     const indices = st.map.get(nWord);
     if (!indices) return 0;
     let newly = 0;
-    for (const i of indices) if (!st.revealed[i]) { st.revealed[i] = true; newly++; }
+    for (const i of indices) if (!st.revealed[i]) { st.revealed[i] = true; st.fresh.add(i); newly++; }
     return newly;
   }
 
   function processGuessLive() {
-    const input = document.getElementById('lyrics-guess');
+    const input = byId('lyrics-guess');
     const raw   = input?.value || '';
-    if (!raw) { setError(''); return; }
+    if (!raw) { setFeedback(''); return; }
 
     const endsWithBoundary = /\s$/.test(raw);
     const words = normalizeLyricsWord(raw).split(/\s+/).filter(Boolean);
-    if (!words.length) { setError(''); return; }
+    if (!words.length) { setFeedback(''); return; }
 
     let gained = 0;
     for (const w of words) gained += revealWordNormalized(w);
 
-    if (gained > 0) { updateProgress(); renderBoard(); input.value = ''; setError(''); }
-    else if (endsWithBoundary) { setError('Mot incorrect'); input.value = ''; }
-    else setError('');
+    if (gained > 0) { updateProgress(); renderBoard(); input.value = ''; setFeedback(''); return; }
+
+    const shown = raw.trim().split(/\s+/).pop();
+    const known = st.map.get(words[words.length - 1]);
+    if (known && words.every(w => st.map.has(w))) {
+      // Mot de la chanson déjà trouvé : on ne vide le champ qu'à la fin du mot (espace)
+      setFeedback(`« ${shown} » est déjà trouvé (${known.length} fois dans le texte).`, 'info');
+      if (endsWithBoundary) { st.wrong++; input.value = ''; }
+    } else if (endsWithBoundary) {
+      st.wrong++;
+      setFeedback(`« ${shown} » n'est pas dans la chanson.`, 'erreur');
+      granUI.shake(input);
+      input.value = '';
+    } else setFeedback('');
   }
 
   function initWithLyrics(raw, optTitle, optArtist) {
+    st.raw      = raw;
     st.tokens   = tokenize(raw);
     st.isWord   = new Array(st.tokens.length).fill(false);
     st.revealed = new Array(st.tokens.length).fill(false);
     st.startedAt = Date.now();
+    st.wrong    = 0;
+    st.fresh    = new Set();
+    st.missed   = new Set();
     st.title    = optTitle  || '';
     st.artist   = optArtist || '';
 
     buildIndex(); renderBoard();
 
-    const input = document.getElementById('lyrics-guess');
+    const input = byId('lyrics-guess');
     if (input) {
-      const t = st.title || 'Paroles';
-      const a = st.artist;
-      input.placeholder = `Tape un mot… (${t}${a ? ' — ' + a : ''})`;
+      input.disabled = false;
+      input.value = '';
       safeFocus(input);
     }
-    setError('');
+    setFeedback('');
 
-    const infoEl = document.getElementById('lyrics-song-info');
-    if (infoEl) infoEl.textContent = st.title ? `${st.title}${st.artist ? ' — ' + st.artist : ''}` : '';
+    // Bandeau chanson : vinyle (CSS), titre, artiste
+    const infoEl = byId('lyrics-song-info');
+    if (infoEl) {
+      const titre = document.createElement('span');
+      titre.className = 'ly-pochette__titre';
+      titre.textContent = st.title || 'Paroles';
+      const artiste = document.createElement('span');
+      artiste.className = 'ly-pochette__artiste';
+      artiste.textContent = st.artist;
+      const texte = document.createElement('span');
+      texte.className = 'ly-pochette__texte';
+      texte.append(titre, artiste);
+      infoEl.replaceChildren(texte);
+    }
 
-    const sb = document.getElementById('lyrics-submit');
-    if (sb) { sb.disabled = false; sb.classList.remove('disabled'); sb.textContent = 'Abandonner'; }
+    const sb = byId('lyrics-submit');
+    if (sb) { sb.disabled = false; sb.textContent = 'Abandonner'; }
   }
 
   function backToSelection() {
-    document.getElementById('lyrics-game').style.display   = 'none';
-    document.getElementById('lyrics-select').style.display = 'block';
+    window.lyricsShowPage('lyrics-select');
     if (window.renderLyricsSelection) window.renderLyricsSelection();
   }
 
   function wireGameUI() {
-    const submitBtn = document.getElementById('lyrics-submit');
-    const clearBtn  = document.getElementById('lyrics-clear');
-    const backBtn   = document.getElementById('lyrics-back-select');
-    const input     = document.getElementById('lyrics-guess');
-    const board     = document.getElementById('lyrics-board');
+    const submitBtn = byId('lyrics-submit');
+    const clearBtn  = byId('lyrics-clear');
+    const backBtn   = byId('lyrics-back-select');
+    const input     = byId('lyrics-guess');
+    const board     = byId('lyrics-board');
 
-    // Sentinelle + IntersectionObserver : ajoute l'ombre cartoon quand la barre colle en haut
+    // Sentinelle + IntersectionObserver : ombre de la barre quand elle colle en haut
     const stickyBar = document.querySelector('.lyrics-sticky-bar');
     if (stickyBar) {
       const sentinel = document.createElement('div');
       sentinel.className = 'lyrics-sticky-sentinel';
+      sentinel.setAttribute('aria-hidden', 'true');
       stickyBar.before(sentinel);
       new IntersectionObserver(
         ([entry]) => stickyBar.classList.toggle('is-stuck', !entry.isIntersecting),
@@ -971,88 +1087,52 @@ function showToast(msg, isError = true) {
 
     if (submitBtn) {
       submitBtn.textContent = 'Abandonner';
-      submitBtn.classList.add('btn-danger');
       submitBtn.onclick = e => {
         e.preventDefault();
-        revealAllLyrics(); showDefeatAnimation();
-        submitBtn.disabled = true; submitBtn.classList.add('disabled');
+        revealAllLyrics(); showDefeat();
+        submitBtn.disabled = true;
       };
     }
     input?.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
     input?.addEventListener('input', processGuessLive);
-    clearBtn?.addEventListener('click', () => { if (input) input.value = ''; setError(''); });
+    clearBtn?.addEventListener('click', () => { if (input) { input.value = ''; safeFocus(input); } setFeedback(''); });
     backBtn?.addEventListener('click', backToSelection);
 
     board?.addEventListener('click', e => {
       const t = e.target;
-      if (!t.classList.contains('lyrics-token') || !t.classList.contains('hidden')) return;
-      const gained = revealWordNormalized(t.dataset.nword || '');
-      if (gained > 0) { updateProgress(); renderBoard(); setError(''); }
+      if (!t.classList.contains('lyrics-token') || !t.classList.contains('mot--cache') || !t.dataset.nword) return;
+      const gained = revealWordNormalized(t.dataset.nword);
+      if (gained > 0) { updateProgress(); renderBoard(); setFeedback(''); }
+    });
+
+    // Écrans de fin
+    byId('lyrics-win-next')?.addEventListener('click', backToSelection);
+    byId('lyrics-lose-other')?.addEventListener('click', backToSelection);
+    byId('lyrics-lose-retry')?.addEventListener('click', () => {
+      initWithLyrics(st.raw, st.title, st.artist);
+      window.lyricsShowPage('lyrics-game');
+      safeFocus(byId('lyrics-guess'));
+    });
+    byId('lyrics-win-review')?.addEventListener('click', () => {
+      window.lyricsShowPage('lyrics-game');
+      if (input) input.disabled = true;
+      if (submitBtn) submitBtn.disabled = true;
+      setFeedback('');
+      safeFocus(backBtn);
     });
   }
 
   (function observeView() {
-    const root = document.getElementById('lyrics-game');
+    const root = byId('lyrics-game');
     if (!root) return;
     let wired = false;
     new MutationObserver(() => {
-      if (root.style.display !== 'none' && !wired) { wireGameUI(); wired = true; }
-    }).observe(root, { attributes: true, attributeFilter: ['style'] });
+      if (!root.hidden && !wired) { wireGameUI(); wired = true; }
+    }).observe(root, { attributes: true, attributeFilter: ['hidden'] });
   })();
 
   // Appelé par la page sélection après confirmation des paroles
   window.loadLyricsDirectly = function(lyrics, title, artist) {
     initWithLyrics(lyrics, title, artist);
   };
-
-  /* ---- FEUX D'ARTIFICES ---- */
-  function launchFireworks(durationMs) {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'lyrics-fireworks-canvas';
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-    const DPR = Math.min(2, window.devicePixelRatio || 1);
-    let W, H, start = performance.now();
-
-    function resize() {
-      W = window.innerWidth; H = window.innerHeight;
-      canvas.style.cssText = `position:fixed;inset:0;pointer-events:none;z-index:9999;width:${W}px;height:${H}px`;
-      canvas.width = Math.floor(W * DPR); canvas.height = Math.floor(H * DPR);
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    }
-    resize();
-    window.addEventListener('resize', resize, { passive: true });
-
-    const particles = [];
-    function burst(x, y) {
-      const n = 55 + Math.floor(Math.random() * 25);
-      for (let i = 0; i < n; i++) {
-        const angle = (Math.PI * 2 * i) / n + Math.random() * 0.2;
-        const speed = 2 + Math.random() * 4;
-        particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-          life: 0, maxLife: 55 + Math.random() * 35,
-          color: `hsl(${Math.floor(Math.random() * 360)},85%,60%)`, size: 2 + Math.random() * 2 });
-      }
-    }
-    function randomBurst() { burst(W * (0.1 + Math.random() * 0.8), H * (0.1 + Math.random() * 0.5)); }
-    for (let i = 0; i < 3; i++) randomBurst();
-
-    let lastT = start;
-    function tick(t) {
-      const elapsed = t - start, dt = Math.min(33, t - lastT); lastT = t;
-      ctx.clearRect(0, 0, W, H);
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.life += dt / 16; p.x += p.vx; p.y += p.vy; p.vy += 0.04;
-        ctx.globalAlpha = Math.max(0, 1 - p.life / p.maxLife);
-        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
-        if (p.life >= p.maxLife) particles.splice(i, 1);
-      }
-      ctx.globalAlpha = 1;
-      if (elapsed < durationMs) { if (Math.random() < 0.07) randomBurst(); requestAnimationFrame(tick); }
-      else if (particles.length > 0) requestAnimationFrame(tick);
-      else { window.removeEventListener('resize', resize); canvas.remove(); }
-    }
-    requestAnimationFrame(tick);
-  }
 })();

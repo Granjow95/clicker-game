@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lyrics, partie (ordinateur)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Shrikhand&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.lined{background-color:#F6F0D8;background-image:repeating-linear-gradient(transparent 0 37px,#C9D6EE 37px 39px)}
+.vinyl{border-radius:50%;background:repeating-radial-gradient(#1B1D16 0 2px,#2A2C24 2px 5px)}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer;text-decoration:none}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #F2B630;outline-offset:3px}
+.fld{height:56px;box-sizing:border-box;width:100%;background:#EFE8CC;color:#1B1D16;border:3px solid #1B1D16;border-radius:6px;padding:0 16px;font:400 20px 'Bricolage Grotesque',sans-serif}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1.6s linear infinite}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+</style>
+</helmet>
+<div style="min-height: 1080px; background: #2E63B8; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif">
+  <div style="max-width: 1320px; margin: 0 auto; padding: 12px 24px 0">
+    <header style="background: rgba(0,0,0,.2); border: 2px solid #4F80CC; border-radius: 16px; padding: 6px 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+      <a href="#/lyrics" class="key" style="display: flex; align-items: center; gap: 8px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 14px 0 10px; height: 44px; box-shadow: 0 3px 0 #000; font-weight: 600; font-size: 15px"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"/></svg>Chansons</a>
+      <nav aria-label="Fil d'Ariane" style="font-size: 15px; display: flex; gap: 8px; color: #D6E2F7"><span style="font-family: 'Pixelify Sans', monospace; color: #EFE8CC">Gran'Games</span><span aria-hidden="true">/</span><span>Lyrics</span><span aria-hidden="true">/</span><span aria-current="page" style="color: #EFE8CC; font-weight: 600">Le Bus de minuit</span></nav>
+      <button type="button" aria-label="Compte" class="key" style="margin-left: auto; width: 44px; height: 44px; background: #F28AA6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 700 18px 'Pixelify Sans', monospace">A</button>
+    </header>
+  </div>
+
+  <main style="max-width: 1320px; margin: 0 auto; padding: 32px 24px 0; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start">
+    <aside style="flex: 1 1 300px; max-width: 360px; display: flex; flex-direction: column; gap: 18px">
+      <div style="position: relative; aspect-ratio: 1; background: #F2B630; border: 4px solid #1B1D16; box-shadow: 0 8px 0 #1B1D16">
+        <span aria-hidden="true" class="vinyl spin" style="position: absolute; inset: 10% -14% 10% 34%"></span>
+        <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: #F2B630; border-right: 4px solid #1B1D16; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; color: #1B1D16">
+          <span style="font-family: 'Shrikhand', serif; font-size: 34px; line-height: 1">Le Bus de minuit</span>
+          <span style="font-weight: 600; margin-top: 6px">Les Néons Tièdes</span>
+        </span>
+      </div>
+      <div style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-weight: 600">Mots trouvés</span><span style="font: 700 34px 'Pixelify Sans', monospace">48/180</span></div>
+        <span role="progressbar" aria-label="Mots trouvés" aria-valuemin="0" aria-valuemax="180" aria-valuenow="48" style="height: 14px; background: #EFE8CC; border: 2px solid #1B1D16; position: relative"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 27%; background: #2E63B8"></span></span>
+        <label for="ld-w" style="font-weight: 600; font-size: 15px">Tape un mot, puis Entrée</label>
+        <div style="display: flex; gap: 8px">
+          <input id="ld-w" class="fld" value="minuit" aria-describedby="ld-m">
+          <button type="button" aria-label="Effacer le mot" class="key" style="flex: 0 0 56px; height: 56px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; display: grid; place-items: center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
+        </div>
+        <span id="ld-m" role="status" style="font-size: 15px; font-weight: 600">« minuit » est déjà trouvé (3 fois dans le texte).</span>
+      </div>
+      <button class="key" type="button" style="height: 52px; background: transparent; color: #EFE8CC; border: 3px solid #EFE8CC; border-radius: 10px; font: 600 16px 'Bricolage Grotesque', sans-serif">Abandonner et voir les paroles</button>
+    </aside>
+
+    <section aria-label="Paroles" class="lined" style="flex: 999 1 560px; min-width: 0; color: #1B1D16; border: 4px solid #1B1D16; padding: 20px 28px; columns: 2 300px; column-gap: 40px; min-height: 640px; box-sizing: border-box">
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="16">
+        <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center; min-height: 39px; break-inside: avoid">
+          <sc-for list="{{l}}" as="w" hint-placeholder-count="5">
+            <span style="display: inline-block; height: 26px; line-height: 26px; min-width: {{w.width}}; font-weight: 800; font-size: 20px; background: {{w.bg}}; border-radius: 3px; padding: 0 2px">{{w.shown}}</span>
+          </sc-for>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+
+  <section aria-label="États" style="max-width: 1320px; margin: 0 auto; padding: 40px 24px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px">
+    <div style="background: #1B3E7A; border: 2px solid #4F80CC; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-weight: 800">Recherche en cours</span>
+      <span style="display: flex; gap: 6px"><span style="flex: 1; aspect-ratio: 1; background: #3A6BC0"></span><span style="flex: 1; aspect-ratio: 1; background: #3A6BC0"></span><span style="flex: 1; aspect-ratio: 1; background: #3A6BC0"></span></span>
+      <span style="font-size: 14px; color: #D6E2F7">Pochettes fantômes à la place de la grille.</span>
+    </div>
+    <div style="background: #1B3E7A; border: 2px solid #4F80CC; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-weight: 800">Aucun résultat</span>
+      <span style="font-size: 15px; line-height: 1.45">Aucune chanson pour « zzz ». Essaie un artiste ou un mot du titre.</span>
+      <a href="#" style="font-weight: 600; font-size: 15px">Effacer la recherche</a>
+    </div>
+    <div style="background: #1B3E7A; border: 2px solid #4F80CC; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-weight: 800">Paroles introuvables</span>
+      <span style="font-size: 15px; line-height: 1.45">On a la chanson, mais pas ses paroles. Choisis-en une autre, celle-ci disparaît de la liste.</span>
+    </div>
+    <div style="background: #1B3E7A; border: 2px solid #4F80CC; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-weight: 800">Erreur réseau</span>
+      <span style="font-size: 15px; line-height: 1.45">Impossible de charger les chansons. Vérifie ta connexion.</span>
+      <button class="key" type="button" style="align-self: flex-start; height: 44px; padding: 0 14px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 600 15px 'Bricolage Grotesque', sans-serif">Réessayer</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var raw = [
+      'Je cours après le bus de minuit', 'Il part toujours quand j’arrive', 'La ville dort, moi je cours encore', 'Le chauffeur rit dans son rétro',
+      'Et moi je chante sous la pluie', 'Je cours après le bus de minuit', 'Mes chaussures prennent l’eau', 'Demain promis je pars plus tôt',
+      'Demain promis, demain peut-être', 'Le bus de minuit me fait des signes', 'Les néons tièdes clignotent', 'Sur le trottoir il reste un ticket',
+      'Je le ramasse comme un trophée', 'Il part toujours quand j’arrive', 'Je cours après le bus de minuit', 'Et le bus, lui, ne court jamais'
+    ];
+    var found = { je: 1, le: 1, bus: 1, de: 1, minuit: 1, et: 1, moi: 1, cours: 1, après: 1, il: 1, part: 1, toujours: 1, quand: 1, demain: 1, la: 1, un: 1 };
+    var lines = raw.map(function (l) {
+      return l.split(' ').map(function (w) {
+        var k = w.toLowerCase().replace(/[,.]/g, '');
+        var f = !!found[k];
+        return { shown: f ? w : '', width: f ? '0px' : (Math.max(2, w.length) * 0.6) + 'em', bg: f ? 'transparent' : '#2E63B8' };
+      });
+    });
+    return { lines: lines };
+  }
+}
+</script>
+</body>
+</html>

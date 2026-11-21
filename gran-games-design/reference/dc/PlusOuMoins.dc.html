@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Plus ou Moins, parcours téléphone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Anton&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1D16}a:hover{color:#B83A24}
+.news{background-color:#E4E0D4;background-image:radial-gradient(rgba(27,29,22,.08) 1px,transparent 1.2px);background-size:5px 5px}
+.phone{width:390px;height:844px;border-radius:40px;border:3px solid #000;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:0 12px 0 rgba(0,0,0,.35)}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer;text-decoration:none}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.back{display:flex;align-items:center;gap:6px;height:44px;padding:0 12px 0 8px;background:#EFE8CC;color:#1B1D16;border:3px solid #1B1D16;border-radius:10px;box-shadow:0 3px 0 #000;font-weight:600;font-size:15px}
+</style>
+</helmet>
+<div style="width: 1394px; height: 1060px; box-sizing: border-box; padding: 56px 64px; background: #C2577A; font-family: 'Bricolage Grotesque', sans-serif; color: #1B1D16; display: flex; gap: 48px">
+
+  <div style="display: flex; flex-direction: column; gap: 16px">
+    <p style="margin: 0; font-weight: 700">1. Départ</p>
+    <div class="phone news">
+      <div style="padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 3px solid #1B1D16">
+        <a href="#/" class="key back"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"/></svg>Accueil</a>
+        <span style="font-family: 'Pixelify Sans', monospace; font-size: 15px">Gran'Games / Plus ou Moins</span>
+      </div>
+      <div style="padding: 12px 18px 0; display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; border-bottom: 2px solid #1B1D16; padding-bottom: 8px"><span>Édition du jour</span><span>Prix : gratuit</span></div>
+      <div style="flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 16px">
+        <h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 92px; line-height: 0.9">Plus<br><span style="background: #F28AA6; padding: 0 8px">ou</span><br>Moins</h1>
+        <p style="margin: 0; font-size: 19px; line-height: 1.4; font-weight: 600; border-top: 3px solid #1B1D16; padding-top: 12px">Deux choses du quotidien. Laquelle a le plus ? Une bonne réponse prolonge la série, une erreur la termine.</p>
+        <div style="display: flex; gap: 10px">
+          <div style="flex: 1; border: 3px solid #1B1D16; padding: 10px; background: #EFE8CC"><span style="font-size: 13px; font-weight: 600">Ton record</span><br><span style="font: 400 40px 'Anton', sans-serif">12</span></div>
+          <div style="flex: 1; border: 3px solid #1B1D16; padding: 10px"><span style="font-size: 13px; font-weight: 600">Thèmes</span><br><span style="font-size: 15px; line-height: 1.3">Population, prix, durée, taille</span></div>
+        </div>
+        <button class="key" type="button" style="margin-top: auto; height: 60px; background: #1B1D16; color: #F28AA6; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #8A3C55; font: 400 26px 'Anton', sans-serif">Lancer une série</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px">
+    <p style="margin: 0; font-weight: 700">2. Jeu (chiffre du haut révélé)</p>
+    <div class="phone news">
+      <div style="padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 3px solid #1B1D16">
+        <button type="button" aria-label="Quitter la série" class="key" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; display: grid; place-items: center"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true" fill="none" stroke="#1B1D16" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"/></svg></button>
+        <span style="flex: 1; font-family: 'Pixelify Sans', monospace; font-size: 15px">Plus ou Moins</span>
+        <span style="background: #F28AA6; border: 3px solid #1B1D16; border-radius: 8px; padding: 4px 10px; font: 400 22px 'Anton', sans-serif">Série 7</span>
+      </div>
+      <article style="flex: 1; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; gap: 4px; border-bottom: 3px solid #1B1D16; background: #EFE8CC">
+        <span style="font-size: 14px; font-weight: 600">Hauteur de</span>
+        <h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 38px; line-height: 1">La tour Eiffel</h2>
+        <p style="margin: 6px 0 0; font-family: 'Anton', sans-serif; font-size: 84px; line-height: 0.95; font-variant-numeric: tabular-nums">330 m</p>
+        <span style="font-size: 12px; color: #4A4A38">Source : [à renseigner dans les données]</span>
+      </article>
+      <div aria-hidden="true" style="height: 0; position: relative"><span style="position: absolute; left: 50%; top: -30px; margin-left: -34px; width: 60px; height: 60px; background: #1B1D16; color: #F28AA6; border-radius: 50%; display: grid; place-items: center; font: 400 22px 'Anton', sans-serif; border: 4px solid #E4E0D4">ou</span></div>
+      <article style="flex: 1; padding: 30px 18px 16px; display: flex; flex-direction: column; gap: 4px; background: #F28AA6">
+        <span style="font-size: 14px; font-weight: 600">Hauteur de</span>
+        <h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 38px; line-height: 1">Big Ben (tour Elizabeth)</h2>
+        <p style="margin: 6px 0 0; font-family: 'Anton', sans-serif; font-size: 56px; line-height: 1">? m</p>
+        <div style="margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <button class="key" type="button" style="height: 64px; background: #1B1D16; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #8A3C55; font: 400 22px 'Anton', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 7 7" aria-hidden="true" shape-rendering="crispEdges"><path d="M3 0h1v1h1v1h1v1h1v1H5v3H2V4H0V3h1V2h1V1h1z" fill="#EFE8CC"/></svg>Plus haut</button>
+          <button class="key" type="button" style="height: 64px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #8A3C55; font: 400 22px 'Anton', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 7 7" aria-hidden="true" shape-rendering="crispEdges"><path d="M2 0h3v3h2v1H6v1H5v1H4v1H3V6H2V5H1V4H0V3h2z" fill="#1B1D16"/></svg>Moins haut</button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px">
+    <p style="margin: 0; font-weight: 700">3. Fin de série</p>
+    <div class="phone news">
+      <div style="padding: 12px 18px 8px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; border-bottom: 3px solid #1B1D16"><span>Dernière minute</span><span>Plus ou Moins</span></div>
+      <div style="flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 16px">
+        <h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 64px; line-height: 0.95">La série s'arrête à 7</h1>
+        <p style="margin: 0; font-size: 17px; line-height: 1.45; border-left: 6px solid #B83A24; padding-left: 12px">Big Ben fait <b>96 m</b>. Tu as dit plus haut que la tour Eiffel. Audacieux.</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <div style="border: 3px solid #1B1D16; padding: 12px; background: #F28AA6"><span style="font-size: 13px; font-weight: 600">Cette série</span><br><span style="font: 400 52px 'Anton', sans-serif; line-height: 1">7</span></div>
+          <div style="border: 3px solid #1B1D16; padding: 12px; background: #EFE8CC"><span style="font-size: 13px; font-weight: 600">Ton record</span><br><span style="font: 400 52px 'Anton', sans-serif; line-height: 1">12</span></div>
+        </div>
+        <p style="margin: 0; font-size: 15px; color: #4A4A38">Record battu : le bloc « Ton record » passe en bouton d'or et l'ancien chiffre est barré.</p>
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+          <button class="key" type="button" style="height: 60px; background: #1B1D16; color: #F28AA6; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #8A3C55; font: 400 26px 'Anton', sans-serif">Rejouer</button>
+          <a href="#/" class="key" style="height: 52px; display: flex; align-items: center; justify-content: center; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif">Autre jeu</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1394,"height":1060}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

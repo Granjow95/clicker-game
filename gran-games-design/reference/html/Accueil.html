@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gran'Games, accueil</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Special+Elite&amp;family=Shrikhand&amp;family=Bungee&amp;family=Anton&amp;family=VT323&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.cart{clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,0 100%)}
+.ridges{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 6px,transparent 6px 12px)}
+.pins{background-image:repeating-linear-gradient(90deg,#C9A64A 0 10px,transparent 10px 16px)}
+.px{clip-path:polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px))}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible,.slot:focus-visible,.row:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.slot{transition:transform 220ms cubic-bezier(.23,1,.32,1);text-decoration:none}
+.row{transition:background-color 200ms ease;text-decoration:none}
+@media (hover:hover) and (pointer:fine){.slot:hover{transform:translateY(-14px) rotate(0deg) !important}.row:hover .go{background:#F2B630}}
+@media (prefers-reduced-motion: reduce){.slot,.key{transition:none}.slot:hover{transform:none !important}}
+</style>
+</head>
+<body>
+<div class="ground" style="min-height: 3000px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif">
+<div style="max-width: 1320px; margin: 0 auto; padding: 16px 24px 0">
+<header style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 16px; padding: 10px 12px 10px 18px; display: flex; align-items: center; gap: 16px 24px; flex-wrap: wrap">
+<a href="#/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #EFE8CC">
+<svg aria-hidden="true" height="30" viewbox="0 0 26 30" width="26"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"></path><rect fill="#1B1D16" height="12" width="18" x="4" y="9"></rect><rect fill="#1B1D16" height="5" width="3" x="5" y="25"></rect><rect fill="#1B1D16" height="5" width="3" x="11" y="25"></rect><rect fill="#1B1D16" height="5" width="3" x="17" y="25"></rect></svg>
+<span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 26px">Gran'Games</span>
+</a>
+<nav aria-label="Navigation principale" style="display: flex; gap: 4px; background: #333828; border-radius: 10px; padding: 4px; margin-left: auto">
+<a aria-current="page" href="#/" style="padding: 10px 18px; border-radius: 7px; background: #EFE8CC; color: #1B1D16; text-decoration: none; font-weight: 600">Accueil</a>
+<a href="#/jeux" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600">Jeux</a>
+<a href="#/nouveautes" style="padding: 10px 18px; border-radius: 7px; color: #EFE8CC; text-decoration: none; font-weight: 600">Nouveautés</a>
+</nav>
+<button class="key" style="display: flex; align-items: center; gap: 10px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; padding: 0 16px; height: 48px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">
+<svg aria-hidden="true" height="18" shape-rendering="crispEdges" viewbox="0 0 9 9" width="18"><path d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z" fill="#1B1D16"></path></svg>
+        Compte
+      </button>
+</header>
+</div>
+<main>
+<section style="max-width: 1320px; margin: 0 auto; padding: 72px 24px 0; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-wrap: wrap; gap: 24px 64px; align-items: end; justify-content: space-between">
+<h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: clamp(80px, 13vw, 208px); line-height: 0.82; letter-spacing: -0.02em">Gran'<br/>Games</h1>
+<div style="flex: 1 1 340px; max-width: 460px; display: flex; flex-direction: column; gap: 24px; padding-bottom: 12px">
+<p style="margin: 0; font-size: 24px; line-height: 1.35; font-weight: 600; font-variation-settings: 'opsz' 32">Des petits jeux pour se chamailler entre amis, directement dans le navigateur.</p>
+<p style="margin: 0; font-size: 17px; line-height: 1.55; color: #D8CFAC">Pas de pub. Pas de compte obligatoire : un pseudo suffit. Prends une cartouche.</p>
+</div>
+</div>
+<div style="position: relative; padding-top: 40px">
+<ul aria-label="Les jeux" style="list-style: none; margin: 0; padding: 0 2% ; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1">
+
+<li style="flex: 1 1 180px; max-width: 228px">
+<a aria-label="Jouer à Imposteur" class="slot cart" href="#/imposteur" style="display: flex; flex-direction: column; height: 290px; background: #1E4D3B; transform: rotate(-5deg); color: #1B1D16">
+<span class="ridges" style="height: 20px; display: block"></span>
+<span style="margin: 10px 14px 0; flex: 1; background: #EFE8CC; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+<span style="font-family: 'Special Elite', monospace; font-size: 28px; line-height: 1; color: #1B1D16">Imposteur</span>
+<span aria-hidden="true" style="flex: 1; display: grid; place-items: center">
+
+<svg height="56" shape-rendering="crispEdges" viewbox="0 0 30 14" width="120"><g fill="#1E4D3B"><rect height="5" width="4" x="1" y="4"></rect><rect height="5" width="4" x="7" y="4"></rect><rect height="5" width="4" x="13" y="4"></rect><rect height="5" width="4" x="25" y="4"></rect></g><rect fill="#B83A24" height="6" width="4" x="19" y="3"></rect><rect fill="#1B1D16" height="1" width="6" x="18" y="2"></rect><g fill="#1B1D16"><rect height="1" width="1" x="2" y="6"></rect><rect height="1" width="1" x="8" y="6"></rect><rect height="1" width="1" x="14" y="6"></rect><rect height="1" width="1" x="26" y="6"></rect><rect height="1" width="1" x="21" y="5"></rect><rect height="1" width="1" x="22" y="5"></rect></g><g fill="#1E4D3B"><rect height="4" width="4" x="1" y="10"></rect><rect height="4" width="4" x="7" y="10"></rect><rect height="4" width="4" x="13" y="10"></rect><rect height="4" width="4" x="25" y="10"></rect></g><rect fill="#B83A24" height="4" width="4" x="19" y="10"></rect></svg>
+
+
+
+
+
+</span>
+<span style="font-size: 13px; font-weight: 600">En salle</span>
+</span>
+<span class="pins" style="height: 16px; margin: 10px 24px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 1 1 180px; max-width: 228px">
+<a aria-label="Jouer à Lyrics" class="slot cart" href="#/lyrics" style="display: flex; flex-direction: column; height: 290px; background: #2E63B8; transform: rotate(3deg); color: #1B1D16">
+<span class="ridges" style="height: 20px; display: block"></span>
+<span style="margin: 10px 14px 0; flex: 1; background: #F2B630; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+<span style="font-family: 'Shrikhand', serif; font-size: 34px; line-height: 1; color: #1B1D16">Lyrics</span>
+<span aria-hidden="true" style="flex: 1; display: grid; place-items: center">
+
+
+<span style="display: flex; flex-direction: column; gap: 6px; width: 100%">
+<span style="display: flex; gap: 5px"><span style="height: 10px; flex: 2; background: #1B1D16"></span><span style="height: 10px; flex: 1; background: #2E63B8"></span><span style="height: 10px; flex: 3; background: #1B1D16"></span></span>
+<span style="display: flex; gap: 5px"><span style="height: 10px; flex: 1; background: #1B1D16"></span><span style="height: 10px; flex: 3; background: #1B1D16"></span><span style="height: 10px; flex: 1; background: #2E63B8"></span></span>
+<span style="display: flex; gap: 5px"><span style="height: 10px; flex: 3; background: #2E63B8"></span><span style="height: 10px; flex: 2; background: #1B1D16"></span></span>
+</span>
+
+
+
+
+</span>
+<span style="font-size: 13px; font-weight: 600">Solo</span>
+</span>
+<span class="pins" style="height: 16px; margin: 10px 24px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 1 1 180px; max-width: 228px">
+<a aria-label="Jouer à Karaoké" class="slot cart" href="#/karaoke" style="display: flex; flex-direction: column; height: 290px; background: #6E1A1F; transform: rotate(-2deg); color: #6E1A1F">
+<span class="ridges" style="height: 20px; display: block"></span>
+<span style="margin: 10px 14px 0; flex: 1; background: #F2B630; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+<span style="font-family: 'Bungee', sans-serif; font-size: 26px; line-height: 1; color: #6E1A1F">Karaoké</span>
+<span aria-hidden="true" style="flex: 1; display: grid; place-items: center">
+
+
+
+<svg height="64" shape-rendering="crispEdges" viewbox="0 0 16 16" width="64"><rect fill="#6E1A1F" height="7" width="4" x="6" y="1"></rect><rect fill="#F2B630" height="1" width="2" x="7" y="2"></rect><rect fill="#6E1A1F" height="3" width="1" x="4" y="6"></rect><rect fill="#6E1A1F" height="3" width="1" x="11" y="6"></rect><rect fill="#6E1A1F" height="1" width="6" x="5" y="9"></rect><rect fill="#6E1A1F" height="4" width="2" x="7" y="10"></rect><rect fill="#6E1A1F" height="1" width="6" x="5" y="14"></rect></svg>
+
+
+
+</span>
+<span style="font-size: 13px; font-weight: 600">Solo ou en salle</span>
+</span>
+<span class="pins" style="height: 16px; margin: 10px 24px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 1 1 180px; max-width: 228px">
+<a aria-label="Jouer à Plus ou Moins" class="slot cart" href="#/plus-ou-moins" style="display: flex; flex-direction: column; height: 290px; background: #F28AA6; transform: rotate(4deg); color: #1B1D16">
+<span class="ridges" style="height: 20px; display: block"></span>
+<span style="margin: 10px 14px 0; flex: 1; background: #E4E0D4; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+<span style="font-family: 'Anton', sans-serif; font-size: 30px; line-height: 1; color: #1B1D16">Plus ou Moins</span>
+<span aria-hidden="true" style="flex: 1; display: grid; place-items: center">
+
+
+
+
+<span style="display: flex; gap: 8px; align-items: center">
+<span style="width: 42px; height: 54px; background: #F28AA6; border: 2px solid #1B1D16; display: grid; place-items: center; font: 400 26px 'Anton', sans-serif">?</span>
+<span style="font: 400 24px 'Anton', sans-serif">ou</span>
+<span style="width: 42px; height: 54px; background: #1B1D16; color: #E4E0D4; display: grid; place-items: center; font: 400 26px 'Anton', sans-serif">?</span>
+</span>
+
+
+</span>
+<span style="font-size: 13px; font-weight: 600">Solo</span>
+</span>
+<span class="pins" style="height: 16px; margin: 10px 24px 0; display: block"></span>
+</a>
+</li>
+
+<li style="flex: 1 1 180px; max-width: 228px">
+<a aria-label="Jouer à Course de frappe" class="slot cart" href="#/frappe" style="display: flex; flex-direction: column; height: 290px; background: #2F3134; transform: rotate(-3deg); color: #1B1D16">
+<span class="ridges" style="height: 20px; display: block"></span>
+<span style="margin: 10px 14px 0; flex: 1; background: #F2B630; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px">
+<span style="font-family: 'VT323', monospace; font-size: 38px; line-height: 1; color: #1B1D16">Course de frappe</span>
+<span aria-hidden="true" style="flex: 1; display: grid; place-items: center">
+
+
+
+
+
+<span style="display: flex; flex-direction: column; gap: 6px; width: 100%">
+<span style="height: 12px; background: repeating-linear-gradient(90deg,#1B1D16 0 12px,#EFE8CC 12px 24px)"></span>
+<span style="font: 400 26px 'VT323', monospace; line-height: 1">vite_</span>
+</span>
+
+</span>
+<span style="font-size: 13px; font-weight: 600">Solo ou en salle</span>
+</span>
+<span class="pins" style="height: 16px; margin: 10px 24px 0; display: block"></span>
+</a>
+</li>
+
+</ul>
+<div aria-hidden="true" style="height: 28px; background: #4A5139; border-top: 4px solid #6E7A55; margin-top: -6px; box-shadow: 0 10px 0 #1B1D16"></div>
+</div>
+</section>
+<section aria-labelledby="h-salle" style="max-width: 1320px; margin: 0 auto; padding: 88px 24px 0">
+<div class="px" style="background: #F2B630; color: #1B1D16; padding: 32px 40px; display: flex; flex-wrap: wrap; align-items: end; gap: 24px 40px">
+<div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 8px">
+<h2 id="h-salle" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 44px; line-height: 1; font-weight: 700">On t'a donné un code ?</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.5">Tape-le ici, on t'emmène directement dans la bonne salle, quel que soit le jeu.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="h-code" style="font-weight: 600; font-size: 15px">Code de salle</label>
+<input autocomplete="off" class="fld" id="h-code" maxlength="4" placeholder="KRAB" style="width: 180px; height: 56px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 14px; font: 700 30px 'Pixelify Sans', monospace; letter-spacing: 0.2em; text-transform: uppercase; color: #1B1D16"/>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="h-pseudo" style="font-weight: 600; font-size: 15px">Ton pseudo</label>
+<input class="fld" id="h-pseudo" placeholder="Comme tes amis t'appellent" style="width: 260px; height: 56px; box-sizing: border-box; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 6px; padding: 0 14px; font: 400 18px 'Bricolage Grotesque', sans-serif; color: #1B1D16"/>
+</div>
+<button class="key" style="background: #1B1D16; color: #F2B630; border: 3px solid #1B1D16; border-radius: 10px; height: 56px; padding: 0 28px; box-shadow: 0 4px 0 #6E5310; font: 700 20px 'Pixelify Sans', monospace" type="button">Rejoindre</button>
+</div>
+</section>
+<section aria-labelledby="h-jeux" id="jeux" style="padding-top: 96px; display: flex; flex-direction: column; gap: 0">
+<div style="max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 0 24px 28px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px">
+<h2 id="h-jeux" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 72px; line-height: 1; font-weight: 700">Les jeux</h2>
+<p style="margin: 0; font-size: 17px; color: #B9B596">5 jeux, dont 3 qui se jouent à plusieurs dans une salle.</p>
+</div>
+
+<a class="row" href="#/imposteur" style="display: block; background: #1E4D3B; color: #EFE8CC; border-top: 4px solid #1B1D16">
+<span style="max-width: 1320px; margin: 0 auto; padding: 40px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<span style="font-family: 'Special Elite', monospace; font-size: 88px; line-height: 1; color: #EFE8CC; flex: 1 1 420px">Imposteur</span>
+
+<span style="flex: 1 1 340px; max-width: 420px; font-size: 18px; line-height: 1.5">Tout le monde a le même mot. Sauf un. Donnez chacun un indice, puis votez pour démasquer l’imposteur.</span>
+
+<span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">Jusqu’à 8 joueurs</span>
+
+<span class="go" style="margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</span>
+</a>
+
+<a class="row" href="#/lyrics" style="display: block; background: #2E63B8; color: #EFE8CC; border-top: 4px solid #1B1D16">
+<span style="max-width: 1320px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<span style="font-family: 'Shrikhand', serif; font-size: 80px; line-height: 1; color: #F2B630; flex: 1 1 420px">Lyrics</span>
+
+<span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span class="go" style="margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</span>
+</a>
+
+<a class="row" href="#/karaoke" style="display: block; background: #6E1A1F; color: #EFE8CC; border-top: 4px solid #1B1D16">
+<span style="max-width: 1320px; margin: 0 auto; padding: 26px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<span style="font-family: 'Bungee', sans-serif; font-size: 72px; line-height: 1; color: #F2B630; flex: 1 1 420px">Karaoké</span>
+
+<span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span class="go" style="margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</span>
+</a>
+
+<a class="row" href="#/plus-ou-moins" style="display: block; background: #F28AA6; color: #1B1D16; border-top: 4px solid #1B1D16">
+<span style="max-width: 1320px; margin: 0 auto; padding: 22px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<span style="font-family: 'Anton', sans-serif; font-size: 84px; line-height: 1; color: #1B1D16; flex: 1 1 420px">Plus ou Moins</span>
+
+<span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #1B1D16">Solo</span>
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #1B1D16">Nouveau</span>
+
+<span class="go" style="margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</span>
+</a>
+
+<a class="row" href="#/frappe" style="display: block; background: #2F3134; color: #EFE8CC; border-top: 4px solid #1B1D16">
+<span style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<span style="font-family: 'VT323', monospace; font-size: 96px; line-height: 1; color: #F2B630; flex: 1 1 420px">Course de frappe</span>
+
+<span style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">Solo</span>
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">En salle</span>
+
+<span style="font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: 6px; border: 2px solid #EFE8CC">Nouveau</span>
+
+<span class="go" style="margin-left: 8px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace">Jouer</span>
+</span>
+</span>
+</a>
+
+<p style="max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 16px 24px 0; font-size: 14px; color: #B9B596">Au survol (souris), la ligne s'ouvre et montre la règle en une phrase. Sur téléphone, toutes les lignes montrent leur phrase.</p>
+</section>
+<section aria-labelledby="h-news" id="nouveautes" style="max-width: 1320px; margin: 0 auto; padding: 96px 24px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 48px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<h2 id="h-news" style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 56px; line-height: 1; font-weight: 700">Quoi de neuf</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 3px solid #EFE8CC">
+
+<li style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid #4A5139">
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 18px; color: #B9B596">[date]</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F28AA6; color: #1B1D16">Nouveau jeu</span>
+<span style="font-weight: 800; font-size: 20px">Plus ou Moins</span>
+</span>
+<span style="font-size: 16px; line-height: 1.5; color: #D8CFAC">Deux choses, une question : laquelle a le plus ? Une erreur et ta série s’arrête.</span>
+</span>
+</li>
+
+<li style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid #4A5139">
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 18px; color: #B9B596">[date]</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #F2B630; color: #1B1D16">Nouveau jeu</span>
+<span style="font-weight: 800; font-size: 20px">Course de frappe</span>
+</span>
+<span style="font-size: 16px; line-height: 1.5; color: #D8CFAC">Seul contre le chrono ou à plusieurs sur la même piste, avec un code de salle.</span>
+</span>
+</li>
+
+<li style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid #4A5139">
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 18px; color: #B9B596">[date]</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #7FB342; color: #1B1D16">Console</span>
+<span style="font-weight: 800; font-size: 20px">Le bouton retour marche enfin</span>
+</span>
+<span style="font-size: 16px; line-height: 1.5; color: #D8CFAC">Chaque jeu et chaque salle a son adresse. Tu peux même envoyer le lien d’une salle.</span>
+</span>
+</li>
+
+<li style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 20px; padding: 20px 0; border-bottom: 2px solid #4A5139">
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 18px; color: #B9B596">[date]</span>
+<span style="display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: #EFE8CC; color: #1B1D16">Console</span>
+<span style="font-weight: 800; font-size: 20px">Nouveau look</span>
+</span>
+<span style="font-size: 16px; line-height: 1.5; color: #D8CFAC">Toute la console a été repeinte. Les jeux ont chacun leur décor.</span>
+</span>
+</li>
+
+</ol>
+</div>
+<div class="px" style="background: #EFE8CC; color: #1B1D16; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; gap: 20px; align-items: center">
+<span aria-hidden="true" style="width: 88px; height: 88px; background: #D8CFAC; border: 3px solid #1B1D16; display: grid; place-items: center">
+<svg height="56" shape-rendering="crispEdges" viewbox="0 0 9 9" width="56"><path d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z" fill="#8C8466"></path></svg>
+</span>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 15px; color: #5A5A45">Fiche de joueur</span>
+<span style="font-family: 'Pixelify Sans', monospace; font-size: 34px; font-weight: 700; line-height: 1">Invité</span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<span style="background: #D8CFAC; padding: 12px; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 28px 'Pixelify Sans', monospace; color: #5A5A45">?</span><span style="font-size: 13px">parties</span></span>
+<span style="background: #D8CFAC; padding: 12px; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 28px 'Pixelify Sans', monospace; color: #5A5A45">?</span><span style="font-size: 13px">victoires</span></span>
+<span style="background: #D8CFAC; padding: 12px; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 28px 'Pixelify Sans', monospace; color: #5A5A45">?</span><span style="font-size: 13px">record</span></span>
+</div>
+<p style="margin: 0; font-size: 17px; line-height: 1.5">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores, tes séries et tes 20 dernières parties.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button class="key" style="background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; padding: 0 22px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace" type="button">Créer mon compte</button>
+<button class="key" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; height: 52px; padding: 0 20px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">J'ai déjà un compte</button>
+</div>
+</div>
+</section>
+</main>
+<footer style="margin-top: 120px; background: #1B1D16; border-top: 4px solid #4A5139">
+<div style="max-width: 1320px; margin: 0 auto; padding: 56px 24px 40px; display: flex; flex-wrap: wrap; gap: 32px 64px; align-items: end; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span aria-hidden="true" style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: clamp(96px, 16vw, 220px); line-height: 0.8; color: #333828">GG</span>
+<span style="font-size: 18px; font-weight: 600">Bien joué. Reviens quand tu veux.</span>
+</div>
+<nav aria-label="Pied de page" style="display: grid; grid-template-columns: repeat(2, minmax(160px, auto)); gap: 12px 48px; font-size: 16px">
+<a href="#/regles/imposteur">Règles des jeux</a>
+<a href="#/profil">Mon profil</a>
+<a href="#/nouveautes">Nouveautés</a>
+<a href="#/confidentialite">Confidentialité</a>
+<a href="#/credits">Crédits</a>
+<a href="#/a-propos">À propos</a>
+</nav>
+</div>
+</footer>
+</div>
+</body>
+</html>

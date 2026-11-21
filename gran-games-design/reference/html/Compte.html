@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gran'Games, fenêtre de compte</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#2E63B8}a:hover{color:#1B1D16}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible,.fld:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+.fld{height:52px;box-sizing:border-box;width:100%;background:#FFFDF4;color:#1B1D16;border:3px solid #1B1D16;border-radius:6px;padding:0 14px;font:400 17px 'Bricolage Grotesque',sans-serif}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.dot{animation:blink 600ms steps(2,end) infinite}.dot2{animation-delay:150ms}.dot3{animation-delay:300ms}
+@media (prefers-reduced-motion: reduce){.dot{animation:none}}
+</style>
+</head>
+<body>
+<div style="width: 1440px; min-height: 1900px; box-sizing: border-box; padding: 64px 60px; background: #12140E; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; justify-content: space-between; align-items: end; gap: 24px">
+<h1 style="margin: 0; font-family: 'Pixelify Sans', monospace; font-size: 64px; line-height: 0.95; font-weight: 700">Fenêtre de compte</h1>
+<p style="margin: 0; max-width: 560px; font-size: 16px; line-height: 1.55; color: #B9B596">Ordinateur : fenêtre centrée de 440 px. Téléphone : tiroir plein écran qui monte du bas. Connecté, la fenêtre résume et renvoie vers la page Profil.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">1. Connexion</p>
+<div aria-labelledby="d1" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 20px; background: #F2B630; border-bottom: 3px solid #1B1D16">
+<h2 id="d1" style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">Ton compte</h2>
+<button aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; display: grid; place-items: center; cursor: pointer" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<div aria-label="Choix" role="tablist" style="display: flex; gap: 4px; background: #D8CFAC; border-radius: 10px; padding: 4px">
+<button aria-selected="true" role="tab" style="flex: 1; height: 44px; border: 0; border-radius: 7px; background: #1B1D16; color: #EFE8CC; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Connexion</button>
+<button aria-selected="false" role="tab" style="flex: 1; height: 44px; border: 0; border-radius: 7px; background: transparent; color: #1B1D16; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Inscription</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a1" style="font-weight: 600; font-size: 15px">Email</label><input class="fld" id="a1" type="email" value="amir@exemple.fr"/></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="a2" style="font-weight: 600; font-size: 15px">Mot de passe</label><input class="fld" id="a2" type="password" value="motdepasse"/></div>
+<button class="key" style="height: 56px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace" type="button">Me connecter</button>
+<div style="display: flex; align-items: center; gap: 12px; color: #5A5A45; font-size: 14px"><span style="flex: 1; height: 2px; background: #D8CFAC"></span>ou<span style="flex: 1; height: 2px; background: #D8CFAC"></span></div>
+<button class="key" style="height: 52px; background: #1B1D16; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px" type="button"><span aria-hidden="true" style="width: 22px; height: 22px; border: 2px dashed #B9B596; border-radius: 4px"></span>Continuer avec Discord</button>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5A5A45">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo.</p>
+</div>
+</div>
+<p style="margin: 0; font-size: 13px; color: #B9B596">Le carré pointillé : emplacement du logo officiel Discord (fichier de leur kit de marque).</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">2. Inscription avec erreurs</p>
+<div aria-labelledby="d2" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 20px; background: #F2B630; border-bottom: 3px solid #1B1D16">
+<h2 id="d2" style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">Ton compte</h2>
+<button aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; display: grid; place-items: center; cursor: pointer" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<div aria-label="Choix" role="tablist" style="display: flex; gap: 4px; background: #D8CFAC; border-radius: 10px; padding: 4px">
+<button aria-selected="false" role="tab" style="flex: 1; height: 44px; border: 0; border-radius: 7px; background: transparent; color: #1B1D16; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Connexion</button>
+<button aria-selected="true" role="tab" style="flex: 1; height: 44px; border: 0; border-radius: 7px; background: #1B1D16; color: #EFE8CC; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Inscription</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="b0" style="font-weight: 600; font-size: 15px">Pseudo</label><input class="fld" id="b0" value="Amir"/></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="b1" style="font-weight: 600; font-size: 15px">Email</label><input aria-describedby="b1e" aria-invalid="true" class="fld" id="b1" style="border-color: #B83A24; box-shadow: 0 0 0 3px #B83A24" value="amir@exemple"/><span id="b1e" style="font-size: 14px; font-weight: 600; color: #9A2E1B">Il manque la fin de l'adresse, par exemple .fr ou .com.</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="b2" style="font-weight: 600; font-size: 15px">Mot de passe</label><input aria-describedby="b2e" aria-invalid="true" class="fld" id="b2" style="border-color: #B83A24; box-shadow: 0 0 0 3px #B83A24" type="password" value="abc"/><span id="b2e" style="font-size: 14px; font-weight: 600; color: #9A2E1B">6 caractères minimum. Il en manque 3.</span></div>
+<button class="key" style="height: 56px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace" type="button">Créer mon compte</button>
+<button class="key" style="height: 52px; background: #1B1D16; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px" type="button"><span aria-hidden="true" style="width: 22px; height: 22px; border: 2px dashed #B9B596; border-radius: 4px"></span>Continuer avec Discord</button>
+</div>
+</div>
+<p style="margin: 0; font-size: 13px; color: #B9B596">Erreurs vérifiées à la sortie du champ, pas à chaque touche. Le focus va sur le premier champ en erreur à l'envoi.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">3. Chargement</p>
+<div aria-busy="true" aria-labelledby="d3" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 20px; background: #F2B630; border-bottom: 3px solid #1B1D16">
+<h2 id="d3" style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">Ton compte</h2>
+<button aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; display: grid; place-items: center; cursor: pointer" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; opacity: 1">
+<div style="display: flex; flex-direction: column; gap: 6px; opacity: 0.55"><label for="c1" style="font-weight: 600; font-size: 15px">Email</label><input class="fld" id="c1" readonly="" value="amir@exemple.fr"/></div>
+<div style="display: flex; flex-direction: column; gap: 6px; opacity: 0.55"><label for="c2" style="font-weight: 600; font-size: 15px">Mot de passe</label><input class="fld" id="c2" readonly="" type="password" value="motdepasse"/></div>
+<button aria-disabled="true" style="height: 56px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace; display: flex; align-items: center; justify-content: center; gap: 12px" type="button"><span aria-hidden="true" style="display: flex; gap: 4px"><span class="dot" style="width: 8px; height: 8px; background: #1B1D16"></span><span class="dot dot2" style="width: 8px; height: 8px; background: #1B1D16"></span><span class="dot dot3" style="width: 8px; height: 8px; background: #1B1D16"></span></span>Connexion…</button>
+<div role="alert" style="display: flex; gap: 12px; align-items: start; background: #F6D9D1; border: 3px solid #B83A24; border-radius: 8px; padding: 12px">
+<span aria-hidden="true" style="flex: 0 0 24px; height: 24px; background: #B83A24; color: #EFE8CC; display: grid; place-items: center; font: 700 16px 'Pixelify Sans', monospace">!</span>
+<span style="font-size: 15px; line-height: 1.45"><b>Email ou mot de passe incorrect.</b> Vérifie les majuscules, ou <a href="#">recrée un mot de passe</a>.</span>
+</div>
+</div>
+</div>
+<p style="margin: 0; font-size: 13px; color: #B9B596">Pendant l'envoi, les champs sont en lecture seule. Une erreur venant du serveur s'affiche au-dessus du bouton (exemple sous le bouton ici pour montrer les deux états).</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">4. Email de confirmation envoyé</p>
+<div aria-labelledby="d4" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 20px; background: #7FB342; border-bottom: 3px solid #1B1D16">
+<h2 id="d4" style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">Regarde tes mails</h2>
+<button aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; display: grid; place-items: center; cursor: pointer" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<div style="padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; align-items: start">
+<svg aria-hidden="true" height="72" shape-rendering="crispEdges" viewbox="0 0 16 12" width="96"><rect fill="#1B1D16" height="12" width="16" x="0" y="0"></rect><rect fill="#FFFDF4" height="10" width="14" x="1" y="1"></rect><path d="M1 1h2v1h2v1h2v1h2V3h2V2h2V1h2v2h-2v1h-2v1H9v1H7V5H5V4H3V3H1z" fill="#F2B630"></path></svg>
+<p style="margin: 0; font-size: 18px; line-height: 1.5">On a envoyé un lien à <b>amir@exemple.fr</b>. Clique dessus pour activer ton compte.</p>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5A5A45">Rien reçu ? Regarde dans les indésirables. Tu peux continuer à jouer avec ton pseudo en attendant.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button class="key" style="height: 52px; padding: 0 20px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 16px 'Bricolage Grotesque', sans-serif" type="button">Renvoyer le lien</button>
+<button class="key" style="height: 52px; padding: 0 20px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 18px 'Pixelify Sans', monospace" type="button">Retour aux jeux</button>
+</div>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">5. Connecté (résumé)</p>
+<div aria-labelledby="d5" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 16px; padding: 16px 12px 16px 20px; background: #F28AA6; border-bottom: 3px solid #1B1D16">
+<span aria-hidden="true" style="width: 64px; height: 64px; background: #1B1D16; color: #F28AA6; border: 3px solid #1B1D16; display: grid; place-items: center; font: 700 34px 'Pixelify Sans', monospace">A</span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+<h2 id="d5" style="margin: 0; font: 700 28px 'Pixelify Sans', monospace; line-height: 1">Amir</h2>
+<span style="font-size: 14px">[nombre] parties jouées</span>
+</div>
+<button aria-label="Fermer" style="width: 44px; height: 44px; background: #EFE8CC; border: 3px solid #1B1D16; border-radius: 8px; display: grid; place-items: center; cursor: pointer; align-self: start" type="button"><svg fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg></button>
+</div>
+<div style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+
+<div style="display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #D8CFAC">
+<span aria-hidden="true" style="width: 14px; height: 14px; background: #1E4D3B; border: 2px solid #1B1D16"></span>
+<span style="font-weight: 600">Imposteur</span>
+<span style="font-size: 14px; color: #4A4A38">[victoires] victoires</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #D8CFAC">
+<span aria-hidden="true" style="width: 14px; height: 14px; background: #2E63B8; border: 2px solid #1B1D16"></span>
+<span style="font-weight: 600">Lyrics</span>
+<span style="font-size: 14px; color: #4A4A38">meilleur [score]</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #D8CFAC">
+<span aria-hidden="true" style="width: 14px; height: 14px; background: #6E1A1F; border: 2px solid #1B1D16"></span>
+<span style="font-weight: 600">Karaoké</span>
+<span style="font-size: 14px; color: #4A4A38">[parties] parties</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #D8CFAC">
+<span aria-hidden="true" style="width: 14px; height: 14px; background: #F28AA6; border: 2px solid #1B1D16"></span>
+<span style="font-weight: 600">Plus ou Moins</span>
+<span style="font-size: 14px; color: #4A4A38">record [série]</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #D8CFAC">
+<span aria-hidden="true" style="width: 14px; height: 14px; background: #2F3134; border: 2px solid #1B1D16"></span>
+<span style="font-weight: 600">Course de frappe</span>
+<span style="font-size: 14px; color: #4A4A38">record [mots/min]</span>
+</div>
+
+<a class="key" href="#/profil" style="display: flex; align-items: center; justify-content: center; height: 56px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace; text-decoration: none">Voir ma fiche complète</a>
+<button class="key" style="height: 48px; background: transparent; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; font: 600 15px 'Bricolage Grotesque', sans-serif" type="button">Me déconnecter</button>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-weight: 600; color: #B9B596">6. Compte supprimé</p>
+<div aria-labelledby="d6" aria-modal="true" role="dialog" style="background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 16px; box-shadow: 0 8px 0 #000; overflow: hidden">
+<div style="padding: 12px 20px; background: #D8CFAC; border-bottom: 3px solid #1B1D16">
+<h2 id="d6" style="margin: 0; font: 700 26px 'Pixelify Sans', monospace">Compte supprimé</h2>
+</div>
+<div style="padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; align-items: start">
+<svg aria-hidden="true" height="80" shape-rendering="crispEdges" viewbox="0 0 10 10" width="80"><path d="M3 0h4v1H3zM1 1h8v1H1zM2 2h6v8H2z" fill="#5A5A45"></path><path d="M3 3h1v6H3zM6 3h1v6H6z" fill="#D8CFAC"></path></svg>
+<p style="margin: 0; font-size: 18px; line-height: 1.5">Ton compte, tes stats et ton historique sont effacés. Tu peux toujours jouer avec un pseudo.</p>
+<button class="key" style="height: 56px; padding: 0 24px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace" type="button">Retour à l'accueil</button>
+</div>
+</div>
+<p style="margin: 0; font-size: 13px; color: #B9B596">La confirmation de suppression (avant) est sur la page Profil.</p>
+</div>
+</div>
+</div>
+</body>
+</html>

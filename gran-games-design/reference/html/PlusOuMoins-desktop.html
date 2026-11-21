@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plus ou Moins, partie (ordinateur)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Anton&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#1B1D16}a:hover{color:#B83A24}
+.news{background-color:#E4E0D4;background-image:radial-gradient(rgba(27,29,22,.08) 1px,transparent 1.2px);background-size:5px 5px}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="news" style="min-height: 900px; color: #1B1D16; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column">
+<div style="max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 12px 24px 0">
+<header style="border: 3px solid #1B1D16; border-radius: 14px; padding: 6px 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: #EFE8CC">
+<button class="key" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 10px; background: #E4E0D4; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 600 15px 'Bricolage Grotesque', sans-serif" type="button"><svg aria-hidden="true" fill="none" height="16" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 18 18" width="16"><path d="M11 3 5 9l6 6"></path></svg>Quitter</button>
+<nav aria-label="Fil d'Ariane" style="font-size: 15px; display: flex; gap: 8px"><span style="font-family: 'Pixelify Sans', monospace">Gran'Games</span><span aria-hidden="true">/</span><span aria-current="page" style="font-weight: 600">Plus ou Moins</span></nav>
+<span style="margin-left: auto; display: flex; gap: 10px; align-items: center">
+<span style="background: #F28AA6; border: 3px solid #1B1D16; border-radius: 8px; padding: 2px 12px; font: 400 24px 'Anton', sans-serif">Série 8</span>
+<span style="font-size: 15px; font-weight: 600">Record : 12</span>
+</span>
+</header>
+</div>
+<main style="flex: 1; max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 28px 24px 40px; display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; border-bottom: 3px solid #1B1D16; padding-bottom: 10px">Lequel dure le plus longtemps ?</h1>
+<div style="flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 0; border: 4px solid #1B1D16; position: relative; min-height: 600px">
+<article style="background: #EFE8CC; padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 10px; border-right: 4px solid #1B1D16">
+<span style="font-size: 16px; font-weight: 600">Durée du film</span>
+<h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 60px; line-height: 1">Titanic (1997)</h2>
+<p style="margin: 12px 0 0; font-family: 'Anton', sans-serif; font-size: clamp(96px, 11vw, 168px); line-height: 0.9; font-variant-numeric: tabular-nums">194 min</p>
+<span style="font-size: 13px; color: #4A4A38">Source : [à renseigner dans les données]</span>
+</article>
+<article style="background: #F28AA6; padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 10px">
+<span style="font-size: 16px; font-weight: 600">Durée du film (version cinéma)</span>
+<h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 60px; line-height: 1">Le Seigneur des anneaux : le Retour du roi (2003)</h2>
+<p style="margin: 12px 0 0; font-family: 'Anton', sans-serif; font-size: 96px; line-height: 0.9">? min</p>
+<div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px">
+<button class="key" style="height: 72px; padding: 0 28px; background: #1B1D16; color: #EFE8CC; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 5px 0 #8A3C55; font: 400 28px 'Anton', sans-serif" type="button">Plus long</button>
+<button class="key" style="height: 72px; padding: 0 28px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 5px 0 #8A3C55; font: 400 28px 'Anton', sans-serif" type="button">Moins long</button>
+</div>
+<p style="margin: 8px 0 0; font-size: 14px">Clavier : flèche haut pour plus, flèche bas pour moins.</p>
+</article>
+<span aria-hidden="true" style="position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; background: #1B1D16; color: #F28AA6; border-radius: 50%; border: 6px solid #E4E0D4; display: grid; place-items: center; font: 400 34px 'Anton', sans-serif">ou</span>
+</div>
+<p style="margin: 0; font-size: 14px; color: #4A4A38">Après le choix : le chiffre se compte de 0 à 201 en 700 ms, le panneau passe au vert pomme (juste) ou brique (faux), puis le panneau de droite glisse à gauche (320 ms) et un nouveau arrive.</p>
+</main>
+</div>
+</body>
+</html>

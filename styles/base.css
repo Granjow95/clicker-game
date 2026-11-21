@@ -1,0 +1,400 @@
+/* ==========================================================================
+   Gran'Games : base.css
+   La "console" commune à tout le site. Chargée sur toutes les pages.
+   Chaque jeu ne redéfinit QUE les variables --monde-* (voir styles/<jeu>.css).
+   Valeurs reprises à l'identique des maquettes (reference/html).
+   ========================================================================== */
+
+/* Polices (à mettre dans <head> de index.html, une seule fois) :
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Pixelify+Sans:wght@400;600;700&family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap">
+*/
+
+/* ---------- 1. Jetons ---------- */
+:root {
+  /* Couleurs de la console */
+  --mousse: #22261C;        /* fond de console */
+  --mousse-damier: #262A1F; /* case claire du damier 8 px */
+  --lichen: #333828;        /* surfaces sombres */
+  --lichen-bord: #4A5139;   /* bords sur fond sombre */
+  --sauge: #6E7A55;         /* arête de l'étagère */
+  --parchemin: #EFE8CC;     /* panneaux, texte clair */
+  --papier-ombre: #D8CFAC;  /* bords et zones calmes sur clair */
+  --encre: #1B1D16;         /* texte, bords, épaisseurs */
+  --noir: #000;             /* ombre portée des touches */
+  --bouton-dor: #F2B630;    /* action principale */
+  --bouton-dor-clair: #FFE8A3; /* reflet des ampoules, pulsation */
+  --faience: #2E63B8;       /* focus, liens, info */
+  --bonbon: #F28AA6;        /* toi, nouveautés */
+  --pomme: #7FB342;         /* juste, gagné, prêt */
+  --brique: #B83A24;        /* faux, danger, imposteur */
+  --texte-doux: #B9B596;    /* texte secondaire sur fond sombre (7,4:1) */
+  --texte-doux-clair: #D8CFAC;
+  --texte-doux-papier: #5A5A45; /* texte secondaire sur parchemin (5,7:1) */
+  --texte-corps-papier: #4A4A38;
+  --erreur-sur-sombre: #F4A08E;
+  --erreur-sur-clair: #9A2E1B;
+  --voile: rgba(18, 20, 14, .72); /* fond derrière une fenêtre */
+
+  /* Monde courant : la console par défaut. Écrasé par chaque jeu. */
+  --monde-fond: var(--mousse);
+  --monde-surface: var(--lichen);
+  --monde-bord: var(--lichen-bord);
+  --monde-texte: var(--parchemin);
+  --monde-texte-doux: var(--texte-doux);
+  --monde-accent: var(--bouton-dor);
+  --monde-police: var(--police-pixel);
+  --monde-focus: var(--bouton-dor); /* 8,45:1 sur mousse (faïence : 2,64:1, sous le seuil de 3:1) */
+
+  /* Typographie */
+  --police-pixel: "Pixelify Sans", monospace;
+  --police-texte: "Bricolage Grotesque", sans-serif;
+  --t-12: 12px; --t-14: 14px; --t-16: 16px; --t-20: 20px; --t-26: 26px;
+  --t-34: 34px; --t-48: 48px; --t-72: 72px; --t-120: 120px;
+
+  /* Espacements (grille de 4 px) */
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px;
+  --e-6: 32px; --e-7: 48px; --e-8: 64px; --e-9: 96px;
+
+  /* Formes */
+  --rayon-champ: 6px;
+  --rayon-touche: 10px;
+  --rayon-fenetre: 16px;
+  --coin-cartouche: 28px;
+  --trait: 3px solid var(--encre);
+  --epaisseur: 0 4px 0 var(--noir);
+  --epaisseur-petite: 0 3px 0 var(--noir);
+  --epaisseur-fenetre: 0 8px 0 var(--noir);
+
+  /* Mouvement */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-tiroir: cubic-bezier(0.32, 0.72, 0, 1);
+  --d-appui: 120ms;
+  --d-survol: 220ms;
+  --d-ecran: 200ms;
+  --d-fenetre: 200ms;
+  --d-fenetre-sortie: 150ms;
+  --d-toast: 300ms;
+  --d-toast-sortie: 200ms;
+
+  --largeur-max: 1320px;
+}
+
+/* ---------- 2. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--police-texte);
+  font-size: var(--t-16);
+  line-height: 1.5;
+  color: var(--monde-texte);
+  background-color: var(--monde-fond);
+}
+img, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--monde-accent); }
+a:hover { color: var(--monde-texte); }
+:focus-visible { outline: 3px solid var(--monde-focus); outline-offset: 3px; }
+.sur-papier :focus-visible { outline-color: var(--faience); } /* 4,75:1 sur parchemin */
+.lien-evitement { position: absolute; left: 12px; top: -80px; z-index: 100; padding: 12px 18px; background: var(--bouton-dor); color: var(--encre); font-weight: 800; border: var(--trait); border-radius: var(--rayon-touche); text-decoration: none; }
+.lien-evitement:focus { top: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.conteneur { max-width: var(--largeur-max); margin-inline: auto; padding-inline: var(--e-5); }
+
+/* Fond "damier" de la console : 8 px, 2 % de contraste */
+.damier {
+  background-color: var(--mousse);
+  background-image: conic-gradient(var(--mousse-damier) 25%, transparent 0 50%, var(--mousse-damier) 0 75%, transparent 0);
+  background-size: 8px 8px;
+}
+
+/* Titres pixel */
+.titre-pixel { font-family: var(--police-pixel); font-weight: 700; line-height: 1; margin: 0; }
+.titre-affiche { font-family: var(--police-pixel); font-weight: 700; font-size: clamp(80px, 13vw, 208px); line-height: .82; letter-spacing: -.02em; margin: 0; }
+
+/* Coins en escalier de pixels (panneaux, pastilles). Jamais sur un champ. */
+.px {
+  clip-path: polygon(0 8px,4px 8px,4px 4px,8px 4px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 4px,calc(100% - 4px) 4px,calc(100% - 4px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 4px) calc(100% - 8px),calc(100% - 4px) calc(100% - 4px),calc(100% - 8px) calc(100% - 4px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 4px),4px calc(100% - 4px),4px calc(100% - 8px),0 calc(100% - 8px));
+}
+
+/* ---------- 3. En-tête (console) ---------- */
+.console {
+  background: var(--encre);
+  border: 2px solid var(--lichen-bord);
+  border-radius: var(--rayon-fenetre);
+  padding: 10px 12px 10px 18px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px;
+}
+.console__logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--parchemin); font-family: var(--police-pixel); font-weight: 700; font-size: 26px; }
+.console__nav { display: flex; gap: 4px; background: var(--lichen); border-radius: var(--rayon-touche); padding: 4px; margin-left: auto; }
+.console__nav a { padding: 10px 18px; border-radius: 7px; color: var(--parchemin); text-decoration: none; font-weight: 600; }
+.console__nav a[aria-current="page"] { background: var(--parchemin); color: var(--encre); }
+/* En partie : barre réduite de 56 px, teintée par le monde */
+.console--jeu {
+  background: var(--monde-barre, rgba(0,0,0,.25));
+  border-color: var(--monde-bord);
+  padding: 6px 8px; gap: 16px;
+}
+.console__ariane { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--monde-texte-doux); }
+.console__ariane > :first-child { font-family: var(--police-pixel); color: var(--monde-texte); }
+.console__ariane [aria-current="page"] { color: var(--monde-texte); font-weight: 600; }
+.avatar-touche { width: 44px; height: 44px; display: grid; place-items: center; font-family: var(--police-pixel); font-weight: 700; font-size: 18px; }
+
+/* Téléphone : logo + compte sur une ligne, onglets en dessous, pleine largeur */
+@media (max-width: 640px) {
+  .console { padding: 6px 6px 6px 14px; }
+  .console__logo { font-size: 22px; }
+  .console__nav { order: 3; width: 100%; margin-left: 0; }
+  .console__nav a { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; }
+}
+
+/* ---------- 4. Touches (boutons) ---------- */
+.key {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 24px;
+  border: var(--trait); border-radius: var(--rayon-touche);
+  box-shadow: var(--epaisseur);
+  background: var(--parchemin); color: var(--encre);
+  font: 600 18px var(--police-texte);
+  text-decoration: none; cursor: pointer;
+  transition: transform var(--d-appui) var(--ease-out), box-shadow var(--d-appui) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.key:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--encre); }
+.key--principal { background: var(--bouton-dor); font: 600 20px var(--police-pixel); }
+.key--secondaire { background: var(--parchemin); }
+.key--fantome { background: transparent; color: var(--monde-texte); border-color: var(--monde-texte); box-shadow: none; }
+.key--danger { background: var(--brique); color: var(--parchemin); }
+.key--sombre { background: var(--encre); color: var(--bouton-dor); font: 700 20px var(--police-pixel); box-shadow: 0 4px 0 #6E5310; }
+.key--compact { min-height: 44px; padding: 0 14px; font-size: 15px; box-shadow: var(--epaisseur-petite); }
+.key--icone { min-height: 44px; width: 44px; padding: 0; box-shadow: var(--epaisseur-petite); }
+.key--bloc { width: 100%; }
+.key:disabled, .key[aria-disabled="true"]:not([aria-busy="true"]) {
+  background: var(--lichen); color: #8E8C74; border: 3px dashed #5A6146; box-shadow: none; cursor: not-allowed; transform: none;
+}
+/* Chargement : trois pixels qui clignotent + libellé au participe ("Connexion…") */
+.dots { display: inline-flex; gap: 4px; }
+.dots i { width: 8px; height: 8px; background: currentColor; animation: dots-clignote 600ms steps(2, end) infinite; }
+.dots i:nth-child(2) { animation-delay: 150ms; }
+.dots i:nth-child(3) { animation-delay: 300ms; }
+@keyframes dots-clignote { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+/* Retour (flèche + "Accueil") */
+.key--retour { min-height: 44px; padding: 0 14px 0 10px; font-size: 15px; box-shadow: var(--epaisseur-petite); gap: 8px; }
+
+/* ---------- 5. Champs ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label { font-weight: 600; font-size: 15px; }
+.field__input, .field select {
+  height: 52px; width: 100%;
+  background: var(--parchemin); color: var(--encre);
+  border: var(--trait); border-radius: var(--rayon-champ);
+  padding: 0 14px; font: 400 17px var(--police-texte);
+}
+.field__input[aria-invalid="true"] { border-color: var(--brique); box-shadow: 0 0 0 3px var(--brique); }
+.field__aide { font-size: 13px; color: var(--monde-texte-doux); }
+.field__erreur { font-size: 14px; font-weight: 600; color: var(--erreur-sur-sombre); }
+.sur-papier .field__erreur { color: var(--erreur-sur-clair); }
+.sur-papier .field__aide { color: var(--texte-doux-papier); }
+.sur-papier .field__input { background: #FFFDF4; }
+/* Code de salle : 4 lettres en pixel */
+.field__input--code { font: 700 28px var(--police-pixel); letter-spacing: .2em; text-transform: uppercase; }
+/* Stepper (manches, temps) */
+.stepper { display: inline-flex; height: 56px; border: var(--trait); border-radius: var(--rayon-touche); background: var(--parchemin); color: var(--encre); overflow: hidden; }
+.stepper button { width: 52px; border: 0; background: var(--papier-ombre); font: 700 24px var(--police-pixel); cursor: pointer; }
+.stepper button:last-child { background: var(--bouton-dor); border-left: var(--trait); }
+.stepper button:first-child { border-right: var(--trait); }
+.stepper output { min-width: 72px; display: grid; place-items: center; font: 700 26px var(--police-pixel); }
+
+/* ---------- 6. Panneaux et pastilles ---------- */
+.panneau { background: var(--parchemin); color: var(--encre); padding: var(--e-6); }
+.panneau--sombre { background: var(--lichen); color: var(--parchemin); }
+.badge {
+  display: inline-block; font-size: 13px; font-weight: 600; line-height: 1.3;
+  padding: 3px 8px; border: 2px solid var(--encre); border-radius: var(--rayon-champ);
+  color: var(--encre); background: var(--parchemin);
+}
+.badge--hote { background: var(--bouton-dor); }
+.badge--moi { background: var(--bonbon); }
+.badge--pret { background: var(--pomme); }
+.badge--absent { background: var(--papier-ombre); }
+.chip { font-size: 14px; font-weight: 600; padding: 6px 10px; border-radius: var(--rayon-champ); border: 2px solid currentColor; }
+
+/* ---------- 7. Joueurs ---------- */
+.joueurs { list-style: none; margin: 0; padding: 12px; display: flex; flex-direction: column; gap: 6px; background: var(--parchemin); color: var(--encre); }
+.joueur { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: var(--rayon-champ); }
+.joueur--moi { background: rgba(242,138,166,.2); }
+.joueur--absent { opacity: .55; }
+.joueur__avatar { width: 36px; height: 36px; flex: 0 0 auto; border: 2px solid var(--encre); border-radius: 4px; display: grid; place-items: center; font: 700 18px var(--police-pixel); color: var(--encre); }
+.joueur__nom { flex: 1; font-weight: 600; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Couleur d'avatar : attribuée par ordre d'arrivée, cycle sur 5 */
+.c-1 { background: var(--bouton-dor); } .c-2 { background: var(--bonbon); } .c-3 { background: var(--pomme); }
+.c-4 { background: var(--faience); } .c-5 { background: var(--papier-ombre); }
+
+/* ---------- 8. Classement ---------- */
+.classement { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.classement li {
+  display: grid; grid-template-columns: 48px minmax(0,1fr) auto; align-items: center; gap: 12px;
+  background: var(--parchemin); color: var(--encre);
+  border: var(--trait); border-radius: var(--rayon-touche); padding: 10px 14px; box-shadow: var(--epaisseur);
+}
+.classement li:first-child { background: var(--bouton-dor); }
+.classement__rang { font: 700 30px var(--police-pixel); }
+.classement__points { font: 700 22px var(--police-pixel); font-variant-numeric: tabular-nums; }
+
+/* ---------- 9. Minuteur (20 segments) ---------- */
+.minuteur { background: var(--parchemin); color: var(--encre); padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.minuteur__temps { font: 700 40px var(--police-pixel); font-variant-numeric: tabular-nums; }
+.minuteur__segments { display: grid; grid-template-columns: repeat(20, minmax(0,1fr)); gap: 3px; }
+.minuteur__segments span { height: 18px; border: 2px solid var(--encre); background: var(--papier-ombre); }
+.minuteur__segments span.on { background: var(--pomme); }
+.minuteur--urgent { background: var(--brique); color: var(--parchemin); } /* sous 10 s */
+
+/* ---------- 10. Fenêtre (<dialog>) ---------- */
+dialog.fenetre {
+  width: min(440px, calc(100vw - 32px)); padding: 0;
+  background: var(--parchemin); color: var(--encre);
+  border: var(--trait); border-radius: var(--rayon-fenetre); box-shadow: var(--epaisseur-fenetre);
+  overflow: hidden;
+  opacity: 1; transform: scale(1);
+  transition: opacity var(--d-fenetre) var(--ease-out), transform var(--d-fenetre) var(--ease-out), overlay var(--d-fenetre) allow-discrete, display var(--d-fenetre) allow-discrete;
+}
+dialog.fenetre::backdrop { background: var(--voile); }
+@starting-style { dialog.fenetre[open] { opacity: 0; transform: scale(.96); } }
+dialog.fenetre.ferme { opacity: 0; transform: scale(.96); transition-duration: var(--d-fenetre-sortie); }
+.fenetre__tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 12px 12px 20px; background: var(--fenetre-teinte, var(--bouton-dor)); border-bottom: var(--trait); }
+.fenetre__titre { margin: 0; font: 700 26px var(--police-pixel); }
+.fenetre__fermer { width: 44px; height: 44px; background: var(--parchemin); border: var(--trait); border-radius: 8px; display: grid; place-items: center; cursor: pointer; }
+.fenetre__corps { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.onglets { display: flex; gap: 4px; background: var(--papier-ombre); border-radius: var(--rayon-touche); padding: 4px; }
+.onglets button { flex: 1; height: 44px; border: 0; border-radius: 7px; background: transparent; font-weight: 600; cursor: pointer; }
+.onglets button[aria-selected="true"] { background: var(--encre); color: var(--parchemin); }
+/* Téléphone : la fenêtre devient un tiroir qui monte du bas */
+@media (max-width: 640px) {
+  dialog.fenetre {
+    width: 100vw; max-width: 100vw; max-height: 92vh; margin: auto 0 0;
+    border-radius: 20px 20px 0 0; border-width: 3px 0 0; box-shadow: none;
+    transform: translateY(0);
+    transition-timing-function: var(--ease-tiroir); transition-duration: 320ms;
+  }
+  @starting-style { dialog.fenetre[open] { opacity: 1; transform: translateY(100%); } }
+  dialog.fenetre.ferme { opacity: 1; transform: translateY(100%); transition-duration: var(--d-toast-sortie); }
+}
+
+/* ---------- 11. Toasts ---------- */
+.toasts { position: fixed; z-index: 50; bottom: 16px; right: 16px; display: flex; flex-direction: column; gap: 10px; width: min(420px, calc(100vw - 32px)); pointer-events: none; }
+@media (max-width: 640px) { .toasts { left: 50%; right: auto; transform: translateX(-50%); } }
+.toast {
+  pointer-events: auto; display: flex; align-items: center; gap: 14px;
+  background: var(--parchemin); color: var(--encre);
+  border: var(--trait); border-radius: var(--rayon-touche); padding: 12px 14px; box-shadow: var(--epaisseur);
+  transform: translateY(0); opacity: 1;
+  transition: transform var(--d-toast) ease, opacity var(--d-toast) ease;
+}
+@starting-style { .toast { transform: translateY(100%); opacity: 0; } }
+.toast.sortie { transform: translateY(100%); opacity: 0; transition-duration: var(--d-toast-sortie); }
+.toast__icone { width: 32px; height: 32px; flex: 0 0 32px; border: 2px solid var(--encre); display: grid; place-items: center; font: 700 18px var(--police-pixel); }
+.toast--succes .toast__icone { background: var(--pomme); }
+.toast--erreur .toast__icone { background: var(--brique); color: var(--parchemin); }
+.toast--info { background: var(--encre); color: var(--parchemin); border-color: var(--parchemin); box-shadow: none; }
+.toast--info .toast__icone { background: var(--bouton-dor); color: var(--encre); border-color: var(--parchemin); }
+.toast__texte { flex: 1; }
+
+/* ---------- 12. États vide / chargement / erreur ---------- */
+.etat { background: var(--monde-surface); padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 260px; }
+.etat__titre { margin: 0; font-weight: 800; font-size: 18px; }
+.etat__texte { margin: 0; font-size: 14px; line-height: 1.5; color: var(--texte-doux-clair); }
+.skel { background: var(--lichen-bord); animation: skel 1200ms ease-in-out infinite; }
+@keyframes skel { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
+
+/* ---------- 13. Cartouche (accueil, 404) ---------- */
+.cart {
+  display: flex; flex-direction: column; height: 290px;
+  background: var(--cart-corps); color: var(--cart-encre);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+  text-decoration: none;
+  transform: rotate(var(--cart-angle, 0deg));
+  transition: transform var(--d-survol) var(--ease-out);
+}
+.cart__stries { height: 20px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 6px, transparent 6px 12px); }
+.cart__etiquette { margin: 10px 14px 0; flex: 1; background: var(--cart-etiquette); padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.cart__nom { font-family: var(--cart-police); font-size: var(--cart-taille); line-height: 1; }
+.cart__mode { font-size: 13px; font-weight: 600; }
+.cart__contacts { height: 16px; margin: 10px 24px 0; background-image: repeating-linear-gradient(90deg, #C9A64A 0 10px, transparent 10px 16px); }
+@media (hover: hover) and (pointer: fine) {
+  .cart:hover { transform: translateY(-14px) rotate(0deg); }
+}
+
+/* ---------- 14. Transitions entre écrans ---------- */
+/* Écran -> écran dans un jeu : fondu + 8 px + flou 2 px, 200 ms */
+.ecran { animation: ecran-entre var(--d-ecran) var(--ease-out) both; }
+@keyframes ecran-entre { from { opacity: 0; transform: translateY(8px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+/* Arrivée d'un joueur dans une liste */
+.arrive { animation: arrive 200ms var(--ease-out) both; }
+@keyframes arrive { from { opacity: 0; transform: translateY(8px); } }
+/* Mot inexistant / erreur de saisie */
+.secousse { animation: secousse 300ms var(--ease-out); }
+@keyframes secousse { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+
+/* Accueil -> jeu : insertion de cartouche (View Transitions API, voir js/router.js) */
+::view-transition-old(root) { animation: 180ms var(--ease-out) both vt-sort; }
+::view-transition-new(root) { animation: 320ms var(--ease-in-out) 160ms both vt-deroule; }
+@keyframes vt-sort { to { opacity: 0; transform: translateY(18px); } }
+@keyframes vt-deroule { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+html.retour::view-transition-old(root) { animation: 180ms var(--ease-in-out) both vt-enroule; z-index: 2; }
+html.retour::view-transition-new(root) { animation: none; }
+@keyframes vt-enroule { to { clip-path: inset(0 0 100% 0); } }
+
+/* ---------- 15. Mouvement réduit ---------- */
+/* Moins de mouvement, pas zéro : on garde opacité et couleur, on retire déplacements et échelles. */
+@media (prefers-reduced-motion: reduce) {
+  .key, .cart, .toast, dialog.fenetre { transition-property: opacity, background-color, color; }
+  .key:active { transform: none; }
+  .cart:hover { transform: rotate(var(--cart-angle, 0deg)); outline: 3px solid var(--bouton-dor); }
+  .ecran { animation: fondu 120ms ease both; }
+  .arrive, .secousse { animation: none; }
+  .dots i, .skel { animation: none; opacity: 1; }
+  @starting-style { .toast { transform: none; } dialog.fenetre[open] { transform: none; } }
+  .toast.sortie, dialog.fenetre.ferme { transform: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: 150ms ease both fondu; }
+}
+@keyframes fondu { from { opacity: 0; } }
+
+/* ---------- 16. Mondes (variables uniquement ; le décor est dans chaque styles/<jeu>.css) ---------- */
+[data-monde="imposteur"] { --monde-fond: #1E4D3B; --monde-surface: rgba(0,0,0,.22); --monde-bord: #2D6A52; --monde-texte: #EFE8CC; --monde-texte-doux: #CFE3D8; --monde-accent: #F2B630; --monde-police: "Special Elite", monospace; --monde-focus: #F2B630; }
+[data-monde="lyrics"] { --monde-fond: #2E63B8; --monde-surface: #1B3E7A; --monde-bord: #4F80CC; --monde-texte: #EFE8CC; --monde-texte-doux: #D6E2F7; --monde-accent: #F2B630; --monde-police: "Shrikhand", serif; --monde-focus: #F2B630; }
+[data-monde="karaoke"] { --monde-fond: #6E1A1F; --monde-surface: #2A0B0D; --monde-bord: #8A2A30; --monde-texte: #FFF4D6; --monde-texte-doux: #F0C9C9; --monde-accent: #F2B630; --monde-police: "Bungee", sans-serif; --monde-focus: #FFF4D6; }
+[data-monde="plus-ou-moins"] { --monde-fond: #E4E0D4; --monde-surface: #EFE8CC; --monde-bord: #1B1D16; --monde-texte: #1B1D16; --monde-texte-doux: #4A4A38; --monde-accent: #F28AA6; --monde-police: "Anton", sans-serif; --monde-focus: #2E63B8; }
+[data-monde="frappe"] { --monde-fond: #2F3134; --monde-surface: #1F2022; --monde-bord: #4A4D52; --monde-texte: #EFE8CC; --monde-texte-doux: #C9CBCF; --monde-accent: #F2B630; --monde-police: "VT323", monospace; --monde-focus: #F2B630; }
+
+/* ---------- 17. Console : compte, retour (ajouts du socle) ---------- */
+[hidden] { display: none !important; }
+.console__compte {
+  display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px;
+  background: var(--parchemin); color: var(--encre);
+  border: var(--trait); border-radius: var(--rayon-touche); box-shadow: var(--epaisseur);
+  font: 600 16px var(--police-texte); text-decoration: none; cursor: pointer;
+  transition: transform var(--d-appui) var(--ease-out), box-shadow var(--d-appui) var(--ease-out);
+}
+.console__compte:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--encre); }
+.console__compte--connecte { background: var(--bonbon); padding: 0 14px 0 8px; }
+.console__avatar { width: 28px; height: 28px; display: grid; place-items: center; background: var(--encre); color: var(--bonbon); border-radius: 4px; font: 700 16px var(--police-pixel); overflow: hidden; }
+.console__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.console--jeu .console__compte { margin-left: auto; width: 44px; height: 44px; padding: 0; justify-content: center; box-shadow: var(--epaisseur-petite); }
+.console--jeu .console__compte-nom { display: none; }
+.console--jeu .console__compte--connecte { padding: 0; }
+.console__compte-icone { width: 18px; height: 18px; }
+@media (max-width: 640px) {
+  .console__compte { margin-left: auto; width: 44px; height: 44px; padding: 0; justify-content: center; box-shadow: var(--epaisseur-petite); }
+  .console__compte-nom { display: none; }
+  .console__compte--connecte { padding: 0; }
+}
+/* Écrans de jeux encore à l'ancien habillage (étapes 4 à 6) : texte sombre sur leur fond clair */
+.vue--heritee { color: var(--encre); }
+.conteneur--entete { padding-top: var(--e-4); }
+.console--jeu .console__logo, .console--jeu .console__nav { display: none; }
+.console__ariane [aria-hidden="true"] { opacity: .7; }
+a.key:hover { color: var(--encre); }
+a.key--danger:hover { color: var(--parchemin); }

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gran'Games, page introuvable</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#EFE8CC}
+.ground{background-color:#22261C;background-image:conic-gradient(#262A1F 25%,transparent 0 50%,#262A1F 0 75%,transparent 0);background-size:8px 8px}
+.cart{clip-path:polygon(0 0,calc(100% - 30px) 0,100% 30px,100% 100%,0 100%)}
+.ridges{background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 6px,transparent 6px 12px)}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer;text-decoration:none}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible{outline:3px solid #2E63B8;outline-offset:3px}
+@keyframes wobble{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(-5deg)}}
+.stuck{animation:wobble 3s cubic-bezier(.77,0,.175,1) infinite}
+@media (prefers-reduced-motion: reduce){.stuck{animation:none}}
+</style>
+</head>
+<body>
+<div class="ground" style="min-height: 820px; color: #EFE8CC; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column">
+<div style="max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 16px 24px 0">
+<header style="background: #1B1D16; border: 2px solid #4A5139; border-radius: 16px; padding: 10px 18px; display: flex; align-items: center; min-height: 52px">
+<a href="#/" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #EFE8CC">
+<svg aria-hidden="true" height="30" viewbox="0 0 26 30" width="26"><path d="M0 0h19l7 7v23H0z" fill="#F2B630"></path><rect fill="#1B1D16" height="12" width="18" x="4" y="9"></rect></svg>
+<span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 26px">Gran'Games</span>
+</a>
+</header>
+</div>
+<main style="flex: 1; max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 56px 24px 72px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px 80px">
+<div aria-hidden="true" style="flex: 0 1 380px; position: relative; height: 480px">
+<div class="stuck cart" style="position: absolute; left: 60px; top: 0; width: 240px; height: 300px; background: #D8CFAC; display: flex; flex-direction: column; transform-origin: 50% 100%">
+<div class="ridges" style="height: 22px"></div>
+<div style="margin: 12px 16px 0; flex: 1; background: #EFE8CC; border: 3px dashed #5A5A45; display: grid; place-items: center; color: #5A5A45; font: 700 120px 'Pixelify Sans', monospace">?</div>
+<div style="height: 30px"></div>
+</div>
+<div style="position: absolute; left: 0; right: 0; top: 270px; height: 64px; background: #1B1D16; border: 4px solid #4A5139; border-radius: 10px"></div>
+<div style="position: absolute; left: 30px; right: 30px; top: 290px; height: 14px; background: #000"></div>
+</div>
+<div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 24px">
+<p style="margin: 0; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: clamp(120px, 16vw, 240px); line-height: 0.8; color: #F2B630">404</p>
+<h1 style="margin: 0; font-size: 44px; line-height: 1.05; font-weight: 800; font-variation-settings: 'opsz' 72">Cette cartouche n'est pas dans le coffre.</h1>
+<p style="margin: 0; max-width: 520px; font-size: 18px; line-height: 1.55; color: #D8CFAC">L'adresse est peut-être mal tapée, ou la page a été rangée ailleurs. Si quelqu'un t'a envoyé un lien de salle, la salle est sans doute fermée.</p>
+<div style="display: flex; gap: 14px; flex-wrap: wrap">
+<a class="key" href="#/" style="display: inline-flex; align-items: center; height: 56px; padding: 0 24px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 700 20px 'Pixelify Sans', monospace">Retour à l'accueil</a>
+<a class="key" href="#/imposteur" style="display: inline-flex; align-items: center; height: 56px; padding: 0 22px; background: #EFE8CC; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 17px 'Bricolage Grotesque', sans-serif">Un jeu au hasard</a>
+</div>
+</div>
+</main>
+</div>
+</body>
+</html>

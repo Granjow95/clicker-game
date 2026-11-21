@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karaoké, écran de chant</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=Pixelify+Sans:wght@400;600;700&amp;family=Bungee&amp;display=swap" rel="stylesheet"/>
+<style>
+body{margin:0}
+a{color:#F2B630}a:hover{color:#FFF4D6}
+.velvet{background-color:#6E1A1F;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 14px,rgba(255,255,255,.05) 26px,rgba(0,0,0,.28) 40px)}
+.bulbs{height:18px;background-image:radial-gradient(circle,#FFE8A3 0 5px,#F2B630 5px 6px,transparent 6px);background-size:28px 18px}
+.key{transition:transform 120ms cubic-bezier(.23,1,.32,1),box-shadow 120ms cubic-bezier(.23,1,.32,1);cursor:pointer}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 #1B1D16 !important}
+.key:focus-visible{outline:3px solid #FFF4D6;outline-offset:3px}
+.line{transition:transform 280ms cubic-bezier(.77,0,.175,1),opacity 280ms cubic-bezier(.77,0,.175,1)}
+@keyframes bulb{0%,100%{opacity:1}50%{opacity:.6}}
+.bulbs{animation:bulb 1.2s steps(2,end) infinite}
+@media (prefers-reduced-motion: reduce){.bulbs{animation:none}}
+</style>
+</head>
+<body>
+<div style="min-height: 900px; background: #160506; color: #FFF4D6; font-family: 'Bricolage Grotesque', sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div aria-hidden="true" class="velvet" style="position: absolute; left: 0; top: 0; bottom: 0; width: 12%; border-right: 4px solid #2A0B0D; border-bottom-right-radius: 60% 18%"></div>
+<div aria-hidden="true" class="velvet" style="position: absolute; right: 0; top: 0; bottom: 0; width: 12%; border-left: 4px solid #2A0B0D; border-bottom-left-radius: 60% 18%"></div>
+<div aria-hidden="true" class="velvet" style="position: absolute; left: 0; right: 0; top: 0; height: 60px; border-bottom: 4px solid #2A0B0D"></div>
+<div aria-hidden="true" class="bulbs" style="position: absolute; left: 12%; right: 12%; top: 66px"></div>
+<div aria-hidden="true" style="position: absolute; left: 50%; top: 80px; width: 1000px; height: 760px; margin-left: -500px; background: radial-gradient(ellipse 50% 55% at 50% 55%, rgba(255,232,163,.22), transparent 70%); clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%)"></div>
+<header style="position: relative; z-index: 1; margin: 12px auto 0; width: min(1100px, 92%); display: flex; align-items: center; gap: 16px; background: rgba(22,5,6,.85); border: 2px solid #8A2A30; border-radius: 14px; padding: 6px 8px; box-sizing: border-box">
+<button class="key" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 10px; background: #FFF4D6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 3px 0 #000; font: 600 15px 'Bricolage Grotesque', sans-serif" type="button"><svg aria-hidden="true" fill="none" height="14" stroke="#1B1D16" stroke-linecap="square" stroke-width="3" viewbox="0 0 14 14" width="14"><path d="M2 2l10 10M12 2 2 12"></path></svg>Quitter</button>
+<h1 style="margin: 0; flex: 1; font-family: 'Bungee', sans-serif; font-weight: 400; font-size: 20px; color: #F2B630; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Le Bus de minuit</h1>
+<span style="font: 700 18px 'Pixelify Sans', monospace">Ligne 14/42</span>
+</header>
+<main aria-live="polite" style="position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 120px 16% 40px; text-align: center">
+<p class="line" style="margin: 0; font-size: 26px; font-weight: 600; color: #C79B9B">Le chauffeur rit dans son rétro</p>
+<p class="line" style="margin: 0; font-size: clamp(44px, 6vw, 88px); font-weight: 800; line-height: 1.02; letter-spacing: -0.02em; font-variation-settings: 'opsz' 96"><span style="color: #F2B630">Et moi je chante</span> sous la pluie</p>
+<p class="line" style="margin: 0; font-size: 34px; font-weight: 600; color: #E9D9C6">Je cours après le bus de minuit</p>
+</main>
+<footer style="position: relative; z-index: 1; padding: 0 14% 28px; display: flex; flex-direction: column; gap: 18px; align-items: center">
+<div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">
+<button class="key" style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 20px; background: #FFF4D6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 17px 'Bricolage Grotesque', sans-serif" type="button"><svg aria-hidden="true" height="14" shape-rendering="crispEdges" viewbox="0 0 7 7" width="14"><path d="M5 0h1v7H5V6H4V5H3V4H2V3h1V2h1V1h1z" fill="#1B1D16"></path></svg>Précédente</button>
+<button aria-pressed="true" class="key" style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 26px; background: #F2B630; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 400 20px 'Bungee', sans-serif" type="button"><svg aria-hidden="true" height="16" shape-rendering="crispEdges" viewbox="0 0 7 7" width="16"><path d="M1 0h1v1h1v1h1v1h1v1H4v1H3v1H2v1H1z" fill="#1B1D16"></path></svg>Auto</button>
+<button class="key" style="display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 20px; background: #FFF4D6; color: #1B1D16; border: 3px solid #1B1D16; border-radius: 10px; box-shadow: 0 4px 0 #000; font: 600 17px 'Bricolage Grotesque', sans-serif" type="button">Suivante<svg aria-hidden="true" height="14" shape-rendering="crispEdges" viewbox="0 0 7 7" width="14"><path d="M1 0h1v1h1v1h1v1h1v1H4v1H3v1H2v1H1z" fill="#1B1D16"></path></svg></button>
+</div>
+<p style="margin: 0; font-size: 14px; color: #E9D9C6">Les spectateurs voient à la place : « Léa contrôle les paroles ». Raccourcis hôte : flèches gauche et droite, Espace pour Auto.</p>
+<ul aria-label="Dans la salle" style="list-style: none; margin: 0; padding: 8px 12px; display: flex; gap: 10px; background: rgba(22,5,6,.85); border: 2px solid #8A2A30; border-radius: 12px">
+
+<li style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 8px; background: rgba(242,182,48,.18)">
+<span aria-hidden="true" style="width: 30px; height: 30px; background: #F2B630; color: #1B1D16; border: 2px solid #1B1D16; display: grid; place-items: center; font: 700 15px 'Pixelify Sans', monospace">L</span>
+<span style="font-weight: 600; font-size: 15px">Léa (hôte, au micro)</span>
+</li>
+
+<li style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 8px; background: transparent">
+<span aria-hidden="true" style="width: 30px; height: 30px; background: #F28AA6; color: #1B1D16; border: 2px solid #1B1D16; display: grid; place-items: center; font: 700 15px 'Pixelify Sans', monospace">A</span>
+<span style="font-weight: 600; font-size: 15px">Amir</span>
+</li>
+
+<li style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 8px; background: transparent">
+<span aria-hidden="true" style="width: 30px; height: 30px; background: #7FB342; color: #1B1D16; border: 2px solid #1B1D16; display: grid; place-items: center; font: 700 15px 'Pixelify Sans', monospace">Y</span>
+<span style="font-weight: 600; font-size: 15px">Yanis</span>
+</li>
+
+<li style="display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 8px; background: transparent">
+<span aria-hidden="true" style="width: 30px; height: 30px; background: #2E63B8; color: #1B1D16; border: 2px solid #1B1D16; display: grid; place-items: center; font: 700 15px 'Pixelify Sans', monospace">S</span>
+<span style="font-weight: 600; font-size: 15px">Sofia</span>
+</li>
+
+</ul>
+</footer>
+</div>
+</body>
+</html>

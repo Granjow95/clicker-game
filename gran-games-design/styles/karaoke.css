@@ -1,0 +1,38 @@
+/* ==========================================================================
+   Karaoké : "La scène". Monde : <main data-monde="karaoke">
+   Référence : reference/html/Karaoke.html (téléphone), Karaoke-scene.html
+   ========================================================================== */
+[data-monde="karaoke"] {
+  --monde-barre: rgba(22,5,6,.85);
+  background-color: #6E1A1F;
+  background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 10px, rgba(255,255,255,.04) 18px, rgba(0,0,0,.22) 28px); /* velours */
+}
+.kar-titre { margin: 0; font-family: "Bungee", sans-serif; font-weight: 400; font-size: 54px; line-height: .95; color: #F2B630; }
+.ampoules { height: 14px; background-image: radial-gradient(circle, #FFE8A3 0 4px, #F2B630 4px 5px, transparent 5px); background-size: 22px 14px; }
+.ampoules--clignote { animation: ampoules 1.2s steps(2, end) infinite; }
+@keyframes ampoules { 50% { opacity: .6; } }
+/* Billets de théâtre (choix du mode) */
+.billet { padding: 24px 32px; display: flex; flex-direction: column; gap: 6px; text-decoration: none;
+  clip-path: polygon(0 0,100% 0,100% 40%,calc(100% - 14px) 50%,100% 60%,100% 100%,0 100%,0 60%,14px 50%,0 40%); }
+.billet--solo { background: #F2B630; color: #1B1D16; }
+.billet--salle { background: #FFF4D6; color: #1B1D16; }
+.billet__nom { font-family: "Bungee", sans-serif; font-size: 40px; line-height: 1; }
+.billet--salle .billet__nom { color: #6E1A1F; }
+/* Projecteur */
+.projecteur { position: absolute; pointer-events: none; background: radial-gradient(ellipse 50% 55% at 50% 55%, rgba(255,232,163,.22), transparent 70%); clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%); }
+/* Écran de chant plein écran */
+.scene { min-height: 100vh; background: #160506; color: #FFF4D6; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.scene__rideau { position: absolute; top: 0; bottom: 0; width: 12%; background-color: #6E1A1F; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 14px, rgba(255,255,255,.05) 26px, rgba(0,0,0,.28) 40px); }
+.scene__rideau--g { left: 0; border-right: 4px solid #2A0B0D; border-bottom-right-radius: 60% 18%; }
+.scene__rideau--d { right: 0; border-left: 4px solid #2A0B0D; border-bottom-left-radius: 60% 18%; }
+.scene__paroles { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 120px 16% 40px; text-align: center; }
+.ligne-prec { margin: 0; font-size: 26px; font-weight: 600; color: #C79B9B; }
+.ligne-cour { margin: 0; font-size: clamp(44px, 6vw, 88px); font-weight: 800; line-height: 1.02; letter-spacing: -.02em; font-variation-settings: "opsz" 96; }
+.ligne-cour .chante { color: #F2B630; } /* partie déjà chantée */
+.ligne-suiv { margin: 0; font-size: 34px; font-weight: 600; color: #E9D9C6; }
+/* Changement de ligne : la suivante monte et grossit, 280 ms */
+.scene__paroles.avance > * { animation: monte 280ms var(--ease-in-out) both; }
+@keyframes monte { from { transform: translateY(40px); opacity: .4; } }
+.public { list-style: none; margin: 0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; background: rgba(22,5,6,.85); border: 2px solid #8A2A30; border-radius: 12px; }
+@media (max-width: 640px) { .scene__rideau { width: 6%; } .scene__paroles { padding: 100px 10% 24px; } .ligne-prec { font-size: 18px; } .ligne-suiv { font-size: 22px; } }
+@media (prefers-reduced-motion: reduce) { .ampoules--clignote, .scene__paroles.avance > * { animation: none; } }
