@@ -152,7 +152,7 @@ function createImposteur(io, results = { record() {} }) {
 
     const next = nextPlayerToHint(roomId);
     if (next) {
-      io.to(next.id).emit("next_turn", st.hints[st.turn].length);
+      io.to(next.id).emit("next_turn", room.findIndex((p) => p.id === next.id));
       return;
     }
     st.turn++;
@@ -161,16 +161,19 @@ function createImposteur(io, results = { record() {} }) {
   }
 
   // Termine la manche quand tous les joueurs présents ont voté.
-  function tryFinalizeVotes(roomId) {
+  // `force` (hôte) : finalise avec les votes reçus. Un joueur seul ne peut voter pour personne : complet.
+  function tryFinalizeVotes(roomId, force = false) {
     const st = gameStates[roomId];
     const room = rooms[roomId];
-    const votes = votesState[roomId];
-    if (!st || !room || !votes || st.phase !== "voting") return;
-    if (room.length === 0 || !room.every((p) => votes[p.id])) return;
+    const votes = votesState[roomId] || {};
+    if (!st || !room || st.phase !== "voting" || room.length === 0) return;
+    if (!force && room.length > 1 && !room.every((p) => votes[p.id])) return;
 
     // Seuls les votes des joueurs présents comptent (un joueur parti ne vote plus).
     const valid = {};
-    room.forEach((p) => (valid[p.id] = votes[p.id]));
+    room.forEach((p) => {
+      if (votes[p.id]) valid[p.id] = votes[p.id];
+    });
     const before = { ...playerPoints[roomId] };
     const { mostVoted } = scoreVotes(valid, st.impostorId, playerPoints[roomId]);
 
@@ -260,6 +263,11 @@ function createImposteur(io, results = { record() {} }) {
       const username = clean(data?.username, 20);
       if (!roomId || !username) return;
       if (socket.data.impRoom === roomId && isMember(roomId, socket)) return;
+      const curPhase = gameStates[roomId]?.phase;
+      if (rooms[roomId] && (curPhase === "hints" || curPhase === "voting")) {
+        socket.emit("error_message", "Une manche est en cours, rejoins la salle à la fin de la manche.");
+        return;
+      }
       leaveRoom(socket); // un socket = une salle à la fois
 
       let isCreator = false;
@@ -291,6 +299,7 @@ function createImposteur(io, results = { record() {} }) {
     socket.on("update_lobby_options", (data) => {
       const roomId = cid(data?.roomId);
       if (!lobbyOptions[roomId] || !isHost(roomId, socket)) return;
+      if (gameStates[roomId] && !gameStates[roomId].over) return; // pas de changement en pleine partie
       lobbyOptions[roomId] = sanitizeOptions(data.options);
       io.to(ns(roomId)).emit("lobby_options_updated", { options: lobbyOptions[roomId] });
     });
@@ -302,6 +311,7 @@ function createImposteur(io, results = { record() {} }) {
       const st = gameStates[roomId];
       if (!room || !st || st.phase !== "voting" || !isMember(roomId, socket)) return;
       if (typeof votedId !== "string" || !room.some((p) => p.id === votedId)) return;
+      if (votedId === socket.id) return; // pas de vote pour soi-même
 
       if (!votesState[roomId]) votesState[roomId] = {};
       if (votesState[roomId][socket.id]) return; // un seul vote par joueur
@@ -336,15 +346,25 @@ function createImposteur(io, results = { record() {} }) {
       io.to(ns(roomId)).emit("all_hints_done");
     });
 
+    socket.on("force_reveal", (rawRoomId) => {
+      const roomId = cid(rawRoomId);
+      const st = gameStates[roomId];
+      if (!st || st.phase !== "voting" || !isHost(roomId, socket)) return;
+      if (Object.keys(votesState[roomId] || {}).length === 0) return; // au moins un vote reçu
+      tryFinalizeVotes(roomId, true);
+    });
+
     socket.on("start_next_round", (rawRoomId) => {
       const roomId = cid(rawRoomId);
       if (!roundCount[roomId] || !lobbyOptions[roomId] || !isHost(roomId, socket)) return;
       if (gameStates[roomId]?.phase !== "revealed") return; // pas de saut de manche
+      if (gameStates[roomId].over) return; // partie terminée
       roundCount[roomId]++;
       if (roundCount[roomId] > lobbyOptions[roomId].rounds) {
         const present = Object.fromEntries(
           Object.entries(playerPoints[roomId]).filter(([id]) => rooms[roomId].some((p) => p.id === id))
         );
+        if (gameStates[roomId]) gameStates[roomId].over = true;
         io.to(ns(roomId)).emit("game_over", buildRanking(present, rooms[roomId]));
       } else {
         startRound(roomId);
@@ -354,6 +374,9 @@ function createImposteur(io, results = { record() {} }) {
     socket.on("start_round", (rawRoomId) => {
       const roomId = cid(rawRoomId);
       if (!rooms[roomId] || !isHost(roomId, socket)) return;
+      const ph = gameStates[roomId]?.phase;
+      if (ph === "hints" || ph === "voting") return; // manche déjà en cours
+      if (gameStates[roomId] && !gameStates[roomId].over) return; // pas de remise à zéro en pleine partie
       roundCount[roomId] = 1;
       playerPoints[roomId] = {};
       startRound(roomId);

@@ -56,7 +56,7 @@ async function playRound(roomId, cs) {
   host.emit("force_vote", roomId);
   await once(rest[0], "all_hints_done");
   const p = once(host, "reveal_results");
-  cs.forEach((c) => c.emit("vote", { roomId, votedId: host.id }));
+  cs.forEach((c) => c.emit("vote", { roomId, votedId: c === host ? rest[0].id : host.id }));
   await p;
   await wait(100);
 }
