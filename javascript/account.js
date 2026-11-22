@@ -279,7 +279,7 @@ const granAccount = (() => {
         el('p', { class: 'fenetre__texte fenetre__texte--doux' }, 'Rien reçu ? Regarde dans les indésirables. Tu peux continuer à jouer avec ton pseudo en attendant.'),
         el('div', { class: 'actions-ligne' },
           renvoyer,
-          el('button', { type: 'button', class: 'key key--principal', onclick: () => { granUI.closeDialog(dlg); granRouter.navigate('/jeux'); } }, 'Retour aux jeux')),
+          el('button', { type: 'button', class: 'key key--principal', onclick: () => { granUI.closeDialog(dlg); granRouter.navigate('/'); } }, 'Retour aux jeux')),
         st));
   }
 
@@ -367,7 +367,13 @@ const granAccount = (() => {
   const P = {
     avatar: document.getElementById('profil-avatar'),
     nom: document.getElementById('profil-nom'),
+    annonce: document.getElementById('p-annonce'),
+    annonce: document.getElementById('p-annonce'),
     depuis: document.getElementById('profil-depuis'),
+    email: document.getElementById('profil-email'),
+    root: document.querySelector('section[data-vue="profil"]'),
+    global: document.getElementById('p-global'),
+    recentes: document.getElementById('p-recentes'),
     form: document.getElementById('profil-form'),
     pseudo: document.getElementById('p-pseudo'),
     pseudoErr: document.getElementById('p-pseudo-err'),
@@ -395,6 +401,7 @@ const granAccount = (() => {
     if (!u) return;
     const name = displayName();
     P.nom.textContent = name;
+    P.email.textContent = u.email || '';
     paintAvatar(P.avatar, profile && profile.avatar_url, name);
     if (u.created_at) {
       const d = new Date(u.created_at);
@@ -404,20 +411,48 @@ const granAccount = (() => {
     if (document.activeElement !== P.avatarUrl) P.avatarUrl.value = (profile && profile.avatar_url) || '';
   }
 
+  const statCell = (label, value) => {
+    const dd = el('dd', {}, '0');
+    granUI.countUp(dd, Number(value) || 0);
+    return el('div', {}, el('dt', {}, label), dd);
+  };
+
+  function paintGlobal(rows) {
+    if (!rows) { P.global.replaceChildren(); return; }
+    const played = rows.reduce((n, r) => n + (r.games_played || 0), 0);
+    const wins = rows.reduce((n, r) => n + (r.wins || 0), 0);
+    const jeux = rows.filter((r) => r.games_played > 0 && GAMES[r.game]).length;
+    if (!played) { P.global.replaceChildren(el('p', { class: 'profil__vide' }, "Aucune partie enregistrée pour l'instant. Joue à Imposteur, Lyrics ou Karaoké : tes chiffres s'afficheront ici.")); return; }
+    P.global.replaceChildren(el('div', { class: 'stat-global' }, el('dl', {},
+      statCell('Parties jouées', played), statCell('Victoires', wins), statCell(`Jeux essayés sur ${GAME_IDS.length}`, jeux))));
+  }
+
   function paintStats(rows) {
-    if (!rows) { P.stats.replaceChildren(el('p', { class: 'profil__statut profil__statut--erreur', role: 'alert' }, 'Statistiques indisponibles.')); return; }
+    if (!rows) {
+      P.global.replaceChildren();
+      P.stats.replaceChildren(el('p', { class: 'profil__statut profil__statut--erreur', role: 'alert' }, 'Statistiques indisponibles.'));
+      return;
+    }
+    paintGlobal(rows);
     const by = Object.fromEntries(rows.map((r) => [r.game, r]));
     P.stats.replaceChildren(...GAME_IDS.map((id) => {
       const r = by[id] || { games_played: 0, wins: 0, total_score: 0, best_score: 0 };
-      const cell = (label, value) => {
-        const dd = el('dd', {}, '0');
-        granUI.countUp(dd, Number(value) || 0);
-        return el('div', {}, el('dt', {}, label), dd);
-      };
       return el('div', { class: `stat-jeu stat-jeu--${id}` },
         el('span', { class: 'stat-jeu__nom' }, GAMES[id]),
-        el('dl', {}, cell('Parties', r.games_played), cell('Victoires', r.wins), cell('Score total', r.total_score), cell('Meilleur score', r.best_score)));
+        el('dl', {}, statCell('Parties', r.games_played), statCell('Victoires', r.wins), statCell('Score total', r.total_score), statCell('Meilleur score', r.best_score)));
     }));
+  }
+
+  function paintRecentes() {
+    const enAttente = new Set(Array.from(pending).map((e) => e.id));
+    const rows = history.filter((r) => !enAttente.has(r.id)).slice(0, 20);
+    if (!rows.length) { P.recentes.replaceChildren(el('p', { class: 'profil__vide' }, 'Aucune partie récente.')); return; }
+    P.recentes.replaceChildren(el('ol', { class: 'recentes__liste' }, rows.map((r) => el('li', { class: 'recentes__ligne' },
+      el('span', { class: `pastille-jeu pastille-jeu--${r.game}`, 'aria-hidden': 'true' }),
+      el('span', { class: 'recentes__jeu' }, GAMES[r.game] || r.game),
+      resultTag(r),
+      el('span', { class: 'historique__score' }, String(r.score)),
+      el('time', { class: 'historique__quand', datetime: r.created_at }, new Date(r.created_at).toLocaleDateString('fr-FR'))))));
   }
 
   const trash = () => svg('<svg aria-hidden="true" viewBox="0 0 10 10" shape-rendering="crispEdges"><path class="illustration-doux" d="M3 0h4v1H3zM1 1h8v1H1zM2 2h6v8H2z"></path><path class="illustration-parchemin" d="M3 3h1v6H3zM6 3h1v6H6z"></path></svg>');
@@ -431,7 +466,7 @@ const granAccount = (() => {
     const filtre = P.filtre.value;
     const enAttente = new Set(Array.from(pending).map((e) => e.id));
     const rows = history.filter((r) => (!filtre || r.game === filtre) && !enAttente.has(r.id));
-    if (!rows.length) { P.hist.replaceChildren(el('p', { class: 'historique__vide' }, 'Aucune partie.')); return; }
+    if (!rows.length) { P.hist.replaceChildren(el('p', { class: 'historique__vide' }, filtre ? `Aucune partie de ${GAMES[filtre]} pour l'instant.` : 'Aucune partie.')); return; }
     const th = (t, sr) => el('th', { scope: 'col' }, sr ? el('span', { class: 'sr-only' }, t) : t);
     const body = rows.map((r) => {
       const tr = el('tr', {},
@@ -461,13 +496,14 @@ const granAccount = (() => {
       if (error) { tr.hidden = false; granUI.toast('Suppression impossible.', { type: 'erreur' }); return; }
       history = history.filter((x) => x.id !== r.id);
       tr.remove();
-      if (profilActive) { getStats(true).then(paintStats); if (!history.length) paintHistory(); }
+      if (profilActive) { getStats(true).then(paintStats); paintRecentes(); if (!history.length) paintHistory(); }
     };
     entry.timer = setTimeout(entry.commit, UNDO_MS);
     pending.add(entry);
+    if (profilActive) paintRecentes();
     granUI.toast('Partie supprimée.', {
       duree: UNDO_MS,
-      action: { label: 'Annuler', onClick: () => { clearTimeout(entry.timer); pending.delete(entry); tr.hidden = false; } },
+      action: { label: 'Annuler', onClick: () => { clearTimeout(entry.timer); pending.delete(entry); tr.hidden = false; if (profilActive) paintRecentes(); } },
     });
   }
   function flushPending() { return Promise.all(Array.from(pending).map((e) => e.commit())); }
@@ -477,28 +513,36 @@ const granAccount = (() => {
     const u = granAuth.user();
     const sb = granAuth.client();
     if (!u || !sb) return;
-    const erreur = () => P.hist.replaceChildren(el('p', { class: 'historique__vide profil__statut--erreur', role: 'alert' }, 'Historique indisponible.'));
+    const erreur = () => {
+      P.hist.replaceChildren(el('p', { class: 'historique__vide profil__statut--erreur', role: 'alert' }, 'Historique indisponible.'));
+      P.recentes.replaceChildren(el('p', { class: 'profil__vide profil__statut--erreur', role: 'alert' }, 'Parties récentes indisponibles.'));
+    };
     try {
       const { data, error } = await sb.from('game_results')
         .select('id, game, score, won, created_at').eq('user_id', u.id)
-        .order('created_at', { ascending: false }).limit(20);
+        .order('created_at', { ascending: false }).limit(100);
       if (!granAuth.user() || granAuth.user().id !== u.id) return; // changement d'utilisateur pendant la requête
       if (error) { erreur(); return; }
       history = data || [];
       paintHistory();
+      paintRecentes();
+      P.annonce.textContent = `${history.length} partie${history.length > 1 ? 's' : ''} chargée${history.length > 1 ? 's' : ''}`;
     } catch (_) {
       if (granAuth.user() && granAuth.user().id === u.id) erreur();
     }
   }
 
   function initProfil() {
-    if (!ready) { P.nom.textContent = '…'; return; } // la session n'est pas encore connue : onChange rappellera
+    if (!ready) { P.nom.textContent = 'Ton profil'; return; } // la session n'est pas encore connue : onChange rappellera
     if (!granAuth.user()) { granRouter.navigate('/'); open('signin'); return; }
     paintProfilHeader();
     setStatus(P.statut, '');
     setStatus(P.delStatut, '');
+    P.global.replaceChildren(el('div', { class: 'skel stat-global' }));
     P.stats.replaceChildren(el('div', { class: 'skel stat-jeu' }));
+    P.recentes.replaceChildren(el('p', { class: 'profil__vide' }, 'Chargement…'));
     P.hist.replaceChildren(el('p', { class: 'historique__vide' }, 'Chargement…'));
+    P.annonce.textContent = '';
     if (!profile) loadProfile();
     getStats(true).then(paintStats);
     refreshFiche();
@@ -541,7 +585,7 @@ const granAccount = (() => {
   // Suppression du compte : appui long de 2 s (confirmation), puis événement serveur account_delete.
   function deleteAccount() {
     P.del.disabled = true;
-    setStatus(P.delStatut, 'Suppression…');
+    setStatus(P.delStatut, 'Suppression en cours');
     let timer = null;
     const done = () => { clearTimeout(timer); socket.off('account_deleted', onOk); socket.off('account_delete_error', onErr); };
     const onOk = async () => {
@@ -560,8 +604,16 @@ const granAccount = (() => {
   }
   granUI.holdToConfirm(P.del, deleteAccount);
 
+  // Entrée écran vers écran : cascade de 40 ms sur les blocs, rejouée à chaque enter() (vues persistantes).
+  function animateEntry() {
+    if (!P.root || !granAuth.user()) return;
+    P.root.classList.remove('profil--entre');
+    void P.root.offsetWidth;
+    P.root.classList.add('profil--entre');
+  }
+
   granRouter.register('profil', {
-    enter() { profilActive = true; initProfil(); },
+    enter() { profilActive = true; initProfil(); animateEntry(); },
     leave() { profilActive = false; statsP = null; flushPending(); },
   });
 
@@ -584,7 +636,7 @@ const granAccount = (() => {
     if (user) loadProfile();
     if (dlg.open) render();
     if (profilActive) {
-      if (user) initProfil(); else { granRouter.navigate('/'); }
+      if (user) { initProfil(); if (first) animateEntry(); } else { granRouter.navigate('/'); }
     }
   });
 

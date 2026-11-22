@@ -401,8 +401,13 @@ async function topSongsWithCache() {
 /* ============================================================
    UTILITAIRE PARTAGÉ
 ============================================================ */
+// Apostrophes typographiques -> ', ligature œ -> oe (pure).
+function normalizeLyricsApostrophes(str) {
+  return (str || '').replace(/[\u2019\u2018\u02BC]/g, "'").replace(/\u0153/g, 'oe').replace(/\u0152/g, 'Oe');
+}
+
 function normalizeLyricsWord(str) {
-  return (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9']+/g, ' ').trim();
+  return normalizeLyricsApostrophes(str).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9']+/g, ' ').trim();
 }
 
 /* ============================================================
@@ -880,7 +885,7 @@ window.lyricsShowPage = id => {
   }
 
   function tokenize(text) {
-    const clean = (text || '').replace(/\r\n/g, '\n');
+    const clean = normalizeLyricsApostrophes(text).replace(/\r\n/g, '\n');
     const regex = /(\n)|([A-Za-zÀ-ÖØ-öø-ÿ0-9']+)|([^\sA-Za-zÀ-ÖØ-öø-ÿ0-9']+)|(\s+)/g;
     const toks  = [];
     let m;

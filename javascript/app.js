@@ -51,6 +51,25 @@
   });
 
   /* ---------- Accueil ---------- */
+  // Entrée « écran vers écran » en cascade (40 ms, 5 bandeaux). Les vues sont persistantes : on rejoue à chaque enter().
+  // Retour d'un jeu avec View Transition : la transition anime déjà l'écran, on saute la cascade.
+  granRouter.register('accueil', {
+    enter() {
+      const vue = document.querySelector('[data-vue="accueil"]');
+      if (!vue) return;
+      const reduit = granUI.reducedMotion();
+      const parVT = document.documentElement.classList.contains('retour') && !!document.startViewTransition && !reduit;
+      vue.classList.remove('accueil--entre');
+      if (parVT) return;
+      void vue.offsetWidth; // relance l'animation si on revient sur l'accueil
+      vue.classList.add('accueil--entre');
+    },
+    leave() {
+      const vue = document.querySelector('[data-vue="accueil"]');
+      if (vue) vue.classList.remove('accueil--entre');
+    },
+  });
+
   // « On t'a donné un code ? » : mène à la salle Imposteur avec code et pseudo pré-remplis (jamais de jointure automatique).
   $('form-rejoindre').addEventListener('submit', (e) => {
     e.preventDefault();

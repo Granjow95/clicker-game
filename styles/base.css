@@ -26,7 +26,7 @@
   --bouton-dor: #F2B630;    /* action principale */
   --bouton-dor-clair: #FFE8A3; /* reflet des ampoules, pulsation */
   --faience: #2E63B8;       /* focus, liens, info */
-  --bonbon: #F28AA6;        /* toi, nouveautés */
+  --bonbon: #F28AA6;        /* toi */
   --pomme: #7FB342;         /* juste, gagné, prêt */
   --brique: #B83A24;        /* faux, danger, imposteur */
   --texte-doux: #B9B596;    /* texte secondaire sur fond sombre (7,4:1) */
@@ -321,7 +321,6 @@ dialog.fenetre.ferme { opacity: 0; transform: scale(.96); transition-duration: v
 .cart__stries { height: 20px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 6px, transparent 6px 12px); }
 .cart__etiquette { margin: 10px 14px 0; flex: 1; background: var(--cart-etiquette); padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
 .cart__nom { font-family: var(--cart-police); font-size: var(--cart-taille); line-height: 1; }
-.cart__mode { font-size: 13px; font-weight: 600; }
 .cart__contacts { height: 16px; margin: 10px 24px 0; background-image: repeating-linear-gradient(90deg, #C9A64A 0 10px, transparent 10px 16px); }
 @media (hover: hover) and (pointer: fine) {
   .cart:hover { transform: translateY(-14px) rotate(0deg); }

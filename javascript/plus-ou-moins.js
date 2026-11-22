@@ -1,12 +1,20 @@
 // Plus ou Moins : écrans seulement (départ, jeu, fin) sur données fictives (demo-data.js).
-// Aucun socket, aucun appel réseau, rien n'est enregistré : le record vit le temps de la page.
+// Aucun socket, aucun appel réseau : le record personnel est gardé dans le localStorage du navigateur.
 (() => {
   const $ = (id) => document.getElementById(id);
   const root = () => document.querySelector('[data-vue="plus-ou-moins"]');
 
-  // Paires consécutives de chaque thème : le gagnant du duel précédent reste à gauche.
+  // Paires consécutives de chaque thème ; l'ordre des duels est mélangé à chaque partie (lancer).
   const paires = DEMO_POM_THEMES.flatMap((t) => t.items.slice(0, -1).map((a, i) => ({ theme: t, a, b: t.items[i + 1] })));
-  let record = DEMO_POM_RECORD;
+  const CLE_RECORD = 'granGames:pom-record';
+  const lireRecord = () => {
+    try {
+      const v = parseInt(localStorage.getItem(CLE_RECORD), 10);
+      return Number.isFinite(v) && v > DEMO_POM_RECORD ? Math.min(v, 1000) : DEMO_POM_RECORD;
+    } catch { return DEMO_POM_RECORD; }
+  };
+  const ecrireRecord = (v) => { try { localStorage.setItem(CLE_RECORD, String(v)); } catch { /* stockage indisponible */ } };
+  let record = lireRecord();
   let serie = 0;
   let index = 0;
   let verrou = false;
@@ -77,7 +85,7 @@
   function finir(theme, a, b, label) {
     const battu = serie > record;
     const ancien = record;
-    if (battu) record = serie;
+    if (battu) { record = serie; ecrireRecord(record); }
     $('pom-fin-titre').textContent = `La série s'arrête à ${serie}`;
     $('pom-explication').replaceChildren(
       `${b.nom} fait `, granUI.el('b', {}, fmt(b.valeur, theme.unite)), `. Tu as dit « ${label.toLowerCase()} » que ${a.nom}.`);
@@ -95,6 +103,7 @@
   function onKey(e) {
     const jeu = root().querySelector('[data-ecran="jeu"]');
     if (!jeu || jeu.hidden) return;
+    if (e.repeat) return;
     if (document.querySelector('dialog[open]')) return;
     const t = e.target;
     if (t && t.closest && t.closest('input, textarea, select, [contenteditable]')) return;
@@ -110,6 +119,7 @@
   granRouter.register('plus-ou-moins', {
     enter() {
       document.addEventListener('keydown', onKey);
+      record = lireRecord();
       $('pom-record-depart').textContent = record;
       montrer('depart');
     },

@@ -396,6 +396,7 @@ function startImpostorRound(_, displayedWord) {
 
   const endBtn = impEl("end-round");
   if (isHostMe()) {
+    endBtn.textContent = "Passer aux votes";
     endBtn.classList.remove("hidden");
     endBtn.onclick = () => {
       socket.emit("force_vote", currentRoomId);
@@ -472,12 +473,24 @@ function clearTurnUI() {
 
 /* ---------- Vote ---------- */
 
+// Phase de vote : l'hôte voit « Révéler maintenant » (le serveur vérifie l'hôte et la phase).
+function showForceReveal() {
+  const btn = impEl("end-round");
+  if (!isHostMe()) { btn.classList.add("hidden"); return; }
+  btn.textContent = "Révéler maintenant";
+  btn.classList.remove("hidden");
+  btn.onclick = () => {
+    socket.emit("force_reveal", currentRoomId);
+    btn.classList.add("hidden");
+  };
+}
+
 function showVotingPhase() {
   clearTurnUI();
   impEl("players-inputs").replaceChildren();
   impEl("word-bar").classList.add("hidden");
-  impEl("end-round").classList.add("hidden");
   setRoundInfo(`Manche ${currentRound}/${gameOptions.totalRounds}, vote`);
+  showForceReveal();
 
   const revealPhase = impEl("reveal-phase");
   const grid = granUI.el("div", { class: "imp-votes", role: "radiogroup", "aria-label": "Suspect" });
@@ -545,6 +558,7 @@ socket.on("hint_submitted", ({ playerId, hint, players }) => {
 });
 
 socket.on("next_turn", (turnNumber) => {
+  if (!Number.isInteger(turnNumber) || turnNumber < 0 || turnNumber >= currentPlayers.length) return;
   clearTurnUI();
   currentTurn = turnNumber;
   activeIndex = turnNumber;
@@ -697,11 +711,14 @@ socket.on("error_message", (msg) => {
 socket.on("host_changed", ({ phase, isLastRound }) => {
   if (phase === "hints") {
     const endBtn = impEl("end-round");
+    endBtn.textContent = "Passer aux votes";
     endBtn.classList.remove("hidden");
     endBtn.onclick = () => {
       socket.emit("force_vote", currentRoomId);
       endBtn.classList.add("hidden");
     };
+  } else if (phase === "voting") {
+    showForceReveal();
   } else if (phase === "revealed") {
     renderRevealActions(Boolean(isLastRound));
   }

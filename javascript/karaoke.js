@@ -436,7 +436,19 @@ function parseLRC(lrc) {
   return out.length ? out : null;
 }
 
-function kkLaunchGame(song) {
+// Affiche les contrôles (hôte/solo) ou le message spectateur.
+function kkApplyHostControls() {
+  const isSoloOrHost = kk.mode === 'solo' || kk.isHost;
+  const ctrlEl = document.getElementById('kk-controls');
+  const specMsg = document.getElementById('kk-spectator-msg');
+  if (ctrlEl) ctrlEl.style.display = isSoloOrHost ? 'flex' : 'none';
+  if (specMsg) {
+    specMsg.textContent = `${kkHostName()} contrôle les paroles`;
+    specMsg.style.display = isSoloOrHost ? 'none' : 'block';
+  }
+}
+
+function kkLaunchGame(song, startLine) {
   kk.song = song;
   // Quand le LRC est disponible, utiliser ses lignes pour l'affichage ET le timing
   // → kk.lines et kk.lrcLines ont toujours le même nombre d'éléments au même index
@@ -447,7 +459,7 @@ function kkLaunchGame(song) {
     kk.lines    = parsePlain(song.lyrics);
     kk.lrcLines = null;
   }
-  kk.currentLine = 0;
+  kk.currentLine = Math.max(0, Math.min(Number(startLine) || 0, Math.max(0, kk.lines.length - 1)));
   kk.autoPlay = false;
   kk.playClock0 = null;
   clearTimeout(kk.autoTimer);
@@ -460,15 +472,7 @@ function kkLaunchGame(song) {
   const titleBar = document.getElementById('kk-song-title-bar');
   if (titleBar) titleBar.textContent = `${song.title} — ${song.artist}`;
 
-  // Contrôles
-  const isSoloOrHost = kk.mode === 'solo' || kk.isHost;
-  const ctrlEl = document.getElementById('kk-controls');
-  const specMsg = document.getElementById('kk-spectator-msg');
-  if (ctrlEl) ctrlEl.style.display = isSoloOrHost ? 'flex' : 'none';
-  if (specMsg) {
-    specMsg.textContent = `${kkHostName()} contrôle les paroles`;
-    specMsg.style.display = isSoloOrHost ? 'none' : 'block';
-  }
+  kkApplyHostControls();
 
   // Bouton auto seulement en solo
   const playBtn = document.getElementById('kk-play-btn');
@@ -1018,8 +1022,7 @@ function kkWireSocket() {
     kkRenderLobby(players, host, song || null);
 
     if (started && song) {
-      kk.currentLine = currentLine;
-      kkLaunchGame(song);
+      kkLaunchGame(song, currentLine);
     }
   });
 
@@ -1036,18 +1039,18 @@ function kkWireSocket() {
     }
     if (gameEl && gameEl.style.display !== 'none') {
       kkUpdatePlayersBar();
+      kkApplyHostControls();
     }
     if (song && !kk.song) kk.song = song;
   });
 
   socket.on('karaoke_song_selected', ({ song }) => {
     kk.song = song;
-    kkRenderLobby(kk.players, null, song);
+    kkRenderLobby(kk.players, kk.hostId, song);
   });
 
   socket.on('karaoke_started', ({ currentLine }) => {
-    kk.currentLine = currentLine;
-    if (kk.song) kkLaunchGame(kk.song);
+    if (kk.song) kkLaunchGame(kk.song, currentLine);
   });
 
   socket.on('karaoke_line_changed', ({ currentLine }) => {

@@ -8,8 +8,7 @@
 const granRouter = (() => {
   const ROUTES = [
     { pattern: /^\/?$/, view: 'accueil', title: "Gran'Games" },
-    { pattern: /^\/jeux$/, view: 'accueil', title: "Gran'Games, les jeux", anchor: 'jeux' },
-    { pattern: /^\/nouveautes$/, view: 'accueil', title: "Gran'Games, nouveautés", anchor: 'nouveautes' },
+    { pattern: /^\/(jeux|nouveautes)$/, redirect: '#/' }, // anciennes adresses : renvoi vers l'accueil
     { pattern: /^\/profil$/, view: 'profil', title: "Ton profil, Gran'Games" },
     // Code de salle : 4 lettres dans le design ; les salles actuelles ont un nom libre (30 car. max) tant que B1 n'est pas livré.
     { pattern: /^\/imposteur$/, view: 'imposteur', monde: 'imposteur', css: 'imposteur', label: 'Imposteur', title: "Imposteur, Gran'Games" },
@@ -130,14 +129,15 @@ const granRouter = (() => {
       path = '/';
     }
     const route = match(path);
+    if (route.redirect) { location.replace(route.redirect); return; } // hashchange relance render()
     const gi = stampHistory();
     const key = `${route.view}|${JSON.stringify(route.params)}`;
 
-    if (current && current.key === key) { // même vue (ex. #/ -> #/jeux) : seulement l'ancre
+    if (current && current.key === key) { // même vue (ex. changement de params) : pas de changement de vue
       current.route = route;
       document.title = route.title;
       paintConsole(route, path);
-      if (route.anchor) { const a = document.getElementById(route.anchor); if (a) a.scrollIntoView(); } else window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
       lastHash = hash;
       histIdx = gi;
       return;
@@ -173,7 +173,7 @@ const granRouter = (() => {
       const h = handlers.get(route.view);
       if (h && h.enter) h.enter(route.params);
       document.title = route.title;
-      if (route.anchor) { const a = document.getElementById(route.anchor); if (a) a.scrollIntoView(); } else window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
       const h1 = section.querySelector('h1');
       if (h1) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); }
     };

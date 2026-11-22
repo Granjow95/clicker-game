@@ -17,6 +17,13 @@
   let fautes = 0;
   let avant = '';
   let fini = false;
+  const CLE_RECORD = 'granGames:frappe-record';
+  const lireRecord = () => {
+    try { const v = parseInt(localStorage.getItem(CLE_RECORD), 10); return Number.isFinite(v) && v > 0 ? Math.min(v, 300) : 0; } catch { return 0; }
+  };
+  const ecrireRecord = (v) => { try { localStorage.setItem(CLE_RECORD, String(v)); } catch { /* stockage indisponible */ } };
+  // Apostrophe typographique tapable : on compare avec l'apostrophe droite du clavier.
+  const car = (c) => (c === '\u2019' ? "'" : c);
 
   const clearTimers = () => { timers.forEach((t) => { clearTimeout(t); clearInterval(t); }); timers = []; };
 
@@ -53,9 +60,9 @@
     }));
     ['solo', 'salle'].forEach((m) => $(`fra-tab-${m}`).setAttribute('aria-selected', String(m === mode)));
     $('fra-code-bloc').hidden = mode === 'solo';
-    $('fra-aide').textContent = mode === 'solo' ? 'Tu pars quand tu es prêt.' : 'Départ automatique quand tout le monde est prêt.';
+    $('fra-aide').textContent = mode === 'solo' ? `Tu pars quand tu es prêt.${lireRecord() ? ` Record : ${lireRecord()} mpm.` : ''}` : 'Départ automatique quand tout le monde est prêt.';
     const bouton = $('fra-pret');
-    bouton.textContent = moiPret ? 'Prêt, on attend les autres' : 'Je suis prêt';
+    bouton.textContent = moiPret ? (mode === 'solo' ? 'C\'est parti' : 'Prêt, on attend les autres') : (mode === 'solo' ? 'Démarrer' : 'Je suis prêt');
     bouton.setAttribute('aria-pressed', String(moiPret));
   }
 
@@ -120,15 +127,15 @@
 
   function rendrePhrase(valeur) {
     let erreur = false;
-    const spans = [...phrase].map((car, i) => {
+    const spans = [...phrase].map((c, i) => {
       let classe = 'reste';
       if (i < valeur.length) {
-        if (!erreur && valeur[i] === car) classe = 'ok'; else { erreur = true; classe = 'faute'; }
+        if (!erreur && valeur[i] === car(c)) classe = 'ok'; else { erreur = true; classe = 'faute'; }
       } else if (i === valeur.length) classe = 'curseur';
-      return el('span', { class: classe }, car);
+      return el('span', { class: classe }, c);
     });
     $('fra-phrase').replaceChildren(...spans);
-    return erreur ? [...phrase].findIndex((c, i) => valeur[i] !== c) : valeur.length; // caractères justes consécutifs
+    return erreur ? [...phrase].findIndex((c, i) => valeur[i] !== car(c)) : valeur.length; // caractères justes consécutifs
   }
 
   const tempsBot = (j) => (j.mpm ? (phrase.length * 12) / j.mpm : Infinity); // 5 caractères = 1 mot
@@ -165,10 +172,10 @@
 
   function surSaisie() {
     if (fini) return;
-    const valeur = $('fra-saisie').value;
+    const valeur = [...$('fra-saisie').value].map(car).join('');
     if (valeur.length > avant.length) { // une lettre ajoutée : on compte la précision
       frappes += valeur.length - avant.length;
-      if (valeur.length > phrase.length || valeur[valeur.length - 1] !== phrase[valeur.length - 1]) fautes += 1;
+      if (valeur.length > phrase.length || valeur[valeur.length - 1] !== car(phrase[valeur.length - 1])) fautes += 1;
     }
     avant = valeur;
     const justes = Math.min(rendrePhrase(valeur), phrase.length);
@@ -177,13 +184,18 @@
     $('fra-mpm').textContent = Math.round(justes / 5 / (s / 60));
     $('fra-precision').textContent = frappes ? Math.round(((frappes - fautes) / frappes) * 100) : 100;
     $('fra-position').textContent = `${rang(position(s, justes / phrase.length))} / ${liste().length}`;
-    if (valeur === phrase) { fini = true; clearTimers(); timers.push(setTimeout(() => resultats(s), 500)); }
+    if ([...phrase].map(car).join('') === valeur) { fini = true; clearTimers(); timers.push(setTimeout(() => resultats(s), 500)); }
   }
 
   /* ---------- Résultats ---------- */
   function resultats(secondes) {
     const mpm = Math.round(phrase.length / 5 / (secondes / 60));
     const precision = frappes ? Math.round(((frappes - fautes) / frappes) * 100) : 100;
+    if (mpm > lireRecord()) {
+      const premier = lireRecord() === 0;
+      ecrireRecord(mpm);
+      if (!premier) granUI.toast(`Nouveau record : ${mpm} mpm.`, { type: 'succes' });
+    }
     const lignes = liste().map((j) => (j.moi
       ? { nom: j.nom, moi: true, t: secondes, mpm, precision }
       : { nom: j.nom, t: tempsBot(j), mpm: j.mpm, precision: j.precision }));

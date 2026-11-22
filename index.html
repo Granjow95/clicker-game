@@ -27,8 +27,6 @@
         </a>
         <nav class="console__nav" aria-label="Navigation principale">
           <a href="#/">Accueil</a>
-          <a href="#/jeux">Jeux</a>
-          <a href="#/nouveautes">Nouveautés</a>
         </nav>
         <button type="button" id="account-btn" class="console__compte" aria-haspopup="dialog" aria-label="Compte, connexion ou inscription">
           <svg class="console__compte-icone" aria-hidden="true" viewBox="0 0 9 9" shape-rendering="crispEdges"><path class="icone-encre" d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z"></path></svg>
@@ -49,81 +47,117 @@
             </div>
           </div>
 
-          <div class="etagere">
-            <ul class="etagere__liste" aria-label="Les jeux">
-              <li>
-                <a class="cart cart--imposteur" href="#/imposteur" aria-label="Jouer à Imposteur">
-                  <span class="cart__stries"></span>
-                  <span class="cart__etiquette">
-                    <span class="cart__nom">Imposteur</span>
-                    <span class="cart__art" aria-hidden="true">
+          <ul class="bandeaux" aria-label="Les jeux">
+            <li>
+              <a class="bandeau bandeau--imposteur" href="#/imposteur" aria-labelledby="b-imposteur-titre" aria-describedby="b-imposteur-desc b-imposteur-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--imposteur">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Imposteur</span>
+                      <span class="cart__art" aria-hidden="true">
                       <svg width="120" height="56" viewBox="0 0 30 14" shape-rendering="crispEdges"><g class="art-corps"><rect x="1" y="4" width="4" height="5"></rect><rect x="7" y="4" width="4" height="5"></rect><rect x="13" y="4" width="4" height="5"></rect><rect x="25" y="4" width="4" height="5"></rect><rect x="1" y="10" width="4" height="4"></rect><rect x="7" y="10" width="4" height="4"></rect><rect x="13" y="10" width="4" height="4"></rect><rect x="25" y="10" width="4" height="4"></rect></g><g class="art-brique"><rect x="19" y="3" width="4" height="6"></rect><rect x="19" y="10" width="4" height="4"></rect></g><g class="art-encre"><rect x="18" y="2" width="6" height="1"></rect><rect x="2" y="6" width="1" height="1"></rect><rect x="8" y="6" width="1" height="1"></rect><rect x="14" y="6" width="1" height="1"></rect><rect x="26" y="6" width="1" height="1"></rect><rect x="21" y="5" width="1" height="1"></rect><rect x="22" y="5" width="1" height="1"></rect></g></svg>
                     </span>
-                    <span class="cart__mode">En salle</span>
+                    </span>
+                    <span class="cart__contacts"></span>
                   </span>
-                  <span class="cart__contacts"></span>
-                </a>
-              </li>
-              <li>
-                <a class="cart cart--lyrics" href="#/lyrics" aria-label="Jouer à Lyrics">
-                  <span class="cart__stries"></span>
-                  <span class="cart__etiquette">
-                    <span class="cart__nom">Lyrics</span>
-                    <span class="cart__art" aria-hidden="true">
+                </div>
+                <div class="bandeau__texte">
+                  <h2 class="bandeau__titre" id="b-imposteur-titre">Imposteur</h2>
+                  <p class="bandeau__desc" id="b-imposteur-desc">Chacun reçoit le même mot, sauf un. Donne un indice et démasque l’imposteur avant qu’il te démasque.</p>
+                  <ul class="bandeau__reperes" id="b-imposteur-reperes"><li class="chip">max 8 joueurs</li><li class="chip">Bluff</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--lyrics" href="#/lyrics" aria-labelledby="b-lyrics-titre" aria-describedby="b-lyrics-desc b-lyrics-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--lyrics">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Lyrics</span>
+                      <span class="cart__art" aria-hidden="true">
                       <span class="art-barres">
                         <span class="art-barres__ligne"><span class="barre barre--2"></span><span class="barre barre--1 barre--bleue"></span><span class="barre barre--3"></span></span>
                         <span class="art-barres__ligne"><span class="barre barre--1"></span><span class="barre barre--3"></span><span class="barre barre--1 barre--bleue"></span></span>
                         <span class="art-barres__ligne"><span class="barre barre--3 barre--bleue"></span><span class="barre barre--2"></span></span>
                       </span>
                     </span>
-                    <span class="cart__mode">Solo</span>
+                    </span>
+                    <span class="cart__contacts"></span>
                   </span>
-                  <span class="cart__contacts"></span>
-                </a>
-              </li>
-              <li>
-                <a class="cart cart--karaoke" href="#/karaoke" aria-label="Jouer à Karaoké">
-                  <span class="cart__stries"></span>
-                  <span class="cart__etiquette">
-                    <span class="cart__nom">Karaoké</span>
-                    <span class="cart__art" aria-hidden="true">
+                </div>
+                <div class="bandeau__texte">
+                  <h2 class="bandeau__titre" id="b-lyrics-titre">Lyrics</h2>
+                  <p class="bandeau__desc" id="b-lyrics-desc">Tous les mots de la chanson sont cachés. Tape ceux que tu connais pour les dévoiler un à un.</p>
+                  <ul class="bandeau__reperes" id="b-lyrics-reperes"><li class="chip">Solo</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--karaoke" href="#/karaoke" aria-labelledby="b-karaoke-titre" aria-describedby="b-karaoke-desc b-karaoke-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--karaoke">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Karaoké</span>
+                      <span class="cart__art" aria-hidden="true">
                       <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><g class="art-corps"><rect x="6" y="1" width="4" height="7"></rect><rect x="4" y="6" width="1" height="3"></rect><rect x="11" y="6" width="1" height="3"></rect><rect x="5" y="9" width="6" height="1"></rect><rect x="7" y="10" width="2" height="4"></rect><rect x="5" y="14" width="6" height="1"></rect></g><rect class="art-etiquette" x="7" y="2" width="2" height="1"></rect></svg>
                     </span>
-                    <span class="cart__mode">Solo ou en salle</span>
+                    </span>
+                    <span class="cart__contacts"></span>
                   </span>
-                  <span class="cart__contacts"></span>
-                </a>
-              </li>
-              <li>
-                <a class="cart cart--plus-ou-moins" href="#/plus-ou-moins" aria-label="Jouer à Plus ou Moins">
-                  <span class="cart__stries"></span>
-                  <span class="cart__etiquette">
-                    <span class="cart__nom">Plus ou Moins</span>
-                    <span class="cart__art" aria-hidden="true">
+                </div>
+                <div class="bandeau__texte">
+                  <h2 class="bandeau__titre" id="b-karaoke-titre">Karaoké</h2>
+                  <p class="bandeau__desc" id="b-karaoke-desc">Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps.</p>
+                  <ul class="bandeau__reperes" id="b-karaoke-reperes"><li class="chip">max 10 joueurs</li><li class="chip">Coopératif</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--plus-ou-moins" href="#/plus-ou-moins" aria-labelledby="b-plus-ou-moins-titre" aria-describedby="b-plus-ou-moins-desc b-plus-ou-moins-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--plus-ou-moins">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Plus ou Moins</span>
+                      <span class="cart__art" aria-hidden="true">
                       <span class="art-pm"><span class="art-pm__case">?</span><span class="art-pm__ou">ou</span><span class="art-pm__case art-pm__case--sombre">?</span></span>
                     </span>
-                    <span class="cart__mode">Solo</span>
+                    </span>
+                    <span class="cart__contacts"></span>
                   </span>
-                  <span class="cart__contacts"></span>
-                </a>
-              </li>
-              <li>
-                <a class="cart cart--frappe" href="#/frappe" aria-label="Jouer à Course de frappe">
-                  <span class="cart__stries"></span>
-                  <span class="cart__etiquette">
-                    <span class="cart__nom">Course de frappe</span>
-                    <span class="cart__art" aria-hidden="true">
+                </div>
+                <div class="bandeau__texte">
+                  <h2 class="bandeau__titre" id="b-plus-ou-moins-titre">Plus ou Moins</h2>
+                  <p class="bandeau__desc" id="b-plus-ou-moins-desc">Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net.</p>
+                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip">Aperçu</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--frappe" href="#/frappe" aria-labelledby="b-frappe-titre" aria-describedby="b-frappe-desc b-frappe-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--frappe">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Course de frappe</span>
+                      <span class="cart__art" aria-hidden="true">
                       <span class="art-frappe"><span class="art-frappe__damier"></span><span class="art-frappe__texte">vite_</span></span>
                     </span>
-                    <span class="cart__mode">Solo ou en salle</span>
+                    </span>
+                    <span class="cart__contacts"></span>
                   </span>
-                  <span class="cart__contacts"></span>
-                </a>
-              </li>
-            </ul>
-            <div class="etagere__planche" aria-hidden="true"></div>
-            <p class="etagere__glisse">Glisse pour voir les 5 cartouches.</p>
-          </div>
+                </div>
+                <div class="bandeau__texte">
+                  <h2 class="bandeau__titre" id="b-frappe-titre">Course de frappe</h2>
+                  <p class="bandeau__desc" id="b-frappe-desc">Tape la phrase plus vite que les autres voitures. Une faute te bloque tant que tu ne l’as pas corrigée.</p>
+                  <ul class="bandeau__reperes" id="b-frappe-reperes"><li class="chip">Course</li><li class="chip">Aperçu</li></ul>
+                </div>
+              </a>
+            </li>
+          </ul>
         </div>
 
         <section class="conteneur" aria-labelledby="h-salle">
@@ -144,84 +178,7 @@
           </form>
         </section>
 
-        <section class="jeux" id="jeux" aria-labelledby="h-jeux">
-          <div class="conteneur jeux__tete">
-            <h2 id="h-jeux" class="titre-section">Les jeux</h2>
-            <p class="jeux__compte">5 jeux, dont 3 qui se jouent à plusieurs dans une salle.</p>
-          </div>
-
-          <a class="ligne-jeu ligne-jeu--imposteur" href="#/imposteur">
-            <span class="ligne-jeu__dedans">
-              <span class="ligne-jeu__nom">Imposteur</span>
-              <span class="ligne-jeu__regle">Tout le monde a le même mot. Sauf un. Donnez chacun un indice, puis votez pour démasquer l’imposteur.</span>
-              <span class="ligne-jeu__meta"><span class="chip">En salle</span><span class="chip">Jusqu’à 8 joueurs</span><span class="ligne-jeu__jouer">Jouer</span></span>
-            </span>
-          </a>
-          <a class="ligne-jeu ligne-jeu--lyrics" href="#/lyrics">
-            <span class="ligne-jeu__dedans">
-              <span class="ligne-jeu__nom">Lyrics</span>
-              <span class="ligne-jeu__regle">Tous les mots d’une chanson sont cachés. Tape ceux que tu connais.</span>
-              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="ligne-jeu__jouer">Jouer</span></span>
-            </span>
-          </a>
-          <a class="ligne-jeu ligne-jeu--karaoke" href="#/karaoke">
-            <span class="ligne-jeu__dedans">
-              <span class="ligne-jeu__nom">Karaoké</span>
-              <span class="ligne-jeu__regle">Les paroles défilent en rythme. Toi, tu chantes. Les autres subissent.</span>
-              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">En salle</span><span class="ligne-jeu__jouer">Jouer</span></span>
-            </span>
-          </a>
-          <a class="ligne-jeu ligne-jeu--plus-ou-moins" href="#/plus-ou-moins">
-            <span class="ligne-jeu__dedans">
-              <span class="ligne-jeu__nom">Plus ou Moins</span>
-              <span class="ligne-jeu__regle">Deux choses. Laquelle a le plus ? Une erreur et la série s’arrête.</span>
-              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">Nouveau</span><span class="ligne-jeu__jouer">Jouer</span></span>
-            </span>
-          </a>
-          <a class="ligne-jeu ligne-jeu--frappe" href="#/frappe">
-            <span class="ligne-jeu__dedans">
-              <span class="ligne-jeu__nom">Course de frappe</span>
-              <span class="ligne-jeu__regle">Une phrase, un chrono. Sans faute, et plus vite que les autres.</span>
-              <span class="ligne-jeu__meta"><span class="chip">Solo</span><span class="chip">En salle</span><span class="chip">Nouveau</span><span class="ligne-jeu__jouer">Jouer</span></span>
-            </span>
-          </a>
-        </section>
-
-        <section class="conteneur neuf" id="nouveautes" aria-labelledby="h-news">
-          <div class="neuf__colonne">
-            <h2 id="h-news" class="titre-section titre-section--moyen">Quoi de neuf</h2>
-            <ol class="neuf__liste">
-              <li class="neuf__item">
-                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
-                <span class="neuf__corps">
-                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Nouveau look</span></span>
-                  <span class="neuf__texte">Une console, des cartouches. Chaque jeu a désormais son monde, sa police et son décor.</span>
-                </span>
-              </li>
-              <li class="neuf__item">
-                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
-                <span class="neuf__corps">
-                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Plus ou Moins</span></span>
-                  <span class="neuf__texte">Deux choses. Laquelle a le plus ? Une erreur et la série s'arrête. Aperçu sur données fictives.</span>
-                </span>
-              </li>
-              <li class="neuf__item">
-                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
-                <span class="neuf__corps">
-                  <span class="neuf__titre"><span class="badge badge--moi">Nouveau</span><span class="neuf__nom">Course de frappe</span></span>
-                  <span class="neuf__texte">Une phrase, un chrono. Sans faute, et plus vite que les autres. Aperçu sur données fictives.</span>
-                </span>
-              </li>
-              <li class="neuf__item">
-                <time class="neuf__date" datetime="2026-11-21">21 nov. 2026</time>
-                <span class="neuf__corps">
-                  <span class="neuf__titre"><span class="badge badge--pret">Console</span><span class="neuf__nom">Le bouton retour marche enfin</span></span>
-                  <span class="neuf__texte">Chaque jeu et chaque salle a son adresse. Tu peux même envoyer le lien d’une salle.</span>
-                </span>
-              </li>
-            </ol>
-          </div>
-
+        <section class="conteneur zone-fiche">
           <aside class="fiche px" id="fiche-joueur" aria-label="Fiche de joueur">
             <div class="fiche__tete">
               <span class="fiche__avatar" aria-hidden="true">
@@ -238,7 +195,7 @@
               <span class="fiche__stat"><span class="fiche__valeur" id="fiche-record">?</span><span>record</span></span>
             </div>
             <div class="fiche__invite" id="fiche-invite">
-              <p class="fiche__texte">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores, tes séries et tes 20 dernières parties.</p>
+              <p class="fiche__texte">Le compte est facultatif : sans lui, tu joues toujours avec un pseudo. Avec lui, on garde tes scores, tes séries et tes 100 dernières parties.</p>
               <div class="fiche__actions">
                 <button type="button" class="key key--principal" id="fiche-creer">Créer mon compte</button>
                 <button type="button" class="key" id="fiche-connexion">J'ai déjà un compte</button>
@@ -257,9 +214,7 @@
               <span class="pied__phrase">Bien joué. Reviens quand tu veux.</span>
             </div>
             <nav class="pied__liens" aria-label="Pied de page">
-              <a href="#/jeux">Règles des jeux</a>
               <a href="#/profil">Mon profil</a>
-              <a href="#/nouveautes">Nouveautés</a>
             </nav>
           </div>
         </footer>
@@ -271,7 +226,8 @@
           <aside class="profil__fiche">
             <div class="panneau px profil__carte">
               <span class="profil__avatar" id="profil-avatar" aria-hidden="true"></span>
-              <h1 class="profil__nom" id="profil-nom">…</h1>
+              <h1 class="profil__nom" id="profil-nom" tabindex="-1">Ton profil</h1>
+              <p class="profil__email" id="profil-email"></p>
               <p class="profil__depuis" id="profil-depuis"></p>
               <form class="profil__form sur-papier" id="profil-form" novalidate>
                 <div class="field">
@@ -294,19 +250,29 @@
               <div class="zone-danger">
                 <p class="zone-danger__titre">Supprimer mon compte</p>
                 <p class="zone-danger__texte">Stats et historique effacés pour de bon. Garde le bouton appuyé 2 secondes pour confirmer.</p>
-                <button type="button" class="key key--danger key--bloc maintenir" id="p-supprimer"><span class="maintenir__remplissage" aria-hidden="true"></span><span class="maintenir__texte">Maintenir pour supprimer</span></button>
+                <button type="button" class="key key--danger key--bloc maintenir" id="p-supprimer" aria-describedby="p-suppr-aide"><span class="maintenir__remplissage" aria-hidden="true"></span><span class="maintenir__texte">Maintenir pour supprimer</span></button>
+                <span class="sr-only" id="p-suppr-aide">Maintiens 2 secondes</span>
                 <p class="profil__statut profil__statut--clair" id="p-suppr-statut" role="status"></p>
               </div>
             </div>
           </aside>
           <div class="profil__contenu">
+            <section aria-labelledby="h-global" class="profil__bloc">
+              <h2 id="h-global" class="titre-section titre-section--profil">Vue d'ensemble</h2>
+              <div class="stats stats--global" id="p-global"></div>
+            </section>
             <section aria-labelledby="h-stats" class="profil__bloc">
-              <h2 id="h-stats" class="titre-section titre-section--profil">Tes stats</h2>
-              <div class="stats" id="p-stats" aria-live="polite"></div>
+              <h2 id="h-stats" class="titre-section titre-section--profil">Par jeu</h2>
+              <div class="stats" id="p-stats"></div>
+              <p class="profil__note" id="p-note">Plus ou Moins et Course de frappe n'enregistrent aucune partie : leur record reste dans ce navigateur et n'apparaît pas ici.</p>
+            </section>
+            <section aria-labelledby="h-recentes" class="profil__bloc">
+              <h2 id="h-recentes" class="titre-section titre-section--profil">Parties récentes</h2>
+              <div class="recentes" id="p-recentes"></div>
             </section>
             <section aria-labelledby="h-hist" class="profil__bloc">
               <div class="profil__tete-hist">
-                <h2 id="h-hist" class="titre-section titre-section--profil">Tes 20 dernières parties</h2>
+                <h2 id="h-hist" class="titre-section titre-section--profil">Historique</h2>
                 <label class="filtre-jeu" for="p-filtre">Jeu
                   <select class="filtre-jeu__select" id="p-filtre">
                     <option value="">Tous</option>
@@ -316,7 +282,8 @@
                   </select>
                 </label>
               </div>
-              <div class="historique" id="p-historique" aria-live="polite"></div>
+              <div class="historique" id="p-historique" tabindex="0" role="region" aria-label="Historique des parties"></div>
+              <p class="sr-only" id="p-annonce" role="status"></p>
             </section>
           </div>
         </div>
