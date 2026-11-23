@@ -129,7 +129,7 @@ a:hover { color: var(--monde-texte); }
   display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px;
 }
 .console__logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--parchemin); font-family: var(--police-pixel); font-weight: 700; font-size: 26px; }
-.console__nav { display: flex; gap: 4px; background: var(--lichen); border-radius: var(--rayon-touche); padding: 4px; margin-left: auto; }
+.console__nav { display: flex; gap: 4px; background: var(--faience); border-radius: var(--rayon-touche); padding: 4px; margin-left: auto; }
 .console__nav a { padding: 10px 18px; border-radius: 7px; color: var(--parchemin); text-decoration: none; font-weight: 600; }
 .console__nav a[aria-current="page"] { background: var(--parchemin); color: var(--encre); }
 /* En partie : barre réduite de 56 px, teintée par le monde */
