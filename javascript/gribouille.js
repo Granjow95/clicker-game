@@ -186,7 +186,8 @@
     const canvas = el('canvas', { class: 'gri-canvas', 'aria-label': 'Zone de dessin', role: 'img' });
     const voile = el('div', { class: 'gri-voile', role: 'status', hidden: true });
     const tampon = el('div', { class: 'gri-tampon', 'aria-hidden': 'true', hidden: true }, 'Trouvé !');
-    const toile = el('div', { class: 'gri-toile' }, canvas, voile, tampon);
+    const pinceau = el('span', { class: 'gri-pinceau', 'aria-hidden': 'true', hidden: true });
+    const toile = el('div', { class: 'gri-toile' }, canvas, pinceau, voile, tampon);
 
     const palette = el('div', { class: 'gri-palette', role: 'group', 'aria-label': 'Couleurs' }, PALETTE.map((p, i) =>
       el('button', { class: 'gri-pastille', type: 'button', style: `--p:${p.v}`, 'aria-label': p.n, 'aria-pressed': String(i === sel.c), 'data-c': i,
@@ -214,7 +215,7 @@
       el('div', { class: 'gri-panneau gri-panneau--chat px' }, el('h2', { class: 'gri-h2' }, 'Devinettes'), messages, form));
 
     const racine = el('section', { class: 'gri-jeu' }, haut, el('div', { class: 'gri-scene' }, toile, outils), cote);
-    G = { racine, infoManche, infoDessin, segs, temps, live, chrono, masque, masqueSr, canvas, ctx: canvas.getContext('2d'), toile, voile, tampon,
+    G = { racine, pinceau, infoManche, infoDessin, segs, temps, live, chrono, masque, masqueSr, canvas, ctx: canvas.getContext('2d'), toile, voile, tampon,
       outils, palette, epaisseurs, annuler, scores, messages, champ, envoi, shown: null, prevMask: '', overlayKey: '' };
     afficher('game', racine);
 
@@ -222,6 +223,7 @@
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onUp);
+    canvas.addEventListener('pointerleave', cacherPinceau);
     ro = new ResizeObserver(planifierRedim);
     ro.observe(toile);
     redimensionner();
@@ -242,6 +244,7 @@
     G.outils.hidden = !(dessine && phaseDessin);
     const actif = dessine && phaseDessin;
     G.toile.classList.toggle('gri-toile--dessin', actif);
+    if (!actif) cacherPinceau();
     G.canvas.setAttribute('aria-label', actif ? 'Zone de dessin : dessine ici' : 'Dessin en cours');
     majMasque();
     majScores();
@@ -386,11 +389,12 @@
 
   function redimensionner() {
     if (!G) return;
-    const r = G.toile.getBoundingClientRect();
-    if (r.width < 2) return;
+    const cw = G.canvas.clientWidth;
+    const ch = G.canvas.clientHeight;
+    if (cw < 2 || ch < 2) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.round(r.width * dpr);
-    const h = Math.round(r.height * dpr);
+    const w = Math.round(cw * dpr);
+    const h = Math.round(ch * dpr);
     if (G.dessine && G.canvas.width === w && G.canvas.height === h) return;
     G.canvas.width = w; G.canvas.height = h; G.dessine = true;
     toutRedessiner();
@@ -399,26 +403,28 @@
   function dessinerSegment(seg) {
     if (!G) return;
     const ctx = G.ctx;
-    const k = G.canvas.width / BASE;
+    // Coordonnées normalisées 0-1000 sur CHAQUE axe : x suit la largeur, y la hauteur (toile 4:3).
+    const kx = G.canvas.width / BASE;
+    const ky = G.canvas.height / BASE;
     const p = seg.p;
     ctx.strokeStyle = PALETTE[seg.c].v;
     ctx.fillStyle = PALETTE[seg.c].v;
-    ctx.lineWidth = EPAISSEURS[seg.w] * k;
+    ctx.lineWidth = EPAISSEURS[seg.w] * kx;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     const n = p.length / 2;
     if (n === 1) {
-      ctx.beginPath(); ctx.arc(p[0] * k, p[1] * k, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(p[0] * kx, p[1] * ky, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
       return;
     }
     ctx.beginPath();
-    ctx.moveTo(p[0] * k, p[1] * k);
+    ctx.moveTo(p[0] * kx, p[1] * ky);
     for (let i = 1; i < n - 1; i++) { // lissage : courbes quadratiques entre milieux
       const mx = (p[2 * i] + p[2 * i + 2]) / 2;
       const my = (p[2 * i + 1] + p[2 * i + 3]) / 2;
-      ctx.quadraticCurveTo(p[2 * i] * k, p[2 * i + 1] * k, mx * k, my * k);
+      ctx.quadraticCurveTo(p[2 * i] * kx, p[2 * i + 1] * ky, mx * kx, my * ky);
     }
-    ctx.lineTo(p[2 * n - 2] * k, p[2 * n - 1] * k);
+    ctx.lineTo(p[2 * n - 2] * kx, p[2 * n - 1] * ky);
     ctx.stroke();
   }
 
@@ -454,7 +460,23 @@
     dessinerSegment({ c: D.c, w: D.w, p });
     planifier();
   }
+  // Curseur-pinceau : un rond de la taille et de la couleur du trait, exactement sous le pointeur (souris/stylet).
+  function majPinceau(e) {
+    if (!G || !G.pinceau) return;
+    if (!peutDessiner() || e.pointerType === 'touch') { cacherPinceau(); return; }
+    const r = G.canvas.getBoundingClientRect();
+    const d = Math.max(6, EPAISSEURS[sel.w] * (r.width / BASE));
+    const st = G.pinceau.style;
+    st.width = `${d}px`;
+    st.height = `${d}px`;
+    st.transform = `translate(${e.clientX - r.left - d / 2}px, ${e.clientY - r.top - d / 2}px)`;
+    st.setProperty('--c', PALETTE[sel.c].v);
+    G.pinceau.hidden = false;
+  }
+  function cacherPinceau() { if (G && G.pinceau) G.pinceau.hidden = true; }
+
   function onMove(e) {
+    majPinceau(e);
     if (!D.active || e.pointerId !== D.pid) return;
     const evts = typeof e.getCoalescedEvents === 'function' && e.getCoalescedEvents().length ? e.getCoalescedEvents() : [e];
     for (const ev of evts) {
