@@ -35,7 +35,11 @@
 .stat-jeu--imposteur { background: #1E4D3B; color: #EFE8CC; }
 .stat-jeu--lyrics { background: #2E63B8; color: #FFFFFF; }
 .stat-jeu--karaoke { background: #6E1A1F; color: #EFE8CC; }
-.stat-jeu--plus-ou-moins { background: #F28AA6; color: #1B1D16; }
+.stat-jeu--gribouille { background: #E0A100; color: #1B1D16; }
+.stat-jeu--petit-bac { background: #2E7D6B; color: #FFFFFF; }
+.stat-jeu--mot-cache { background: #5B8C3A; color: #10170B; }
+.stat-jeu--echo { background: #7A4FB0; color: #FFFFFF; }
+.stat-jeu--potager { background: #4F8A2B; color: #0F1A08; }
 .stat-jeu--frappe { background: #2F3134; color: #EFE8CC; }
 .historique { overflow-x: auto; border: var(--trait); background: var(--parchemin); color: var(--encre); }
 .historique table { width: 100%; min-width: 640px; border-collapse: collapse; }
@@ -83,7 +87,11 @@
 .pastille-jeu--imposteur { background: #1E4D3B; }
 .pastille-jeu--lyrics { background: #2E63B8; }
 .pastille-jeu--karaoke { background: #6E1A1F; }
-.pastille-jeu--plus-ou-moins { background: #F28AA6; }
+.pastille-jeu--gribouille { background: #E0A100; }
+.pastille-jeu--petit-bac { background: #2E7D6B; }
+.pastille-jeu--mot-cache { background: #5B8C3A; }
+.pastille-jeu--echo { background: #7A4FB0; }
+.pastille-jeu--potager { background: #4F8A2B; }
 .pastille-jeu--frappe { background: #2F3134; }
 .formulaire { display: flex; flex-direction: column; gap: 16px; }
 .formulaire-envoi .field__input { cursor: progress; }
@@ -112,7 +120,21 @@
 .stat-jeu--imposteur .stat-jeu__nom { font-family: "Special Elite", monospace; }
 .stat-jeu--lyrics .stat-jeu__nom { font-family: "Shrikhand", serif; font-size: 30px; color: var(--bouton-dor); }
 .stat-jeu--karaoke .stat-jeu__nom { font-family: "Bungee", sans-serif; font-size: 24px; color: var(--bouton-dor); }
-.stat-jeu--plus-ou-moins .stat-jeu__nom { font-family: "Anton", sans-serif; font-size: 28px; }
+.stat-jeu--gribouille .stat-jeu__nom { font-size: 28px; }
+.stat-jeu--petit-bac .stat-jeu__nom { font-size: 28px; }
+.stat-jeu--mot-cache .stat-jeu__nom { font-size: 26px; letter-spacing: .04em; }
+.stat-jeu--echo .stat-jeu__nom { font-size: 30px; }
+.stat-jeu--potager .stat-jeu__nom { font-size: 28px; }
+.stat-jeu--vide dl { display: none; }
+.stat-jeu__vide { margin: 0; font-size: 15px; }
+.stat-jeu__jouer { align-self: flex-start; }
+.stat-jeu__unite { font-size: 13px; font-weight: 400; margin-left: 4px; }
+.stat-jeu__derniere { margin: 0; font-size: 13px; }
+.profil__invite { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px; border: var(--trait); background: var(--parchemin); color: var(--encre); }
+.profil__invite p { margin: 0; line-height: 1.5; max-width: 62ch; }
+.profil__invite[hidden] { display: none; }
+.profil--invite .profil__fiche { display: none; }
+.profil--invite .profil__contenu { flex: 1 1 100%; }
 .stat-jeu--frappe .stat-jeu__nom { font-family: "VT323", monospace; font-size: 34px; color: var(--bouton-dor); }
 .historique__jeu { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
 .historique th[scope="row"] { text-align: left; font-weight: 600; }

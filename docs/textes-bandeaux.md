@@ -18,7 +18,7 @@ Gabarit : 2 phrases, 90 à 140 caractères, tutoiement, sentence case, sans tire
 | Lyrics | Tous les mots de la chanson sont cachés. Tape ceux que tu connais pour les dévoiler un à un. | `Solo` · `~5 min` |
 | Mot Caché | Trouve le mot de 5 lettres en 6 essais. Les couleurs te disent où chercher. | `Solo` · `~5 min` |
 | Écho | Retiens la séquence de couleurs et de sons, puis rejoue-la. Elle s’allonge à chaque tour. | `Solo` · `~3 min` · `Mémoire` |
-| Plus ou Moins | Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net. | `Solo` · `Culture G` |
+| Potager | Plante, récolte, vends et agrandis ta ferme. Ton potager pousse même quand tu n’es pas là, et ta partie est sauvegardée. | `Solo` · `Farming` · `Sauvegarde` |
 | Course de frappe | Tape la phrase plus vite que les robots et que ton propre record. Une faute te bloque tant que tu ne l’as pas corrigée. | `Solo` · `Rapidité` |
 
 ## Sources des repères
@@ -26,5 +26,5 @@ Gabarit : 2 phrases, 90 à 140 caractères, tutoiement, sentence case, sans tire
 - Imposteur : `MAX_IMPOSTEUR_PLAYERS = 8`, au moins 3 joueurs connectés pour lancer, Mr White à partir de 4 (`backend/games/imposteur.js`).
 - Gribouille : `MAX_GRIBOUILLE_PLAYERS = 8`, au moins 2 joueurs. Petit Bac : `MAX_PETITBAC_PLAYERS = 10`, au moins 2.
 - Karaoké : `MAX_KARAOKE_PLAYERS = 10`, salle sur le registre commun (`kk:*`), l'hôte fait défiler les lignes ; mode solo disponible.
-- Plus ou Moins : valeurs arrondies de culture générale (`javascript/pom-donnees.js`), record dans le navigateur.
+- Potager : jeu de farming incrémental (`javascript/potager.js`, `potager-donnees.js`), sauvegarde locale + code d'export.
 - Course de frappe : solo contre trois robots et le fantôme de ton record (`javascript/frappe-donnees.js`).

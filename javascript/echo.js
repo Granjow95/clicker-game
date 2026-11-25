@@ -316,6 +316,7 @@
     const battu = score > rec;
     if (battu) ecrireRecord(mode, score);
     const meilleur = Math.max(score, rec);
+    if (typeof granStats !== 'undefined') granStats.enregistrer('echo', { score, gagne: score > 0, manches: 1, meta: { mode } });
     refs.finTitre.textContent = parErreur ? 'Raté' : 'Temps écoulé';
     refs.finLib.textContent = mode === 'chrono' ? 'Séquences réussies ' : 'Niveaux réussis ';
     refs.finRecord.replaceChildren('Record ', granUI.el('b', {}, String(meilleur)), ` (${MODES[mode]})`);

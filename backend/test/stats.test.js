@@ -161,8 +161,11 @@ test("gribouille et petit-bac : historique par compte, invités ignorés", async
     await once(cs[1], "pb:options");
     cs[0].emit("pb:start", {});
     const rs = await once(cs[0], "pb:round_start");
-    const res = once(cs[0], "pb:results");
+    const rev = once(cs[0], "pb:review");
     cs[0].emit("pb:stop", { answers: [0, 1, 2, 3, 4, 5].map((i) => `${rs.letter}ab${i}`) });
+    await rev;
+    const res = once(cs[0], "pb:results");
+    cs[0].emit("pb:review_done", {});
     await res;
     const over = once(cs[0], "pb:game_over");
     cs[0].emit("pb:next", {});

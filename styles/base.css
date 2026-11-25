@@ -123,34 +123,48 @@ a:hover { color: var(--monde-texte); }
 }
 
 /* ---------- 3. En-tête (console) ---------- */
+/* Couleurs de la barre : accueil et profil par défaut, teintées par le monde en jeu. La forme ne change jamais.
+   Contrastes texte/fond vérifiés (>= 4,5:1) : encre/parchemin 13,9 ; imposteur 7,8 ; lyrics 4,75 ; karaoke 10,5 ;
+   frappe 10,6 ; echo 12,5 ; gribouille, petit-bac, mot-cache >= 12,9 ; potager 12,4. */
 .console {
-  background: var(--encre);
-  border: 2px solid var(--lichen-bord);
-  border-radius: var(--rayon-fenetre);
-  padding: 10px 12px 10px 18px;
-  display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px;
+  --nav-fond: var(--encre); --nav-texte: var(--parchemin); --nav-accent: var(--bouton-dor);
+  position: sticky; top: 0; z-index: 50;
+  height: 64px; display: flex; align-items: center;
+  background: var(--nav-fond); color: var(--nav-texte);
+  border-bottom: 2px solid var(--nav-accent);
 }
-.console__logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--parchemin); font-family: var(--police-pixel); font-weight: 700; font-size: 26px; }
-.console__nav { display: flex; gap: 4px; background: var(--lichen); border-radius: var(--rayon-touche); padding: 4px; margin-left: auto; }
-.console__nav a { padding: 10px 18px; border-radius: 7px; color: var(--parchemin); text-decoration: none; font-weight: 600; }
-.console__nav a[aria-current="page"] { background: var(--parchemin); color: var(--encre); }
-/* En partie : barre réduite de 56 px, teintée par le monde */
-.console--jeu {
-  background: var(--monde-barre, rgba(0,0,0,.25));
-  border-color: var(--monde-bord);
-  padding: 6px 8px; gap: 16px;
+body[data-monde] .console { --nav-fond: var(--monde-fond); --nav-texte: var(--monde-texte); --nav-accent: var(--monde-accent); }
+.console__dedans { display: flex; align-items: center; gap: 8px 16px; width: 100%; }
+.console__logo { display: flex; align-items: center; gap: 10px; flex: none; text-decoration: none; color: var(--nav-texte); font-family: var(--police-pixel); font-weight: 700; font-size: 24px; }
+.console__logo svg path.logo__corps { fill: var(--nav-accent); }
+.console__logo svg .logo__fente { fill: var(--nav-fond); }
+.console__contexte { flex: 1; min-width: 0; margin: 0; padding-left: 16px; border-left: 2px solid var(--nav-accent); font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.console__nav { display: flex; gap: 4px; margin-left: auto; flex: none; }
+.console__contexte:not([hidden]) + .console__nav { margin-left: 0; }
+.console__nav a {
+  position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px;
+  color: var(--nav-texte); text-decoration: none; font-weight: 600; border-radius: 6px; white-space: nowrap;
 }
-.console__ariane { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--monde-texte-doux); }
-.console__ariane > :first-child { font-family: var(--police-pixel); color: var(--monde-texte); }
-.console__ariane [aria-current="page"] { color: var(--monde-texte); font-weight: 600; }
+.console__nav a::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 6px; height: 3px; background: var(--nav-accent);
+  transform: scaleX(0); transform-origin: left; transition: transform var(--d-survol) var(--ease-out);
+}
+.console__nav a:hover::after, .console__nav a[aria-current="page"]::after { transform: scaleX(1); }
+.console__nav a[aria-current="page"] { font-weight: 800; }
+.console a:focus-visible, .console button:focus-visible { outline: 3px solid var(--nav-texte); outline-offset: 2px; }
+.console__court { display: none; }
+@media (prefers-reduced-motion: reduce) { .console__nav a::after { transition: none; } }
 .avatar-touche { width: 44px; height: 44px; display: grid; place-items: center; font-family: var(--police-pixel); font-weight: 700; font-size: 18px; }
 
-/* Téléphone : logo + compte sur une ligne, onglets en dessous, pleine largeur */
+/* Téléphone (360 px) : logo réduit à son icône, libellés courts, même barre */
 @media (max-width: 640px) {
-  .console { padding: 6px 6px 6px 14px; }
-  .console__logo { font-size: 22px; }
-  .console__nav { order: 3; width: 100%; margin-left: 0; }
-  .console__nav a { flex: 1; text-align: center; padding: 10px 0; font-size: 15px; }
+  .console__dedans { gap: 4px 8px; }
+  .console__logo-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .console__contexte { padding-left: 10px; font-size: 14px; }
+  .console__nav a { padding: 0 8px; }
+  .console__nav a::after { left: 8px; right: 8px; }
+  .console__court { display: inline; }
+  .console__long { display: none; }
 }
 
 /* ---------- 4. Touches (boutons) ---------- */
@@ -367,13 +381,13 @@ html.retour::view-transition-new(root) { animation: none; }
 [data-monde="imposteur"] { --monde-fond: #1E4D3B; --monde-surface: rgba(0,0,0,.22); --monde-bord: #2D6A52; --monde-texte: #EFE8CC; --monde-texte-doux: #CFE3D8; --monde-accent: #F2B630; --monde-police: "Special Elite", monospace; --monde-focus: #F2B630; }
 [data-monde="lyrics"] { --monde-fond: #2E63B8; --monde-surface: #1B3E7A; --monde-bord: #4F80CC; --monde-texte: #EFE8CC; --monde-texte-doux: #D6E2F7; --monde-accent: #F2B630; --monde-police: "Shrikhand", serif; --monde-focus: #F2B630; }
 [data-monde="karaoke"] { --monde-fond: #6E1A1F; --monde-surface: #2A0B0D; --monde-bord: #8A2A30; --monde-texte: #FFF4D6; --monde-texte-doux: #F0C9C9; --monde-accent: #F2B630; --monde-police: "Bungee", sans-serif; --monde-focus: #FFF4D6; }
-[data-monde="plus-ou-moins"] { --monde-fond: #E4E0D4; --monde-surface: #EFE8CC; --monde-bord: #1B1D16; --monde-texte: #1B1D16; --monde-texte-doux: #4A4A38; --monde-accent: #F28AA6; --monde-police: "Anton", sans-serif; --monde-focus: #2E63B8; }
+[data-monde="potager"] { --monde-fond: #3B2A1A; --monde-surface: #4E3924; --monde-bord: #7A5A38; --monde-texte: #EFE8CC; --monde-texte-doux: #D8CFAC; --monde-accent: #F2B630; --monde-police: var(--police-pixel); --monde-focus: #F2B630; }
 [data-monde="frappe"] { --monde-fond: #2F3134; --monde-surface: #1F2022; --monde-bord: #4A4D52; --monde-texte: #EFE8CC; --monde-texte-doux: #C9CBCF; --monde-accent: #F2B630; --monde-police: "VT323", monospace; --monde-focus: #F2B630; }
 
 /* ---------- 17. Console : compte, retour (ajouts du socle) ---------- */
 [hidden] { display: none !important; }
 .console__compte {
-  display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px;
+  flex: none; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px;
   background: var(--parchemin); color: var(--encre);
   border: var(--trait); border-radius: var(--rayon-touche); box-shadow: var(--epaisseur);
   font: 600 16px var(--police-texte); text-decoration: none; cursor: pointer;
@@ -383,20 +397,14 @@ html.retour::view-transition-new(root) { animation: none; }
 .console__compte--connecte { background: var(--bonbon); padding: 0 14px 0 8px; }
 .console__avatar { width: 28px; height: 28px; display: grid; place-items: center; background: var(--encre); color: var(--bonbon); border-radius: 4px; font: 700 16px var(--police-pixel); overflow: hidden; }
 .console__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.console--jeu .console__compte { margin-left: auto; width: 44px; height: 44px; padding: 0; justify-content: center; box-shadow: var(--epaisseur-petite); }
-.console--jeu .console__compte-nom { display: none; }
-.console--jeu .console__compte--connecte { padding: 0; }
 .console__compte-icone { width: 18px; height: 18px; }
 @media (max-width: 640px) {
-  .console__compte { margin-left: auto; width: 44px; height: 44px; padding: 0; justify-content: center; box-shadow: var(--epaisseur-petite); }
+  .console__compte { margin-left: 0; width: 44px; height: 44px; padding: 0; justify-content: center; box-shadow: var(--epaisseur-petite); }
   .console__compte-nom { display: none; }
   .console__compte--connecte { padding: 0; }
 }
 /* Écrans de jeux encore à l'ancien habillage (étapes 4 à 6) : texte sombre sur leur fond clair */
 .vue--heritee { color: var(--encre); }
-.conteneur--entete { padding-top: var(--e-4); }
-.console--jeu .console__logo, .console--jeu .console__nav { display: none; }
-.console__ariane [aria-hidden="true"] { opacity: .7; }
 a.key:hover { color: var(--encre); }
 a.key--danger:hover { color: var(--parchemin); }
 

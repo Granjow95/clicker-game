@@ -19,7 +19,7 @@
 .cart--imposteur { --cart-corps: #1E4D3B; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Special Elite", monospace; --cart-taille: 28px; --cart-angle: -5deg; }
 .cart--lyrics { --cart-corps: #2E63B8; --cart-etiquette: #F2B630; --cart-encre: #1B1D16; --cart-police: "Shrikhand", serif; --cart-taille: 34px; --cart-angle: 3deg; }
 .cart--karaoke { --cart-corps: #6E1A1F; --cart-etiquette: #F2B630; --cart-encre: #6E1A1F; --cart-police: "Bungee", sans-serif; --cart-taille: 26px; --cart-angle: -2deg; }
-.cart--plus-ou-moins { --cart-corps: #F28AA6; --cart-etiquette: #E4E0D4; --cart-encre: #1B1D16; --cart-police: "Anton", sans-serif; --cart-taille: 30px; --cart-angle: 4deg; }
+.cart--potager { --cart-corps: #7FB342; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: var(--police-pixel); --cart-taille: 30px; --cart-angle: -3deg; }
 .cart--gribouille { --cart-corps: #8A5A9E; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Pixelify Sans", monospace; --cart-taille: 30px; --cart-angle: 3deg; }
 .cart--petit-bac { --cart-corps: #B83A24; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Special Elite", monospace; --cart-taille: 30px; --cart-angle: -4deg; }
 .cart--mot-cache { --cart-corps: #4E7A2C; --cart-etiquette: #EFE8CC; --cart-encre: #1B1D16; --cart-police: "Pixelify Sans", monospace; --cart-taille: 30px; --cart-angle: 2deg; }
@@ -154,9 +154,6 @@
 .barre { height: 10px; background: var(--encre); }
 .barre--bleue { background: var(--cart-corps); }
 .barre--1 { flex: 1; } .barre--2 { flex: 2; } .barre--3 { flex: 3; }
-.art-pm { display: flex; gap: 8px; align-items: center; font: 400 24px var(--cart-police); }
-.art-pm__case { width: 42px; height: 54px; display: grid; place-items: center; background: var(--cart-corps); border: 2px solid var(--encre); font-size: 26px; }
-.art-pm__case--sombre { background: var(--encre); color: var(--cart-etiquette); }
 .art-frappe { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .art-frappe__damier { height: 12px; background: repeating-linear-gradient(90deg, var(--encre) 0 12px, var(--parchemin) 12px 24px); }
 .art-frappe__texte { font: 400 26px/1 var(--cart-police); }
@@ -185,6 +182,8 @@
 /* Pied de page */
 .pied__gauche { display: flex; flex-direction: column; gap: 8px; }
 .pied__phrase { font-size: 18px; font-weight: 600; }
+.pied__mention { font-size: 15px; color: var(--texte-doux); }
+.pied a:focus-visible { outline-color: var(--parchemin); }
 .pied .pied__liens a { color: var(--bouton-dor); }
 .pied .pied__liens a:hover { color: var(--parchemin); }
 
@@ -222,3 +221,7 @@
   .erreur404__titre { font-size: 34px; }
 }
 @media (prefers-reduced-motion: reduce) { .cart--vide { transform: rotate(-9deg); } }
+/* Potager : terre, pousse et fruits */
+.cart--potager .art-terre { fill: #6B3F1D; }
+.cart--potager .art-pousse { fill: #2F6B2A; }
+.cart--potager .art-fruit { fill: #B83A24; }

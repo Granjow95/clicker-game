@@ -83,6 +83,7 @@ io.on("connection", (socket) => {
     petitBac.forgetUser(uid);
   });
   results.registerLyrics(socket);
+  results.registerSolo(socket);
   imposteur.register(socket);
   karaoke.register(socket);
   gribouille.register(socket);

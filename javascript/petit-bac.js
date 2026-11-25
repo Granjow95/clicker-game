@@ -8,7 +8,13 @@
   const NB_CAT = 6;
   const NB_SEG = 20;
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const EN_PARTIE = ['writing', 'collecting', 'results'];
+  const EN_PARTIE = ['writing', 'collecting', 'review', 'results'];
+  const STATUTS = [
+    { k: 'unique', label: 'Unique', pts: 10 },
+    { k: 'partage', label: 'Partagé', pts: 5 },
+    { k: 'refuse', label: 'Refusé', pts: 0 },
+  ];
+  const MSG_ERR = { not_host: 'Seul l\'hôte peut valider.', bad_phase: 'Action impossible à ce moment.', invalid: 'Action invalide.' };
 
   let racine = null;   // [data-montage]
   let statut = null;   // bandeau « connexion perdue »
@@ -24,7 +30,7 @@
     code: null, you: null, hostId: null, players: [], names: {}, username: '',
     phase: null, options: { rounds: 5, duration: 90, categories: [0, 1, 2, 3, 4, 5] }, allCategories: [],
     scores: {}, round: 0, totalRounds: 0, letter: '', categories: [], answers: null,
-    fin: 0, dur: 0, stoppedBy: undefined, results: null, ranking: null,
+    review: null, fin: 0, dur: 0, stoppedBy: undefined, results: null, ranking: null,
     dirty: false, dernierEnvoi: 0, envoiTimer: 0, chrono: 0, anims: [], busyTimer: 0,
     auto: false, replaced: false, ui: {}, lastSec: -1,
   });
@@ -53,9 +59,8 @@
   function evaluer(texte, lettre) {
     const n = normaliser(texte);
     if (!n) return { etat: 'vide', icone: '○', txt: 'À remplir' };
-    if (n[0] !== lettre.toLowerCase()) return { etat: 'non', icone: '✗', txt: `Doit commencer par ${lettre}` };
-    if (n.length < 2) return { etat: 'non', icone: '✗', txt: '2 lettres minimum' };
-    return { etat: 'ok', icone: '✓', txt: 'Valide' };
+    if (n[0] !== lettre.toLowerCase()) return { etat: 'non', icone: '✗', txt: `Ne commence pas par ${lettre}` };
+    return { etat: 'ok', icone: '✓', txt: 'Commence par la bonne lettre' };
   }
 
   function monter(node, focus = true) {
@@ -271,7 +276,7 @@
       u.etats[i].replaceChildren(el('span', { 'aria-hidden': 'true' }, `${r.icone} `), r.txt);
     });
     u.stop.disabled = !tous || S.phase !== 'writing';
-    u.stopAide.textContent = tous ? 'Tout est valide : tu peux stopper.' : 'Remplis les 6 catégories pour pouvoir stopper.';
+    u.stopAide.textContent = tous ? 'Les 6 réponses commencent par la lettre : tu peux stopper. L\'hôte vérifiera le fond.' : 'Remplis les 6 catégories avec la bonne lettre pour pouvoir stopper.';
   }
 
   function peindreChrono(left) {
@@ -382,11 +387,155 @@
     socket.emit('pb:stop', { answers: valeurs() });
   }
 
+  /* ---------- Validation par l'hôte ---------- */
+  const ptsStatut = (k) => (STATUTS.find((x) => x.k === k) || STATUTS[2]).pts;
+  function suggestion(texte, doubl) {
+    if (evaluer(texte, S.review.letter).etat !== 'ok') return 'refuse';
+    return doubl && doubl.length ? 'partage' : 'unique';
+  }
+  function sousTotal() { return S.review.sheet.reduce((t, c) => t + ptsStatut(c && c.status), 0); }
+  function verdict(cat, status) {
+    const r = S.review;
+    if (!r || S.phase !== 'review' || S.reviewEnvoye || !estHote()) return;
+    socket.emit('pb:verdict', { playerId: r.playerId, cat, status });
+  }
+  function allerFiche(index) {
+    const r = S.review;
+    if (!r || S.reviewEnvoye || !estHote() || index < 0 || index >= r.total || index === r.index) return;
+    socket.emit('pb:review_goto', { index });
+  }
+  function validerManche() {
+    const r = S.review;
+    if (!r || !estHote()) return;
+    const u = S.ui.rev;
+    const nonVues = r.total - r.decided.length;
+    if (nonVues > 0 && !u.confirme) {
+      u.confirme = true;
+      u.done.textContent = `${nonVues} fiche${nonVues > 1 ? 's' : ''} non vue${nonVues > 1 ? 's' : ''} : confirmer ?`;
+      u.annule = later(() => { u.confirme = false; majReview(); }, 5000);
+      return;
+    }
+    clearTimeout(u.annule); u.confirme = false;
+    S.reviewEnvoye = true;
+    u.done.disabled = true;
+    u.lignes.forEach((l) => l.btns.forEach((b) => { b.disabled = true; }));
+    u.pastilles.forEach((b) => { if (b.tagName === 'BUTTON') b.disabled = true; });
+    socket.emit('pb:review_done', {});
+  }
+  function majReview() {
+    const r = S.review; const u = S.ui.rev;
+    if (!r || !u) return;
+    const hote = estHote();
+    u.titre.textContent = `Fiche ${/^[aeiouyhàâéèêëîïôûü]/i.test(r.username || "") ? "d’" : "de "}${r.username} (${r.index + 1}/${r.total})`;
+    u.pastilles.forEach((b, i) => {
+      b.dataset.fait = r.decided.includes(i) ? '1' : '0';
+      b.setAttribute('aria-label', `Fiche ${i + 1} sur ${r.total}${r.decided.includes(i) ? ', vue' : ', non vue'}`);
+      if (i === r.index) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    u.progres.textContent = `${r.decided.length}/${r.total} vues`;
+    r.categories.forEach((cat, c) => {
+      const cell = r.sheet[c] || { text: '', status: 'refuse' };
+      const ligne = u.lignes[c];
+      ligne.root.dataset.etat = cell.status;
+      const st = STATUTS.find((x) => x.k === cell.status) || STATUTS[2];
+      const sug = suggestion(cell.text, r.doublons[c]);
+      const vide = !String(cell.text || '').trim(); // une case vide est toujours refusée (règle serveur)
+      ligne.btns.forEach((b, i) => {
+        const on = STATUTS[i].k === cell.status;
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.dataset.suggere = STATUTS[i].k === sug ? '1' : '0';
+        if (vide && STATUTS[i].k !== 'refuse') b.disabled = true;
+      });
+      ligne.statut.dataset.etat = cell.status;
+      ligne.statut.textContent = `${st.label} ${st.pts ? `+${st.pts}` : '0'}`;
+      const d = (r.doublons[c] || []).map(nomAffiche);
+      ligne.doub.textContent = d.length ? `Même réponse que ${d.join(', ')}` : '';
+      ligne.doub.hidden = !d.length;
+    });
+    const t = sousTotal();
+    u.sous.textContent = `Sous-total de la fiche : ${t} point${t > 1 ? 's' : ''}`;
+    if (hote) {
+      const derniere = r.index >= r.total - 1;
+      u.prev.disabled = r.index <= 0;
+      u.next.hidden = derniere;
+      u.done.className = `key ${derniere ? 'key--principal' : 'key--secondaire'} key--bloc`;
+      u.done.textContent = 'Valider la manche';
+    }
+  }
+  function afficherReview({ focus = true, dir = 1 } = {}) {
+    const r = S.review;
+    if (!r) return;
+    stopChrono(); stopEnvoi(); clearAnims();
+    const hote = estHote();
+    const refocus = !focus && vue.contains(document.activeElement) ? document.activeElement.dataset.rf : null;
+    S.ui = {};
+    S.reviewEnvoye = false;
+    const u = (S.ui.rev = { cle: `${r.playerId}|${hote}`, confirme: false, annule: 0 });
+    u.titre = el('h1', { class: 'pb-titre pb-titre--manche' });
+    u.progres = el('span', { class: 'pb-compteur' });
+    u.pastilles = Array.from({ length: r.total }, (_, i) => (hote
+      ? el('button', { type: 'button', class: 'pb-pastille', 'data-rf': `p${i}`, onclick: () => allerFiche(i) })
+      : el('span', { class: 'pb-pastille' })));
+    u.lignes = r.categories.map((cat, c) => {
+      const cell = r.sheet[c] || { text: '' };
+      const txt = String(cell.text || '').trim();
+      const btns = hote ? STATUTS.map((st, i) => el('button', {
+        type: 'button', class: 'pb-seg', 'data-k': st.k, 'data-rf': `v${c}${i}`, 'aria-pressed': 'false',
+        'aria-label': `${cat} : ${st.label}, ${st.pts} point${st.pts > 1 ? 's' : ''}`, onclick: () => verdict(c, st.k),
+      }, el('span', {}, st.label), el('small', {}, st.pts ? `+${st.pts}` : '0'))) : [];
+      const statut = el('span', { class: 'pb-tampon-statut', role: hote ? null : 'status' });
+      const doub = el('p', { class: 'pb-doub', hidden: true });
+      const root = el('li', { class: 'pb-rev-ligne' },
+        el('span', { class: 'pb-rev-cat' }, cat),
+        el('span', { class: txt ? 'pb-rev-rep' : 'pb-rev-rep pb-rev-rep--vide' }, txt || '—'),
+        doub,
+        hote ? el('div', { class: 'pb-segs', role: 'group', 'aria-label': `Verdict pour ${cat}` }, btns) : null,
+        statut);
+      return { root, btns, statut, doub };
+    });
+    u.sous = el('p', { class: 'pb-sous-total', role: 'status' });
+    const carte = el('ol', { class: 'pb-rev-liste' }, u.lignes.map((l) => l.root));
+    const glisse = el('div', { class: 'pb-rev-carte' }, carte);
+    glisse.style.setProperty('--dir', String(dir));
+    u.carte = glisse;
+    let actions;
+    if (hote) {
+      u.prev = bouton('key--secondaire', '← Fiche précédente', () => allerFiche(S.review.index - 1), { 'data-rf': 'prev' });
+      u.next = bouton('key--principal', 'Fiche suivante →', () => allerFiche(S.review.index + 1), { 'data-rf': 'next' });
+      u.done = bouton('key--secondaire key--bloc', 'Valider la manche', validerManche, { 'data-rf': 'done' });
+      actions = el('div', { class: 'pb-rev-nav' }, el('div', { class: 'pb-actions' }, u.prev, u.next), u.done);
+    } else {
+      actions = el('p', { class: 'pb-attente', role: 'status' }, `${nomAffiche(S.hostId)} valide les réponses…`);
+    }
+    monter(el('div', { class: 'pb-ecran pb-ecran--rev' },
+      u.titre,
+      el('div', { class: 'pb-rev-haut' },
+        el('div', { class: 'pb-lettre pb-lettre--petite', role: 'img', 'aria-label': `Lettre ${String(r.letter).toUpperCase()}` }, el('span', { 'aria-hidden': 'true' }, String(r.letter).toUpperCase())),
+        el('div', { class: 'pb-pastilles', role: hote ? 'group' : null, 'aria-label': 'Fiches' }, u.pastilles, u.progres)),
+      glisse, u.sous, actions,
+      bouton('key--fantome pb-sortie', 'Quitter définitivement', quitterDefinitivement)), focus);
+    majReview();
+    if (refocus) { const n = vue.querySelector(`[data-rf="${refocus}"]`); if (n && !n.disabled && !n.hidden) n.focus({ preventScroll: true }); }
+  }
+  function surReview(d) {
+    const avant = S.review;
+    S.phase = 'review';
+    S.review = d; S.letter = d.letter; S.categories = d.categories;
+    const u = S.ui.rev;
+    const memeEcran = u && u.cle === `${d.playerId}|${estHote()}` && u.pastilles.length === d.total;
+    if (memeEcran) { majReview(); majGarde(); return; }
+    const dir = avant && d.index < avant.index ? -1 : 1;
+    afficherReview({ focus: !u, dir });
+    majGarde();
+  }
+
   /* ---------- Résultats ---------- */
   function etatCellule(c) {
     if (!c || !String(c.text || '').trim()) return { k: 'vide', label: 'Vide' };
-    if (!c.valid) return { k: 'invalide', label: 'Invalide' };
-    return c.points >= 10 ? { k: 'unique', label: 'Valide, unique' } : { k: 'doublon', label: 'Doublon' };
+    const st = STATUTS.find((x) => x.k === c.status);
+    if (st) return { k: st.k, label: st.label };
+    if (!c.valid) return { k: 'refuse', label: 'Refusé' };
+    return c.points >= 10 ? { k: 'unique', label: 'Unique' } : { k: 'partage', label: 'Partagé' };
   }
   function afficherResultats(res, { focus = true } = {}) {
     stopChrono(); stopEnvoi(); clearAnims();
@@ -491,6 +640,7 @@
         S.stoppedBy = st.stoppedBy;
         afficherManche({ resume: true, remainingMs: st.remainingMs || 0, durationMs: st.durationMs || 0, locked: true, by: st.stoppedBy || null });
         break;
+      case 'review': S.review = st.review; if (st.review) { S.letter = st.review.letter; S.categories = st.review.categories; afficherReview(); } else afficherManche({ resume: true, locked: true }); break;
       case 'results': S.results = st.results; afficherResultats(st.results); break;
       case 'over': S.ranking = st.ranking; afficherFin(st.ranking || []); break;
       default: afficherSalon();
@@ -523,6 +673,9 @@
       if (S.phase === 'lobby') {
         if (hoteAvant !== S.hostId && (hoteAvant === S.you || S.hostId === S.you)) afficherSalon({ focus: false });
         else rafraichirSalon();
+      } else if (S.phase === 'review') {
+        if (hoteAvant !== S.hostId) afficherReview({ focus: false });
+        else if (S.ui.rev) majReview();
       } else if (S.phase === 'over') {
         if (hoteAvant !== S.hostId && (hoteAvant === S.you || S.hostId === S.you)) afficherFin(S.ranking || [], { focus: false });
         else majRejouer();
@@ -532,7 +685,7 @@
     'pb:round_start': (d) => {
       if (!S.code) return;
       S.phase = 'writing'; S.round = d.round; S.totalRounds = d.totalRounds; S.letter = d.letter; S.categories = d.categories;
-      S.answers = null; S.dirty = false; S.dernierEnvoi = 0; S.stoppedBy = undefined;
+      S.answers = null; S.review = null; S.dirty = false; S.dernierEnvoi = 0; S.stoppedBy = undefined;
       afficherManche({ remainingMs: d.durationMs, durationMs: d.durationMs });
       majGarde();
     },
@@ -542,9 +695,10 @@
       envoyerReponses(true);
       verrouiller(d.by);
     },
+    'pb:review': (d) => { if (S.code && d) surReview(d); },
     'pb:results': (res) => {
       if (!S.code) return;
-      S.phase = 'results'; S.results = res; S.scores = res.scores || {};
+      S.phase = 'results'; S.review = null; S.results = res; S.scores = res.scores || {};
       afficherResultats(res);
       majGarde();
     },
@@ -557,7 +711,8 @@
     'pb:replaced': () => { if (S.code) afficherRemplace(); },
     'pb:error': (e) => {
       const code = e && e.code;
-      const msg = (e && e.message) || 'Une erreur est survenue.';
+      const msg = (e && e.message) || MSG_ERR[code] || 'Une erreur est survenue.';
+      if (code === 'bad_phase' && (S.phase !== 'review' || S.reviewEnvoye)) return;
       clearBusy();
       if (code === 'resume_failed') {
         granReprise.clear(P);

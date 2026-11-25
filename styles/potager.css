@@ -1,0 +1,123 @@
+/* ==========================================================================
+   Potager : « La ferme ». Monde : <body data-monde="potager">
+   Variables --monde-* / --pot-* et interface générée par javascript/potager.js.
+   ========================================================================== */
+[data-monde="potager"] {
+  --monde-fond: #3B2A1A; --monde-surface: #4E3924; --monde-bord: #7A5A38; --monde-texte: #EFE8CC; --monde-texte-doux: #D8CFAC;
+  --monde-accent: #F2B630; --monde-police: var(--police-pixel); --monde-focus: #F2B630; --monde-barre: #3B2A1A;
+  --pot-sol: #6B4423; --pot-sol-sombre: #573619; --pot-sillon: #4A2D14; --pot-herbe: #7FB342; --pot-pousse: #A8D45C; --pot-piece: #F2B630;
+  background-image: radial-gradient(rgba(0, 0, 0, .12) 1px, transparent 1.4px);
+  background-size: 10px 10px;
+}
+
+.potager { max-width: 1000px; margin-inline: auto; color: var(--monde-texte); }
+.potager button:focus-visible, .potager textarea:focus-visible { outline: 3px solid var(--bouton-dor); outline-offset: 3px; }
+.pot-titre { margin: 0 0 var(--e-3); font: 700 clamp(32px, 9vw, 48px) / 1 var(--police-pixel); color: var(--bouton-dor); }
+.pot-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* En-tête : pièces et niveau */
+.pot-hud { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3) var(--e-5); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-4);
+  background: var(--monde-surface); border: 3px solid var(--monde-bord); border-radius: var(--rayon-touche); }
+.pot-pieces { display: flex; align-items: center; gap: var(--e-2); font: 700 28px / 1 var(--police-pixel); color: var(--pot-piece); }
+.pot-piece { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFE8A3, var(--pot-piece) 60%, #B07A10); border: 2px solid var(--encre); }
+.pot-niveau { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: var(--t-14); }
+.pot-niveau__ligne b { color: var(--pomme); font: 700 20px var(--police-pixel); }
+.pot-xp__txt { color: var(--monde-texte-doux); }
+.pot-xp, .pot-mini, .pot-pousse { display: block; height: 10px; background: var(--encre); border-radius: 5px; overflow: hidden; }
+.pot-xp i, .pot-mini i { display: block; height: 100%; width: 100%; background: var(--pomme); transform-origin: left; transform: scaleX(0); transition: transform .25s linear; }
+
+/* Résumé d'absence */
+.pot-absence { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); padding: var(--e-3) var(--e-4); margin-bottom: var(--e-4);
+  background: var(--parchemin); color: var(--encre); border: 3px solid var(--encre); border-radius: var(--rayon-touche); }
+.pot-absence[hidden] { display: none; }
+.pot-absence__corps { flex: 1 1 220px; }
+.pot-absence__titre { margin: 0 0 4px; font: 700 20px var(--police-pixel); }
+.pot-absence p { margin: 0; font-size: var(--t-14); color: var(--texte-corps-papier); }
+
+/* Disposition : ferme + panneaux */
+.pot-corps { display: grid; gap: var(--e-5); align-items: start; }
+@media (min-width: 900px) { .pot-corps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+
+/* Grille de parcelles */
+.pot-grille { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 8px; background: #3F7A2C; border: 3px solid var(--encre); border-radius: var(--rayon-touche);
+  background-image: linear-gradient(45deg, rgba(0, 0, 0, .06) 25%, transparent 25% 75%, rgba(0, 0, 0, .06) 75%); background-size: 8px 8px; }
+.pot-case { position: relative; aspect-ratio: 1; min-width: 0; }
+.pot-parcelle { position: relative; display: block; width: 100%; height: 100%; padding: 0; overflow: hidden; cursor: pointer; border: 3px solid var(--encre); border-radius: 6px; background: var(--pot-sol); }
+.pot-sol { position: absolute; inset: 0; background:
+  repeating-linear-gradient(0deg, var(--pot-sillon) 0 3px, transparent 3px 14px),
+  linear-gradient(45deg, var(--pot-sol-sombre) 25%, var(--pot-sol) 25% 75%, var(--pot-sol-sombre) 75%);
+  background-size: auto, 8px 8px; opacity: .85; }
+.pot-sprite { position: absolute; inset: 6% 6% 14%; width: 88%; height: 80%; image-rendering: pixelated; }
+.pot-pousse { position: absolute; left: 6px; right: 6px; bottom: 5px; height: 6px; border-radius: 3px; background: rgba(0, 0, 0, .55); }
+.pot-pousse i { display: block; height: 100%; width: 100%; background: var(--pot-pousse); transform-origin: left; transform: scaleX(0); transition: transform .25s linear; }
+.pot-parcelle--vide .pot-pousse { visibility: hidden; }
+.pot-parcelle--mure { border-color: var(--bouton-dor); box-shadow: 0 0 0 2px var(--encre); }
+.pot-parcelle--mure .pot-pousse i { background: var(--bouton-dor); }
+.pot-parcelle--mure::before, .pot-parcelle--mure::after { content: ""; position: absolute; width: 6px; height: 6px; background: #FFF4D6; z-index: 2; pointer-events: none;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: pot-scintille 1.6s steps(4, end) infinite; }
+.pot-parcelle--mure::before { top: 14%; left: 18%; }
+.pot-parcelle--mure::after { top: 30%; right: 16%; width: 8px; height: 8px; animation-delay: .8s; }
+.pot-parcelle:hover:not(.pot-parcelle--mure) { border-color: var(--sauge); }
+@keyframes pot-scintille { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1.2); } }
+
+/* Achat de parcelle */
+.pot-achat { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; aspect-ratio: 1; min-width: 0; padding: 4px; cursor: pointer;
+  background: transparent; color: var(--parchemin); border: 3px dashed var(--parchemin); border-radius: 6px; font: 600 12px / 1.1 var(--police-pixel); }
+.pot-achat:disabled { opacity: .6; cursor: not-allowed; }
+.pot-achat__plus { font: 700 24px / 1 var(--police-pixel); color: var(--bouton-dor); }
+.pot-achat__cout { color: var(--bouton-dor-clair); font-size: 13px; }
+
+/* Pièces qui montent */
+.pot-flotte { position: absolute; left: 50%; top: 20%; z-index: 3; pointer-events: none; transform: translateX(-50%); font: 700 18px var(--police-pixel); color: var(--bouton-dor-clair);
+  text-shadow: 0 2px 0 var(--encre), 0 0 4px var(--encre); animation: pot-monte 1.2s ease-out forwards; }
+@keyframes pot-monte { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -48px); } }
+
+.pot-barre-actions { display: flex; flex-wrap: wrap; gap: var(--e-3); margin-top: var(--e-3); }
+.pot-barre-actions .key { flex: 1 1 140px; }
+
+/* Panneaux */
+.pot-onglets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--e-3); }
+.pot-onglet { min-height: 44px; padding: 0 12px; cursor: pointer; color: var(--parchemin); background: transparent; border: 2px solid var(--monde-bord); border-radius: var(--rayon-touche); font: 600 14px var(--police-pixel); }
+.pot-onglet[aria-pressed="true"] { background: var(--bouton-dor); color: var(--encre); border-color: var(--encre); }
+.pot-panneau { padding: var(--e-3); background: var(--monde-surface); border: 3px solid var(--monde-bord); border-radius: var(--rayon-touche); }
+.pot-panneau[hidden] { display: none; }
+.pot-aide { margin: 0 0 var(--e-3); font-size: var(--t-14); color: var(--monde-texte-doux); }
+.pot-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.pot-liste li[hidden] { display: none; }
+.pot-item { display: flex; align-items: center; gap: var(--e-3); width: 100%; min-height: 56px; padding: 6px 10px; text-align: left; cursor: pointer; color: var(--parchemin);
+  background: rgba(0, 0, 0, .2); border: 2px solid var(--monde-bord); border-radius: var(--rayon-touche); font-family: var(--police-texte); }
+.pot-item[aria-pressed="true"] { border-color: var(--bouton-dor); background: rgba(242, 182, 48, .14); }
+.pot-item:disabled { opacity: .6; cursor: not-allowed; }
+.pot-item--cher .pot-item__info { color: var(--erreur-sur-sombre); }
+.pot-item__icone { flex: none; width: 40px; height: 40px; background: var(--pot-sol); border: 2px solid var(--encre); border-radius: 4px; }
+.pot-item__icone .pot-sprite { position: static; width: 100%; height: 100%; }
+.pot-item__txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pot-item__txt b { font: 700 17px var(--police-pixel); }
+.pot-item__info, .pot-item__niv { font-size: 13px; color: var(--monde-texte-doux); }
+.pot-item__niv { display: inline; }
+.pot-ligne { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); padding: 8px 10px; background: rgba(0, 0, 0, .2); border: 2px solid var(--monde-bord); border-radius: var(--rayon-touche); }
+.pot-ligne .pot-item__txt { flex: 1 1 auto; }
+.pot-item__achat { flex: none; min-width: 96px; }
+.pot-item__achat:disabled { opacity: .55; cursor: not-allowed; }
+.pot-mini { margin-top: 4px; height: 8px; }
+
+/* Sauvegarde */
+.pot-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-bottom: var(--e-3); }
+.pot-code { width: 100%; box-sizing: border-box; padding: 8px; resize: vertical; color: var(--encre); background: var(--parchemin); border: 2px solid var(--encre); border-radius: var(--rayon-champ); font: 13px / 1.3 monospace; word-break: break-all; }
+.pot-msg { min-height: 1.4em; margin: var(--e-2) 0 0; font-size: var(--t-14); color: var(--pomme); }
+.pot-msg--erreur { color: var(--erreur-sur-sombre); }
+.pot-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-3); padding: var(--e-3); background: rgba(0, 0, 0, .25); border: 2px solid var(--brique); border-radius: var(--rayon-touche); }
+.pot-confirm[hidden] { display: none; }
+.pot-confirm p { flex: 1 1 100%; margin: 0; font-size: var(--t-14); }
+
+@media (max-width: 420px) {
+  .pot-grille { gap: 6px; padding: 6px; }
+  .pot-pieces { font-size: 24px; }
+  .pot-item__achat { min-width: 84px; }
+  .pot-flotte { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pot-parcelle--mure::before, .pot-parcelle--mure::after { animation: none; opacity: 1; transform: none; }
+  .pot-flotte { animation: none; display: none; }
+  .pot-xp i, .pot-mini i, .pot-pousse i { transition: none; }
+}

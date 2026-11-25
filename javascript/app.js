@@ -7,12 +7,7 @@
   const hide = (id) => { const n = $(id); if (n) n.style.display = 'none'; };
 
   /* ---------- Zone « Reprendre » (accueil) ---------- */
-  const JEUX_REPRISE = {
-    imp: { route: '/imposteur', label: "d'Imposteur" },
-    gri: { route: '/gribouille', label: 'de Gribouille' },
-    pb: { route: '/petit-bac', label: 'de Petit Bac' },
-    kk: { route: '/karaoke', label: 'de Karaoké' },
-  };
+  const JEUX_REPRISE = Object.fromEntries(GRAN_JEUX.filter((j) => j.reprise).map((j) => [j.reprise, { route: j.route, label: `${/^[aeiouyéèÉ]/i.test(j.nom) ? "d'" : 'de '}${j.nom}` }]));
   // La reprise elle-même est faite par l'écran d'entrée du jeu ; ici on ne fait que l'y envoyer.
   function renderReprise() {
     const zone = $('accueil-reprise');
@@ -76,8 +71,25 @@
   // « Un jeu au hasard » (404) : un des jeux jouables aujourd'hui.
   $('jeu-hasard').addEventListener('click', (e) => {
     e.preventDefault();
-    const jeux = ['imposteur', 'gribouille', 'petit-bac', 'karaoke', 'lyrics', 'mot-cache', 'echo', 'plus-ou-moins', 'frappe'];
-    granRouter.navigate(`/${jeux[Math.floor(Math.random() * jeux.length)]}`);
+    granRouter.navigate(GRAN_JEUX[Math.floor(Math.random() * GRAN_JEUX.length)].route);
+  });
+
+  // Liens « Jeux » (navbar, footer) : depuis l'accueil, défile jusqu'à la liste ; ailleurs, va à l'accueil puis défile.
+  // En jeu, le lien de la navbar devient « ← Accueil » (géré par le routeur) : on laisse alors la navigation normale.
+  document.addEventListener('click', (e) => {
+    const lien = e.target.closest && e.target.closest('[data-vers-jeux]');
+    if (!lien) return;
+    const courant = granRouter.current();
+    if (courant && courant.view !== 'accueil' && courant.view !== 'profil' && courant.view !== '404') return;
+    e.preventDefault();
+    const defiler = () => {
+      const liste = $('liste-jeux');
+      if (!liste) return;
+      liste.scrollIntoView({ behavior: granUI.reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+      liste.focus({ preventScroll: true });
+    };
+    if (courant && courant.view === 'accueil') defiler();
+    else { granRouter.navigate('/'); setTimeout(defiler, 450); }
   });
 
   // Lien d'évitement : pas de changement de hash (le routeur le prendrait pour une route), on déplace le focus.

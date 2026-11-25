@@ -18,27 +18,24 @@
   </head>
   <body class="damier">
     <a class="lien-evitement" href="#contenu" id="lien-evitement">Aller au contenu</a>
-    <!-- En-tête de la console : commun à tous les écrans (version réduite en jeu, voir routeur) -->
-    <div class="conteneur conteneur--entete">
-      <header class="console">
-        <a class="key key--retour console__quitter" href="#/" hidden>
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"><path d="M11 3 5 9l6 6"></path></svg>
-          Quitter
-        </a>
-        <nav class="console__ariane" aria-label="Fil d'Ariane" hidden></nav>
-        <a class="console__logo" href="#/">
+    <!-- Barre de navigation unique : même structure partout, seule la couleur suit le monde du jeu (voir routeur) -->
+    <header class="console">
+      <div class="conteneur console__dedans">
+        <a class="console__logo" href="#/" aria-label="Gran'Games, accueil">
           <svg aria-hidden="true" width="26" height="30" viewBox="0 0 26 30"><path class="logo__corps" d="M0 0h19l7 7v23H0z"></path><g class="logo__fente"><rect x="4" y="9" width="18" height="12"></rect><rect x="5" y="25" width="3" height="5"></rect><rect x="11" y="25" width="3" height="5"></rect><rect x="17" y="25" width="3" height="5"></rect></g></svg>
-          <span>Gran'Games</span>
+          <span class="console__logo-texte">Gran'Games</span>
         </a>
+        <p class="console__contexte" id="console-contexte" hidden></p>
         <nav class="console__nav" aria-label="Navigation principale">
-          <a href="#/">Accueil</a>
+          <a href="#/" id="console-jeux" data-label="Jeux" data-vers-jeux>Jeux</a>
+          <a href="#/profil" data-label="Mon profil"><span class="console__court">Profil</span><span class="console__long">Mon profil</span></a>
         </nav>
         <button type="button" id="account-btn" class="console__compte" aria-haspopup="dialog" aria-label="Compte, connexion ou inscription">
           <svg class="console__compte-icone" aria-hidden="true" viewBox="0 0 9 9" shape-rendering="crispEdges"><path class="icone-encre" d="M3 0h3v1h1v3H6v1H3V4H2V1h1zM1 6h7v1h1v2H0V7h1z"></path></svg>
           <span class="console__compte-nom">Compte</span>
         </button>
-      </header>
-    </div>
+      </div>
+    </header>
 
     <main id="contenu" tabindex="-1">
       <!-- ====== Accueil ====== -->
@@ -54,7 +51,7 @@
             </div>
           </div>
 
-          <section class="groupe" aria-labelledby="g-multi">
+          <section class="groupe" id="liste-jeux" aria-labelledby="g-multi" tabindex="-1">
             <h2 class="groupe__titre" id="g-multi">On joue à plusieurs</h2>
             <p class="groupe__sous">Crée une salle, envoie le code, c'est parti.</p>
           <ul class="bandeaux" aria-labelledby="g-multi">
@@ -217,23 +214,23 @@
               </a>
             </li>
             <li>
-              <a class="bandeau bandeau--plus-ou-moins" href="#/plus-ou-moins" aria-labelledby="b-plus-ou-moins-titre" aria-describedby="b-plus-ou-moins-desc b-plus-ou-moins-reperes">
+              <a class="bandeau bandeau--potager" href="#/potager" aria-labelledby="b-potager-titre" aria-describedby="b-potager-desc b-potager-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
-                  <span class="cart cart--plus-ou-moins">
+                  <span class="cart cart--potager">
                     <span class="cart__stries"></span>
                     <span class="cart__etiquette">
-                      <span class="cart__nom">Plus ou Moins</span>
+                      <span class="cart__nom">Potager</span>
                       <span class="cart__art" aria-hidden="true">
-                      <span class="art-pm"><span class="art-pm__case">?</span><span class="art-pm__ou">ou</span><span class="art-pm__case art-pm__case--sombre">?</span></span>
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect class="art-terre" x="1" y="11" width="14" height="4"></rect><g class="art-pousse"><rect x="7" y="6" width="2" height="5"></rect><rect x="4" y="4" width="3" height="2"></rect><rect x="3" y="3" width="2" height="1"></rect><rect x="9" y="3" width="3" height="2"></rect><rect x="11" y="2" width="2" height="1"></rect></g><g class="art-fruit"><rect x="2" y="9" width="2" height="2"></rect><rect x="12" y="9" width="2" height="2"></rect></g></svg>
                     </span>
                     </span>
                     <span class="cart__contacts"></span>
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h3 class="bandeau__titre" id="b-plus-ou-moins-titre">Plus ou Moins</h3>
-                  <p class="bandeau__desc" id="b-plus-ou-moins-desc">Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net.</p>
-                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip">Culture G</li></ul>
+                  <h3 class="bandeau__titre" id="b-potager-titre">Potager</h3>
+                  <p class="bandeau__desc" id="b-potager-desc">Plante, récolte, vends et agrandis ta ferme. Ton potager pousse même quand tu n’es pas là, et ta partie est sauvegardée.</p>
+                  <ul class="bandeau__reperes" id="b-potager-reperes"><li class="chip">Solo</li><li class="chip">Farming</li><li class="chip">Sauvegarde</li></ul>
                 </div>
               </a>
             </li>
@@ -290,18 +287,6 @@
             </div>
           </aside>
         </section>
-
-        <footer class="pied">
-          <div class="conteneur pied__dedans">
-            <div class="pied__gauche">
-              <span class="pied__gg" aria-hidden="true">GG</span>
-              <span class="pied__phrase">Bien joué. Reviens quand tu veux.</span>
-            </div>
-            <nav class="pied__liens" aria-label="Pied de page">
-              <a href="#/profil">Mon profil</a>
-            </nav>
-          </div>
-        </footer>
       </section>
 
       <!-- ====== Profil (#/profil) ====== -->
@@ -341,6 +326,11 @@
             </div>
           </aside>
           <div class="profil__contenu">
+            <div class="profil__invite" id="p-invite" hidden>
+              <p>Tu joues sans compte : ces chiffres restent dans ce navigateur. Crée un compte gratuit pour garder tes parties, ton historique et tes scores partout.</p>
+              <button type="button" class="key key--principal" id="p-invite-creer">Créer un compte</button>
+              <button type="button" class="key key--fantome" id="p-invite-connexion">J'ai déjà un compte</button>
+            </div>
             <section aria-labelledby="h-global" class="profil__bloc">
               <h2 id="h-global" class="titre-section titre-section--profil">Vue d'ensemble</h2>
               <div class="stats stats--global" id="p-global"></div>
@@ -348,7 +338,6 @@
             <section aria-labelledby="h-stats" class="profil__bloc">
               <h2 id="h-stats" class="titre-section titre-section--profil">Par jeu</h2>
               <div class="stats" id="p-stats"></div>
-              <p class="profil__note" id="p-note">Mot Caché, Écho, Plus ou Moins et Course de frappe gardent leur record dans ce navigateur : il n'apparaît pas ici.</p>
             </section>
             <section aria-labelledby="h-recentes" class="profil__bloc">
               <h2 id="h-recentes" class="titre-section titre-section--profil">Parties récentes</h2>
@@ -358,14 +347,7 @@
               <div class="profil__tete-hist">
                 <h2 id="h-hist" class="titre-section titre-section--profil">Historique</h2>
                 <label class="filtre-jeu" for="p-filtre">Jeu
-                  <select class="filtre-jeu__select" id="p-filtre">
-                    <option value="">Tous</option>
-                    <option value="imposteur">Imposteur</option>
-                    <option value="lyrics">Lyrics</option>
-                    <option value="karaoke">Karaoké</option>
-                    <option value="gribouille">Gribouille</option>
-                    <option value="petit-bac">Petit Bac</option>
-                  </select>
+                  <select class="filtre-jeu__select" id="p-filtre"></select>
                 </label>
               </div>
               <div class="historique" id="p-historique" tabindex="0" role="region" aria-label="Historique des parties"></div>
@@ -690,61 +672,9 @@
 
       </section>
 
-      <!-- ====== Plus ou Moins : « La Une » (solo : robots et fantôme de record, phrases dans javascript/frappe-donnees.js) ====== -->
-      <section data-vue="plus-ou-moins" class="pom" hidden>
-        <div class="pom__ecran pom__depart" data-ecran="depart">
-          <div class="pom__une"><span>Édition du jour</span><span>Prix : gratuit</span></div>
-          <h1 class="pom-titre">Plus<br><mark>ou</mark><br>Moins</h1>
-          <p class="pom__regle">Deux choses du quotidien. Laquelle a le plus ? Une bonne réponse prolonge la série, une erreur la termine.</p>
-          <div class="pom__cases">
-            <div class="pom__case pom__case--papier"><span class="pom__case-lib">Ton record</span><span class="pom__case-val" id="pom-record-depart">0</span></div>
-            <div class="pom__case"><span class="pom__case-lib">Thèmes</span><span class="pom__case-txt" id="pom-themes"></span></div>
-          </div>
-          <button type="button" class="key key--pom key--pom-sombre pom__lancer" id="pom-lancer">Lancer une série</button>
-        </div>
-
-        <div class="pom__ecran pom__jeu" data-ecran="jeu" hidden>
-          <div class="pom__entete">
-            <span class="pom-serie" id="pom-serie">Série 0</span>
-            <span class="pom__record">Record : <span id="pom-record-jeu">0</span></span>
-          </div>
-          <h1 class="pom__question" id="pom-question">Laquelle a le plus ?</h1>
-          <div class="duel" id="pom-duel">
-            <article class="duel__panneau" id="pom-a">
-              <span class="duel__cat" data-champ="cat"></span>
-              <h2 class="duel__nom" data-champ="nom"></h2>
-              <p class="duel__valeur" data-champ="valeur"></p>
-              <span class="duel__source" data-champ="source"></span>
-            </article>
-            <article class="duel__panneau" id="pom-b">
-              <span class="duel__cat" data-champ="cat"></span>
-              <h2 class="duel__nom" data-champ="nom"></h2>
-              <p class="duel__valeur duel__valeur--inconnue" data-champ="valeur">?</p>
-              <div class="duel__choix">
-                <button type="button" class="key key--pom key--pom-sombre" id="pom-plus"><svg class="pom__fleche" aria-hidden="true" width="16" height="16" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M3 0h1v1h1v1h1v1h1v1H5v3H2V4H0V3h1V2h1V1h1z" fill="currentColor"></path></svg><span data-champ="plus">Plus</span></button>
-                <button type="button" class="key key--pom" id="pom-moins"><svg class="pom__fleche" aria-hidden="true" width="16" height="16" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M2 0h3v3h2v1H6v1H5v1H4v1H3V6H2V5H1V4H0V3h2z" fill="currentColor"></path></svg><span data-champ="moins">Moins</span></button>
-              </div>
-              <span class="duel__source">Clavier : flèche haut pour plus, flèche bas pour moins.</span>
-            </article>
-            <span class="duel__ou" aria-hidden="true">ou</span>
-          </div>
-          <p class="sr-only" id="pom-annonce" role="status" aria-live="polite"></p>
-        </div>
-
-        <div class="pom__ecran pom__fin" data-ecran="fin" hidden>
-          <div class="pom__une"><span>Dernière minute</span><span>Plus ou Moins</span></div>
-          <h1 class="pom__fin-titre" id="pom-fin-titre">La série s'arrête à 0</h1>
-          <p class="pom__explication" id="pom-explication"></p>
-          <div class="pom__cases pom__cases--score">
-            <div class="pom__case pom__case--bonbon"><span class="pom__case-lib">Cette série</span><span class="pom__case-score" id="pom-fin-serie">0</span></div>
-            <div class="pom__case pom__case--papier" id="pom-fin-record-bloc"><span class="pom__case-lib">Ton record</span><span class="pom__case-score"><s id="pom-fin-ancien" hidden></s> <span id="pom-fin-record">0</span></span></div>
-          </div>
-          <p class="pom__note" id="pom-note-record" hidden>Record battu.</p>
-          <div class="pom__actions">
-            <button type="button" class="key key--pom key--pom-sombre" id="pom-rejouer">Rejouer</button>
-            <a class="key" href="#/">Autre jeu</a>
-          </div>
-        </div>
+      <!-- ====== Course de frappe (solo : robots et fantôme de record, phrases dans javascript/frappe-donnees.js) ====== -->
+      <section data-vue="potager" hidden>
+        <div class="jeu-montage" data-montage></div>
       </section>
 
       <!-- ====== Course de frappe : « Le circuit » (solo : robots et fantôme de record, phrases dans javascript/frappe-donnees.js) ====== -->
@@ -813,6 +743,22 @@
       </section>
     </main>
 
+    <!-- Pied de page unique : visible sur l'accueil et le profil seulement (le routeur gère hidden) -->
+    <footer class="pied" id="pied" hidden>
+      <div class="conteneur pied__dedans">
+        <div class="pied__gauche">
+          <span class="pied__gg" aria-hidden="true">GG</span>
+          <span class="pied__phrase">Bien joué. Reviens quand tu veux.</span>
+          <span class="pied__mention">Pas de pub, pas de compte obligatoire.</span>
+        </div>
+        <nav class="pied__liens" aria-label="Pied de page">
+          <a href="#/">Accueil</a>
+          <a href="#/" data-vers-jeux>Jeux</a>
+          <a href="#/profil">Mon profil</a>
+        </nav>
+      </div>
+    </footer>
+
     <!-- Fenêtre de compte : contenu construit par javascript/account.js -->
     <dialog id="fenetre-compte" class="fenetre fenetre-compte sur-papier" aria-labelledby="compte-titre"></dialog>
 
@@ -830,6 +776,7 @@
     <script defer src="javascript/config.js"></script>
     <script defer src="javascript/auth.js"></script>
     <script defer src="javascript/ui.js"></script>
+    <script defer src="javascript/jeux.js"></script>
     <script defer src="javascript/router.js"></script>
     <script defer src="javascript/reprise.js"></script>
     <script defer src="javascript/salle.js"></script>

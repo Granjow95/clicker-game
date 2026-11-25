@@ -4,8 +4,9 @@
 // Les gabarits SVG passés à svg() sont des constantes de ce fichier.
 const granAccount = (() => {
   const { el } = granUI;
-  const GAMES = { imposteur: 'Imposteur', lyrics: 'Lyrics', karaoke: 'Karaoké' };
-  const GAME_IDS = Object.keys(GAMES);
+  // Liste des jeux : registre GRAN_JEUX (jeux.js), rien à modifier ici quand on ajoute un jeu.
+  const GAMES = Object.fromEntries(GRAN_JEUX.map((j) => [j.id, j.nom]));
+  const GAME_IDS = GRAN_JEUX.map((j) => j.id);
   const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
   const USERNAME_ERR = 'Pseudo invalide : 3 à 20 lettres, chiffres ou _.';
   const MODIFIERS = ['fenetre-compte--confirmation', 'fenetre-compte--connecte', 'fenetre-compte--supprime'];
@@ -63,6 +64,31 @@ const granAccount = (() => {
     p.then((rows) => { if (!rows && statsP === p) statsP = null; }); // jamais de null en cache
     return p;
   }
+  // Stats par jeu = serveur (compte) et locales (granStats). Un même jeu peut exister des deux côtés (Lyrics, ou parties
+  // solo jouées connecté) : on prend le plus grand des deux plutôt que d'additionner, pour ne jamais compter deux fois.
+  function fusion(rows) {
+    const by = Object.fromEntries((rows || []).map((r) => [r.game, r]));
+    return GRAN_JEUX.map((jeu) => {
+      const r = by[jeu.id] || {};
+      const l = granStats.local(jeu.id);
+      return {
+        jeu,
+        parties: Math.max(r.games_played || 0, l.parties),
+        victoires: Math.max(r.wins || 0, l.victoires),
+        total: Math.max(r.total_score || 0, l.total),
+        meilleur: Math.max(r.best_score || 0, l.meilleur),
+        derniere: l.derniere,
+      };
+    });
+  }
+  // Historique local (invité) au format des lignes game_results, sans id : pas de suppression.
+  function localHistory() {
+    const out = [];
+    GRAN_JEUX.forEach((j) => granStats.local(j.id).recentes.forEach((r) => {
+      if (r.date) out.push({ id: null, game: j.id, score: r.score, won: r.gagne, created_at: r.date });
+    }));
+    return out.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, 100);
+  }
   function loadProfile() {
     const sb = granAuth.client();
     const u = granAuth.user();
@@ -115,22 +141,25 @@ const granAccount = (() => {
     const u = granAuth.user();
     fiche.invite.hidden = Boolean(u);
     fiche.connecte.hidden = !u;
+    const totaux = (lignes) => {
+      fiche.parties.textContent = String(lignes.reduce((n, l) => n + l.parties, 0));
+      fiche.victoires.textContent = String(lignes.reduce((n, l) => n + l.victoires, 0));
+      fiche.record.textContent = String(lignes.reduce((m, l) => Math.max(m, l.meilleur), 0));
+    };
     if (!u) {
       fiche.avatar.replaceChildren(...ficheAvatarInvite);
       fiche.nom.textContent = 'Invité';
-      [fiche.parties, fiche.victoires, fiche.record].forEach((n) => { n.textContent = '?'; });
+      totaux(fusion(null)); // stats locales des jeux solo
       return;
     }
     const name = displayName();
     paintAvatar(fiche.avatar, profile && profile.avatar_url, name);
     fiche.nom.textContent = name;
     const uid = u.id;
+    totaux(fusion(null));
     getStats().then((rows) => {
       if (!granAuth.user() || granAuth.user().id !== uid) return;
-      if (!rows) { [fiche.parties, fiche.victoires, fiche.record].forEach((n) => { n.textContent = '?'; }); return; }
-      fiche.parties.textContent = String(rows.reduce((s, r) => s + r.games_played, 0));
-      fiche.victoires.textContent = String(rows.reduce((s, r) => s + r.wins, 0));
-      fiche.record.textContent = String(rows.reduce((m, r) => Math.max(m, r.best_score), 0));
+      totaux(fusion(rows));
     });
   }
 
@@ -301,12 +330,10 @@ const granAccount = (() => {
     const uid = granAuth.user().id;
     getStats().then((rows) => {
       if (!granAuth.user() || granAuth.user().id !== uid || !rows) return;
-      const by = Object.fromEntries(rows.map((r) => [r.game, r]));
-      sous.textContent = `${plural(rows.reduce((s, r) => s + r.games_played, 0), 'partie')} jouée${rows.reduce((s, r) => s + r.games_played, 0) > 1 ? 's' : ''}`;
-      const g = (id, k) => (by[id] ? by[id][k] : 0);
-      rowTexts.imposteur.textContent = plural(g('imposteur', 'wins'), 'victoire');
-      rowTexts.lyrics.textContent = `meilleur ${g('lyrics', 'best_score')}`;
-      rowTexts.karaoke.textContent = plural(g('karaoke', 'games_played'), 'partie');
+      const lignes = fusion(rows);
+      const total = lignes.reduce((n, l) => n + l.parties, 0);
+      sous.textContent = `${plural(total, 'partie')} jouée${total > 1 ? 's' : ''}`;
+      lignes.forEach((l) => { rowTexts[l.jeu.id].textContent = plural(l.parties, 'partie'); });
     });
     show('fenetre-compte--connecte',
       el('div', { class: 'fenetre__tete fenetre__tete--profil' },
@@ -368,10 +395,10 @@ const granAccount = (() => {
     avatar: document.getElementById('profil-avatar'),
     nom: document.getElementById('profil-nom'),
     annonce: document.getElementById('p-annonce'),
-    annonce: document.getElementById('p-annonce'),
     depuis: document.getElementById('profil-depuis'),
     email: document.getElementById('profil-email'),
     root: document.querySelector('section[data-vue="profil"]'),
+    invite: document.getElementById('p-invite'),
     global: document.getElementById('p-global'),
     recentes: document.getElementById('p-recentes'),
     form: document.getElementById('profil-form'),
@@ -417,30 +444,41 @@ const granAccount = (() => {
     return el('div', {}, el('dt', {}, label), dd);
   };
 
-  function paintGlobal(rows) {
-    if (!rows) { P.global.replaceChildren(); return; }
-    const played = rows.reduce((n, r) => n + (r.games_played || 0), 0);
-    const wins = rows.reduce((n, r) => n + (r.wins || 0), 0);
-    const jeux = rows.filter((r) => r.games_played > 0 && GAMES[r.game]).length;
-    if (!played) { P.global.replaceChildren(el('p', { class: 'profil__vide' }, "Aucune partie enregistrée pour l'instant. Joue à Imposteur, Gribouille, Petit Bac, Lyrics ou Karaoké : tes chiffres s'afficheront ici.")); return; }
+  function paintGlobal(lignes) {
+    const played = lignes.reduce((n, l) => n + l.parties, 0);
+    const wins = lignes.reduce((n, l) => n + l.victoires, 0);
+    const jeux = lignes.filter((l) => l.parties > 0).length;
+    if (!played) { P.global.replaceChildren(el('p', { class: 'profil__vide' }, "Aucune partie enregistrée pour l'instant. Lance un jeu ci-dessous : tes chiffres s'afficheront ici.")); return; }
     P.global.replaceChildren(el('div', { class: 'stat-global' }, el('dl', {},
       statCell('Parties jouées', played), statCell('Victoires', wins), statCell(`Jeux essayés sur ${GAME_IDS.length}`, jeux))));
   }
 
-  function paintStats(rows) {
-    if (!rows) {
-      P.global.replaceChildren();
-      P.stats.replaceChildren(el('p', { class: 'profil__statut profil__statut--erreur', role: 'alert' }, 'Statistiques indisponibles.'));
-      return;
-    }
-    paintGlobal(rows);
-    const by = Object.fromEntries(rows.map((r) => [r.game, r]));
-    P.stats.replaceChildren(...GAME_IDS.map((id) => {
-      const r = by[id] || { games_played: 0, wins: 0, total_score: 0, best_score: 0 };
-      return el('div', { class: `stat-jeu stat-jeu--${id}` },
-        el('span', { class: 'stat-jeu__nom' }, GAMES[id]),
-        el('dl', {}, statCell('Parties', r.games_played), statCell('Victoires', r.wins), statCell('Score total', r.total_score), statCell('Meilleur score', r.best_score)));
-    }));
+  // rows : lignes player_stats (ou null : invité / serveur indisponible, on montre alors le local). erreur : afficher l'alerte.
+  function paintStats(rows, erreur) {
+    const lignes = fusion(rows);
+    paintGlobal(lignes);
+    const cartes = lignes.map((l) => {
+      const { jeu } = l;
+      const carte = el('div', { class: `stat-jeu stat-jeu--${jeu.id}${l.parties ? '' : ' stat-jeu--vide'}` },
+        el('span', { class: 'stat-jeu__nom' }, jeu.nom));
+      if (!l.parties) {
+        carte.append(el('p', { class: 'stat-jeu__vide' }, 'Pas encore joué'),
+          el('a', { class: 'key key--fantome stat-jeu__jouer', href: `#${jeu.route}`, 'aria-label': `Jouer à ${jeu.nom}` }, 'Jouer'));
+        return carte;
+      }
+      const meilleur = el('dd', {}, '0');
+      granUI.countUp(meilleur, l.meilleur);
+      meilleur.append(el('span', { class: 'stat-jeu__unite' }, jeu.unite || ''));
+      carte.append(el('dl', {}, statCell('Parties', l.parties), statCell('Victoires', l.victoires),
+        statCell('Score total', l.total), el('div', {}, el('dt', {}, 'Meilleur score'), meilleur)));
+      if (l.derniere) {
+        const d = new Date(l.derniere);
+        if (!Number.isNaN(d.getTime())) carte.append(el('p', { class: 'stat-jeu__derniere' }, `Dernière partie (ici) : ${d.toLocaleDateString('fr-FR')}`));
+      }
+      return carte;
+    });
+    const alerte = erreur ? [el('p', { class: 'profil__statut profil__statut--erreur', role: 'alert' }, 'Statistiques du compte indisponibles : seuls les chiffres de ce navigateur sont affichés.')] : [];
+    P.stats.replaceChildren(...alerte, ...cartes);
   }
 
   function paintRecentes() {
@@ -475,7 +513,7 @@ const granAccount = (() => {
         el('td', { class: 'historique__score' }, String(r.score)),
         el('td', { class: 'historique__quand' }, new Date(r.created_at).toLocaleDateString('fr-FR')),
         el('td', { class: 'historique__action' }));
-      tr.lastChild.append(el('button', { type: 'button', class: 'historique__suppr', 'aria-label': `Supprimer cette partie (${GAMES[r.game] || r.game})`, onclick: () => removeGame(r, tr) }, trash()));
+      if (r.id) tr.lastChild.append(el('button', { type: 'button', class: 'historique__suppr', 'aria-label': `Supprimer cette partie (${GAMES[r.game] || r.game})`, onclick: () => removeGame(r, tr) }, trash()));
       return tr;
     });
     P.hist.replaceChildren(el('table', {},
@@ -496,7 +534,7 @@ const granAccount = (() => {
       if (error) { tr.hidden = false; granUI.toast('Suppression impossible.', { type: 'erreur' }); return; }
       history = history.filter((x) => x.id !== r.id);
       tr.remove();
-      if (profilActive) { getStats(true).then(paintStats); paintRecentes(); if (!history.length) paintHistory(); }
+      if (profilActive) { getStats(true).then((rows) => paintStats(rows, !rows)); paintRecentes(); if (!history.length) paintHistory(); }
     };
     entry.timer = setTimeout(entry.commit, UNDO_MS);
     pending.add(entry);
@@ -532,9 +570,23 @@ const granAccount = (() => {
     }
   }
 
+  // Options du filtre : générées depuis le registre.
+  P.filtre.replaceChildren(el('option', { value: '' }, 'Tous'), ...GRAN_JEUX.map((j) => el('option', { value: j.id }, j.nom)));
+
   function initProfil() {
     if (!ready) { P.nom.textContent = 'Ton profil'; return; } // la session n'est pas encore connue : onChange rappellera
-    if (!granAuth.user()) { granRouter.navigate('/'); open('signin'); return; }
+    const u = granAuth.user();
+    P.root.classList.toggle('profil--invite', !u);
+    P.invite.hidden = Boolean(u);
+    P.annonce.textContent = '';
+    if (!u) { // invité : stats et parties locales, invitation à créer un compte
+      P.nom.textContent = 'Ton profil';
+      paintStats(null);
+      history = localHistory();
+      paintRecentes();
+      paintHistory();
+      return;
+    }
     paintProfilHeader();
     setStatus(P.statut, '');
     setStatus(P.delStatut, '');
@@ -542,12 +594,18 @@ const granAccount = (() => {
     P.stats.replaceChildren(el('div', { class: 'skel stat-jeu' }));
     P.recentes.replaceChildren(el('p', { class: 'profil__vide' }, 'Chargement…'));
     P.hist.replaceChildren(el('p', { class: 'historique__vide' }, 'Chargement…'));
-    P.annonce.textContent = '';
     if (!profile) loadProfile();
-    getStats(true).then(paintStats);
+    getStats(true).then((rows) => paintStats(rows, !rows));
     refreshFiche();
     loadHistory();
   }
+  P.invite.querySelector('#p-invite-creer').addEventListener('click', () => open('signup'));
+  P.invite.querySelector('#p-invite-connexion').addEventListener('click', () => open('signin'));
+  // Une partie solo vient de se terminer : on rafraîchit la fiche d'accueil et, si elle est ouverte, les cartes du profil.
+  window.addEventListener('gran:stats', () => {
+    refreshFiche();
+    if (profilActive && ready && !granAuth.user()) initProfil();
+  });
 
   P.filtre.addEventListener('change', paintHistory);
 
@@ -606,7 +664,7 @@ const granAccount = (() => {
 
   // Entrée écran vers écran : cascade de 40 ms sur les blocs, rejouée à chaque enter() (vues persistantes).
   function animateEntry() {
-    if (!P.root || !granAuth.user()) return;
+    if (!P.root) return;
     P.root.classList.remove('profil--entre');
     void P.root.offsetWidth;
     P.root.classList.add('profil--entre');
@@ -636,7 +694,7 @@ const granAccount = (() => {
     if (user) loadProfile();
     if (dlg.open) render();
     if (profilActive) {
-      if (user) { initProfil(); if (first) animateEntry(); } else { granRouter.navigate('/'); }
+      initProfil(); if (first) animateEntry();
     }
   });
 

@@ -1,7 +1,10 @@
 const { clean, createRateLimiter, createKeyedLimiter } = require("./util");
 const { getSupabase } = require("./supabase");
 
-const GAMES = new Set(["imposteur", "lyrics", "karaoke", "gribouille", "petit-bac"]);
+// Tous les jeux du registre client (javascript/jeux.js). SOLO_GAMES : ceux qui peuvent envoyer solo_result.
+const GAMES = new Set(["imposteur", "gribouille", "petit-bac", "karaoke", "lyrics", "mot-cache", "echo", "potager", "frappe"]);
+// Lyrics a sa propre voie (lyrics_result, limites dédiées) : il n'est pas accepté ici.
+const SOLO_GAMES = new Set(["mot-cache", "echo", "frappe", "potager"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const MAX_SCORE = 1000; // plafond réaliste, toutes parties confondues
@@ -19,7 +22,7 @@ function cleanMeta(meta) {
     if (!key || key === "__proto__") continue;
     if (typeof v === "string") out[key] = clean(v, 60);
     else if (typeof v === "boolean") out[key] = v;
-    else if (typeof v === "number" && Number.isFinite(v)) out[key] = v;
+    else if (typeof v === "number" && Number.isFinite(v)) out[key] = Math.max(-1e6, Math.min(1e6, v));
   }
   return out;
 }
@@ -74,7 +77,31 @@ function createResults(getClient = getSupabase) {
     });
   }
 
-  return { record, registerLyrics };
+  // Jeux solo (mot-cache, echo, frappe, potager, lyrics) : score déclaré par le client, donc non vérifiable (meta.unverified).
+  // Comptes seulement ; 6 / minute et 150 / jour par compte, en plus du plafond global de record().
+  const allowSoloMin = createKeyedLimiter({ max: 6, windowMs: 60 * 1000 });
+  const allowSoloDay = createKeyedLimiter({ max: 150, windowMs: 24 * 3600 * 1000 });
+  function registerSolo(socket) {
+    const allow = createRateLimiter({ capacity: 5, perSecond: 0.2 });
+    socket.on("solo_result", (data) => {
+      if (!allow()) return;
+      const userId = socket.data.userId;
+      if (!userId || !data || typeof data !== "object") return;
+      if (typeof data.game !== "string" || !SOLO_GAMES.has(data.game)) return;
+      if (!allowSoloMin(userId) || !allowSoloDay(userId)) return;
+      record({
+        userId,
+        game: data.game,
+        score: data.score,
+        won: data.won,
+        rounds: data.rounds,
+        durationS: data.durationS,
+        meta: { ...cleanMeta(data.meta), unverified: true },
+      });
+    });
+  }
+
+  return { record, registerLyrics, registerSolo };
 }
 
 // Au moins 2 comptes (userId) distincts parmi les joueurs : un compte + des invités ne suffit pas.
@@ -111,4 +138,4 @@ function recordRanking(results, { game, players, scoreOf, rounds }) {
   }
 }
 
-module.exports = { createResults, cleanMeta, recordRanking, hasDistinctAccounts };
+module.exports = { GAMES, SOLO_GAMES, createResults, cleanMeta, recordRanking, hasDistinctAccounts };

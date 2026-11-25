@@ -196,6 +196,7 @@
       : { nom: j.nom, t: tempsBot(j), mpm: j.mpm }));
     lignes.sort((a, b) => a.t - b.t);
     const place = lignes.findIndex((l) => l.moi) + 1;
+    if (typeof granStats !== 'undefined') granStats.enregistrer('frappe', { score: mpm, gagne: place === 1, manches: 1, meta: { precision, place } });
     $('fra-resume').textContent = `${rang(place)} sur ${lignes.length} : ${mpm} mpm, ${precision} % de précision, ${secondes.toFixed(1).replace('.', ',')} s.`;
     $('fra-classement').replaceChildren(...lignes.map((l, i) => el('li', { class: `fra__rang${l.moi ? ' fra__rang--moi' : ''}` },
       el('span', { class: 'fra__rang-num' }, i + 1),

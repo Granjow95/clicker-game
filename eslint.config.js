@@ -5,13 +5,13 @@ const globals = require("globals");
 const SHARED_GLOBALS = {
   io: "readonly", YT: "readonly",
   GRAN_BACKEND: "readonly", GRAN_SUPABASE_URL: "readonly", GRAN_SUPABASE_KEY: "readonly",
-  socket: "readonly", granAuth: "readonly", granAccount: "readonly", granUI: "readonly", granRouter: "readonly", granReprise: "readonly", granSalle: "readonly", granMotCache: "readonly", MOT_CACHE_SOLUTIONS: "readonly", MOT_CACHE_ACCEPTES: "readonly", esc: "readonly", kk: "readonly", kkCleanup: "readonly",
+  socket: "readonly", granAuth: "readonly", granAccount: "readonly", granUI: "readonly", granRouter: "readonly", granReprise: "readonly", GRAN_JEUX: "readonly", granStats: "readonly", granSalle: "readonly", granMotCache: "readonly", MOT_CACHE_SOLUTIONS: "readonly", MOT_CACHE_ACCEPTES: "readonly", esc: "readonly", kk: "readonly", kkCleanup: "readonly",
   showToast: "readonly",
   topSongsWithCache: "readonly", searchWithCache: "readonly", getLyricsWithCache: "readonly",
   getSyncedLyrics: "readonly", _tryLyricsOvh: "readonly", _tryLrclibDirect: "readonly",
   _cacheStoreLyrics: "readonly", karaokeAdvance: "readonly", karaokeToggleAutoPlay: "readonly",
-  // Données des jeux solo (pom-donnees.js, frappe-donnees.js)
-  POM_THEMES: "readonly", POM_SOURCE: "readonly", FRAPPE_PHRASES: "readonly",
+  // Données des jeux solo (frappe-donnees.js ; potager-donnees.js se déclare dans potager.js)
+  FRAPPE_PHRASES: "readonly",
   // Seule globale d'Imposteur : lue par granAuth.inGame() (auth.js)
   currentRoomId: "writable",
 };

@@ -23,7 +23,8 @@ const granRouter = (() => {
     { pattern: /^\/karaoke$/, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: "Karaoké, Gran'Games" },
     { pattern: /^\/karaoke\/salle\/[^/]+$/, redirect: '#/karaoke' }, // ancienne forme : renvoi vers l'entrée du jeu
     { pattern: /^\/karaoke\/([A-Za-z]{4})$/, upper: true, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: 'Karaoké, salle {1}', params: ['code'] },
-    { pattern: /^\/plus-ou-moins$/, js: ['pom-donnees.js', 'plus-ou-moins.js'], view: 'plus-ou-moins', monde: 'plus-ou-moins', css: 'plus-ou-moins', label: 'Plus ou Moins', title: "Plus ou Moins, Gran'Games" },
+    { pattern: /^\/potager$/, js: ['potager-donnees.js', 'potager.js'], view: 'potager', monde: 'potager', css: 'potager', label: 'Potager', title: "Potager, Gran'Games" },
+    { pattern: /^\/plus-ou-moins$/, redirect: '#/potager' }, // jeu retiré, remplacé par le Potager
     { pattern: /^\/frappe$/, js: ['frappe-donnees.js', 'frappe.js'], view: 'frappe', monde: 'frappe', css: 'frappe', label: 'Course de frappe', title: "Course de frappe, Gran'Games" },
     { pattern: /^\/frappe\/[^/]*$/, redirect: '#/frappe' }, // pas de salle à code pour ce jeu : renvoi vers l'entrée
   ];
@@ -93,36 +94,27 @@ const granRouter = (() => {
     }));
   }
 
+  // Barre unique : la structure ne change jamais, seuls le contexte (nom du jeu, salle), le libellé du lien de sortie
+  // et la couleur (variables --nav-* issues de body[data-monde], voir base.css) s'adaptent.
   function paintConsole(route, path) {
     const isGame = Boolean(route.monde);
     const consoleEl = document.querySelector('.console');
     if (consoleEl) {
-      consoleEl.classList.toggle('console--jeu', isGame);
-      const quitter = consoleEl.querySelector('.console__quitter');
-      const ariane = consoleEl.querySelector('.console__ariane');
-      if (quitter) quitter.hidden = !isGame;
-      if (ariane) {
-        ariane.hidden = !isGame;
-        if (isGame) {
-          const sep = () => { const s = document.createElement('span'); s.setAttribute('aria-hidden', 'true'); s.textContent = '/'; return s; };
-          const nom = document.createElement('span'); nom.textContent = "Gran'Games";
-          const jeu = document.createElement('span'); jeu.textContent = route.label;
-          const nodes = [nom, sep(), jeu];
-          if (route.params.code) {
-            const salle = document.createElement('span');
-            salle.setAttribute('aria-current', 'page');
-            salle.textContent = `Salle ${route.params.code}`;
-            nodes.push(sep(), salle);
-          } else jeu.setAttribute('aria-current', 'page');
-          ariane.replaceChildren(...nodes);
-        }
+      const ctx = consoleEl.querySelector('.console__contexte');
+      if (ctx) {
+        ctx.hidden = !isGame;
+        ctx.textContent = isGame ? (route.params.code ? `${route.label} · Salle ${route.params.code}` : route.label) : '';
       }
+      const jeux = consoleEl.querySelector('#console-jeux');
+      if (jeux) jeux.textContent = isGame ? '\u2190 Accueil' : jeux.dataset.label;
       consoleEl.querySelectorAll('.console__nav a').forEach((a) => {
         const target = a.getAttribute('href').slice(1);
-        if (target === path || (target === '/' && path === '')) a.setAttribute('aria-current', 'page');
-        else a.removeAttribute('aria-current');
+        const actif = !isGame && (target === path || (target === '/' && path === ''));
+        if (actif) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
       });
     }
+    const pied = document.getElementById('pied');
+    if (pied) pied.hidden = route.view !== 'accueil' && route.view !== 'profil';
     document.body.classList.toggle('damier', !isGame);
     if (route.monde) document.body.dataset.monde = route.monde; else delete document.body.dataset.monde;
   }

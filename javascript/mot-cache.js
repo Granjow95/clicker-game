@@ -293,6 +293,7 @@
     } else stats.serie = 0;
     if (partie.mode === 'jour') stats.jour = { cle: cleDuJour(), essais: partie.essais.slice(), fini: true, gagne: partie.gagne };
     ecrireStats();
+    if (typeof granStats !== 'undefined') granStats.enregistrer('mot-cache', { score: partie.gagne ? ESSAIS + 1 - partie.essais.length : 0, gagne: partie.gagne, manches: 1, meta: { mode: partie.mode, essais: partie.essais.length } });
     afficherFin(true);
   }
 

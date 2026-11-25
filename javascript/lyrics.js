@@ -867,6 +867,7 @@ window.lyricsShowPage = id => {
 
   // Résultat envoyé au serveur (joueurs connectés seulement ; le serveur ignore l'identité du client).
   function sendResult(won) {
+    if (typeof granStats !== 'undefined') granStats.enregistrer('lyrics', { score: countFound(), gagne: won, manches: 1, serveur: false }); // serveur:false : lyrics_result ci-dessous
     if (!granAuth.user() || !socket.connected) return;
     const found = countFound();
     socket.emit('lyrics_result', {
