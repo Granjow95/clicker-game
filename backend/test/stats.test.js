@@ -39,24 +39,30 @@ function client(token) {
   clients.push(c);
   return new Promise((r) => c.on("connect", () => r(c)));
 }
-async function room(roomId, tokens) {
+// Protocole imp:* : le premier crée (code généré), les suivants rejoignent ; c.pid = identité publique.
+async function room(_label, tokens) {
   const cs = [];
+  let code = null;
   for (const t of tokens) {
     const c = await client(t);
-    c.emit("join_or_create_room", { roomId, username: "p" + cs.length });
-    await once(c, "room-created");
+    const joined = once(c, "imp:joined");
+    if (code) c.emit("imp:join", { code, username: "p" + cs.length });
+    else c.emit("imp:create", { username: "p" + cs.length });
+    const j = await joined;
+    code = j.code;
+    c.pid = j.you;
     cs.push(c);
   }
   return cs;
 }
-async function playRound(roomId, cs) {
+async function playRound(_label, cs) {
   const [host, ...rest] = cs;
-  host.emit("start_round", roomId);
+  host.emit("start_round");
   await once(host, "next_turn");
-  host.emit("force_vote", roomId);
+  host.emit("force_vote");
   await once(rest[0], "all_hints_done");
   const p = once(host, "reveal_results");
-  cs.forEach((c) => c.emit("vote", { roomId, votedId: c === host ? rest[0].id : host.id }));
+  cs.forEach((c) => c.emit("vote", { votedId: c === host ? rest[0].pid : host.pid }));
   await p;
   await wait(100);
 }

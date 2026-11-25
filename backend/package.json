@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "start:local": "node --env-file-if-exists=.env server.js",
-    "test": "node --test \"test/*.test.js\"",
+    "test": "ROOM_IP_ACTIONS_PER_MIN=1000000 ROOM_IP_MAX_ROOMS=1000000 node --test \"test/*.test.js\"",
     "check": "for f in server.js config.js lib/*.js games/*.js; do node --check $f || exit 1; done"
   },
   "keywords": [],

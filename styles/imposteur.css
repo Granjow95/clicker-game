@@ -16,26 +16,20 @@ body[data-monde="imposteur"] {
   display: flex; flex-direction: column; gap: var(--e-4);
   font-family: var(--police-texte); color: var(--monde-texte);
 }
-.imp-zone { display: flex; flex-direction: column; }
 
 /* ---------- Fiches tapées ---------- */
-.imp-fiche, .imp-dossier, .imp-mot, .imp-indice, .imp-bilan {
+.imp-fiche, .imp-mot, .imp-indice, .imp-bilan {
   background: var(--parchemin); color: var(--encre);
   font-family: var(--monde-police); box-shadow: 0 3px 0 rgba(0,0,0,.35);
 }
 .imp-fiche__etiquette { font: 600 13px var(--police-texte); }
 
-.imp-dossier { align-self: flex-start; padding: 6px 12px; font-size: 14px; transform: rotate(-3deg); }
-.imp-titre { margin: 0; font: 400 clamp(52px, 14vw, 60px)/.95 var(--monde-police); }
 .imp-titre-ecran { margin: 0; font: 400 40px/1 var(--monde-police); }
 .imp-intro { margin: 0; font-size: 18px; line-height: 1.45; }
 .imp-intro--doux { font-size: 16px; color: var(--monde-texte-doux); }
 .imp-h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .imp-manche { margin: 0; font: 400 15px var(--police-pixel); color: var(--monde-texte-doux); }
 
-/* ---------- Entrée ---------- */
-.imp-entree { display: flex; flex-direction: column; gap: 20px; padding-top: var(--e-4); }
-.imp-entree .field__erreur { margin: 0; }
 
 /* ---------- Salon ---------- */
 .imp-salon { display: flex; flex-direction: column; gap: 14px; }
@@ -69,7 +63,7 @@ body[data-monde="imposteur"] {
 .imp-stepper button { width: 44px; flex: 0 0 44px; }
 .imp-stepper__valeur { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; font: 700 22px var(--police-pixel); }
 .imp-stepper__valeur input {
-  width: 2.2ch; border: 0; padding: 0; background: transparent; color: inherit; text-align: right;
+  width: 3.2ch; min-width: 3.2ch; border: 0; padding: 0; background: transparent; color: inherit; -webkit-text-fill-color: currentColor; text-align: center;
   font: inherit; -moz-appearance: textfield; appearance: textfield;
 }
 .imp-stepper__valeur input::-webkit-inner-spin-button, .imp-stepper__valeur input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -172,7 +166,7 @@ body[data-monde="imposteur"] {
 /* ---------- Ordinateur : suspects en grille de fiches ---------- */
 @media (min-width: 900px) {
   .imp { max-width: 1100px; }
-  .imp > :not(.imp-tours) { width: 100%; max-width: 640px; margin-inline: auto; }
+  .imp-manche-ecran > :not(.imp-tours) { width: 100%; max-width: 640px; margin-inline: auto; }
   .imp-tours { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
   .imp-tour {
     min-height: 140px; padding: 16px; border-radius: 0;
@@ -188,7 +182,107 @@ body[data-monde="imposteur"] {
   .imp-tour .imp-indice { box-shadow: none; padding: 0; }
 }
 
+
+
+/* ---------- Imposteur v2 : écrans, carte, animations ---------- */
+.imp-vue, .imp-salon, .imp-manche-ecran, .imp-vote-ecran, .imp-revele { display: flex; flex-direction: column; gap: 14px; }
+.imp-barre { display: flex; justify-content: flex-end; }
+.imp-statut { margin: 0; padding: 8px 12px; background: var(--brique); color: var(--parchemin); border-radius: 8px; font-size: 14px; }
+.imp-aide { margin: 4px 0 0; font-size: 14px; color: var(--monde-texte-doux); }
+.imp-joueur--absent { opacity: .55; }
+.imp-joueur--absent .imp-avatar { filter: grayscale(1); }
+
+/* Code de salle en grand */
+.imp-code { font-size: clamp(44px, 14vw, 64px); }
+
+/* Règles repliables */
+.imp-regles { background: var(--monde-surface); border: 2px solid var(--monde-bord); border-radius: 8px; padding: 8px 12px; }
+.imp-regles summary { cursor: pointer; font-weight: 700; min-height: 32px; display: flex; align-items: center; }
+.imp-regles__corps p, .imp-qui { margin: 8px 0 0; font-size: 15px; line-height: 1.4; }
+.imp-regles__bareme, .imp-qui { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+.imp-white { display: flex; flex-direction: column; gap: 4px; }
+.imp-white__label { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 1.35; cursor: pointer; }
+.imp-white__label input { width: 22px; height: 22px; flex: 0 0 auto; accent-color: var(--bouton-dor); }
+
+/* Carte de rôle : se retourne au toucher (rotateY 180 ms) */
+.imp-carte { display: block; width: 100%; padding: 0; border: 0; background: none; color: var(--encre); font: inherit; text-align: left; cursor: pointer; perspective: 900px; }
+.imp-carte__inner { display: grid; position: relative; transform-style: preserve-3d; transition: transform 180ms var(--ease-out); }
+.imp-carte--ouverte .imp-carte__inner { transform: rotateY(180deg); }
+.imp-carte__face {
+  grid-area: 1 / 1; position: relative; display: flex; flex-direction: column; gap: 4px; justify-content: center;
+  min-height: 112px; padding: 14px 16px; background: var(--parchemin); font-family: var(--monde-police);
+  box-shadow: 0 3px 0 rgba(0,0,0,.35); backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.imp-carte__face--dos { background: repeating-linear-gradient(45deg, var(--parchemin) 0 8px, #E4DCB8 8px 16px); }
+.imp-carte__face--avant { transform: rotateY(180deg); }
+.imp-carte__etiquette { font: 600 13px var(--police-texte); }
+.imp-carte__invite { font-size: 22px; }
+.imp-carte__texte { font-size: 20px; line-height: 1.3; }
+.imp-carte:focus-visible { outline: 3px solid var(--bouton-dor); outline-offset: 3px; }
+.imp-mot__tampon--blanc { animation: imp-tampon 240ms var(--ease-out) 200ms both; }
+
+/* Tours */
+.imp-tour--absent { opacity: .55; }
+.imp-tour--actif { animation: imp-pulse 1.8s var(--ease-in-out) infinite; }
+@keyframes imp-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(242,182,48,0); } 50% { box-shadow: 0 0 0 6px rgba(242,182,48,.35); } }
+.imp-indice--passe { font-style: italic; opacity: .75; }
+.imp-indice--ecrit { display: inline-block; overflow: hidden; white-space: nowrap; animation: imp-ecrit calc(var(--n, 6) * 45ms) steps(var(--n, 6)) both; }
+@keyframes imp-ecrit { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.imp-chrono, .imp-tour__timer { font-variant-numeric: tabular-nums; }
+.imp-chrono--urgent { color: var(--brique); font-weight: 800; }
+.imp-tour--actif .imp-tour__timer.imp-chrono--urgent { color: #FF8A73; }
+.imp-saisie .field__erreur { margin: 0; color: var(--encre); font-weight: 700; }
+.imp-vote--absent { opacity: .6; }
+.imp-vote__hors { font-size: 12px; font-weight: 600; color: #5A5A45; }
+
+/* Révélation : urne, roulement, tampon */
+.imp-urne { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.imp-bulletin {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px;
+  background: var(--parchemin); color: var(--encre); border: 2px solid var(--encre); border-radius: 8px;
+  transition: background-color 90ms var(--ease-out), transform 90ms var(--ease-out);
+}
+.imp-bulletin--allume { background: var(--bouton-dor); transform: translateY(-4px); }
+.imp-bulletin__nom { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: 14px; }
+.imp-bulletin__nb { font: 700 26px var(--police-pixel); font-variant-numeric: tabular-nums; }
+.imp-verdict { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.imp-verdict__detail { margin: 0; font-size: 16px; }
+.imp-verdict .imp-tampon { position: static; font-size: 34px; padding: 6px 16px; animation: imp-tampon 300ms var(--ease-out) both; }
+.imp-tampon--juste { color: #1F5E1A; border-color: #1F5E1A; }
+.imp-tampon--neutre { color: var(--encre); border-color: var(--encre); }
+.imp-white-reveal { margin: 0; font-size: 16px; }
+.imp-fiche--revele .imp-tampon { display: none; }
+
+/* Podium et confettis */
+.imp-final { position: relative; overflow: hidden; padding-top: 24px; }
+.imp-podium { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; justify-content: center; gap: 8px; min-height: 160px; }
+.imp-marche {
+  flex: 1; max-width: 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px;
+  padding: 8px 6px; background: var(--parchemin); color: var(--encre); border: 2px solid var(--encre); border-radius: 8px 8px 0 0;
+  animation: imp-monte 360ms var(--ease-out) both;
+}
+.imp-marche--1 { min-height: 150px; background: var(--bouton-dor); animation-delay: 360ms; }
+.imp-marche--2 { min-height: 112px; animation-delay: 180ms; }
+.imp-marche--3 { min-height: 84px; animation-delay: 0ms; }
+.imp-marche__nom { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 14px; }
+.imp-marche__score { font: 700 20px var(--police-pixel); }
+.imp-marche__rang { font: 700 28px var(--police-pixel); }
+@keyframes imp-monte { from { opacity: 0; transform: translateY(40px); } }
+.imp-confettis { position: absolute; inset: 0; pointer-events: none; }
+.imp-confettis i { position: absolute; top: -10px; left: var(--x); width: 8px; height: 12px; background: var(--c); animation: imp-confetti 1.8s var(--ease-out) var(--d) both; }
+.imp-confettis i:nth-child(odd) { width: 6px; height: 6px; border-radius: 50%; }
+@keyframes imp-confetti { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(190px) rotate(300deg); } }
+.imp-suite.arrive { animation-duration: 240ms; }
+
 @media (prefers-reduced-motion: reduce) {
-  .imp-tampon { animation: none; }
-  .imp-tour--actif { transform: none; }
+  .imp-tampon, .imp-mot__tampon--blanc, .imp-verdict .imp-tampon { animation: none; }
+  .imp-tour--actif { transform: none; animation: none; }
+  .imp-indice--ecrit, .imp-marche { animation: none; }
+  .imp-confettis { display: none; }
+  .imp-bulletin { transition: none; }
+  .imp-carte__inner { transform: none !important; transition: none; }
+  .imp-carte__face { transition: opacity 120ms ease; backface-visibility: visible; -webkit-backface-visibility: visible; }
+  .imp-carte__face--avant { transform: none; opacity: 0; }
+  .imp-carte--ouverte .imp-carte__face--avant { opacity: 1; }
+  .imp-carte--ouverte .imp-carte__face--dos { opacity: 0; }
 }

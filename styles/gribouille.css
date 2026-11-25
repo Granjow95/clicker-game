@@ -1,0 +1,169 @@
+/* ==========================================================================
+   Gribouille : « L'atelier ». Monde : <body data-monde="gribouille">
+   Parchemin tramé, canvas cadré au trait, pastilles de couleur, ton taquin.
+   ========================================================================== */
+[data-monde="gribouille"] {
+  --monde-fond: #EFE8CC; --monde-surface: #D8CFAC; --monde-bord: #1B1D16; --monde-texte: #1B1D16; --monde-texte-doux: #4A4A38; --monde-accent: #F28AA6; --monde-police: "Pixelify Sans", monospace; --monde-focus: #2E63B8; --monde-barre: #D8CFAC;
+  background-image: radial-gradient(rgba(27, 29, 22, .08) 1px, transparent 1.4px);
+  background-size: 12px 12px; /* parchemin tramé */
+}
+
+.gri { color: var(--monde-texte); max-width: 1120px; margin: 0 auto; padding: var(--e-4) 0 var(--e-7); }
+.gri-titre { font: 700 clamp(32px, 6vw, 56px)/1 var(--police-pixel); margin: 0 0 var(--e-5); }
+.gri-h2 { font: 700 20px/1.2 var(--police-pixel); margin: 0 0 var(--e-3); }
+.gri-aide, .gri-resume { margin: var(--e-2) 0 0; color: var(--monde-texte-doux); font-size: 15px; min-height: 1.4em; }
+.gri-etiquette { font: 600 14px var(--police-texte); color: var(--monde-texte-doux); text-transform: uppercase; letter-spacing: .08em; }
+.gri-panneau { background: var(--monde-surface); border: 0; padding: var(--e-4); min-width: 0; }
+
+/* ---------- Salon ---------- */
+.gri-salon { display: grid; gap: var(--e-4); }
+.gri-salon__code { background: var(--bouton-dor); padding: var(--e-5); display: grid; gap: var(--e-2); justify-items: start; }
+.gri-code { font: 700 clamp(56px, 14vw, 112px)/1 var(--police-pixel); letter-spacing: .12em; margin: 0; user-select: all; }
+.gri-lien { margin: 0; font-size: 14px; word-break: break-all; }
+.gri-salon__corps { display: grid; gap: var(--e-4); grid-template-columns: minmax(0, 1fr); }
+.gri-joueurs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.gri-joueur { display: flex; align-items: center; gap: var(--e-2); background: var(--parchemin); border: 2px solid var(--encre); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); min-height: 52px; }
+.gri-joueur--arrive { animation: arrive 200ms var(--ease-out) both; }
+.gri-joueur--hors { opacity: .6; filter: grayscale(1); }
+.gri-joueur__nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.gri-options { display: grid; gap: var(--e-3); margin-bottom: var(--e-4); }
+.gri-reglage { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; }
+.gri-reglage__nom { font-weight: 600; }
+.gri-salon .key--fantome { justify-self: start; }
+
+/* ---------- Jeu : mise en page ---------- */
+.gri-jeu { display: grid; gap: var(--e-4); grid-template-columns: minmax(0, 1fr); }
+.gri-haut { background: var(--parchemin); padding: var(--e-3) var(--e-4); display: grid; gap: var(--e-3); }
+.gri-haut__infos { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2) var(--e-4); }
+.gri-info { font: 700 18px var(--police-pixel); }
+.gri-info--dessin { flex: 1; min-width: 0; color: var(--monde-texte-doux); }
+.gri-info--dessin::before { content: "✎ "; }
+.gri-scene { display: grid; gap: var(--e-3); min-width: 0; align-content: start; }
+.gri-cote { display: flex; flex-direction: column; gap: var(--e-4); min-width: 0; }
+.gri-panneau--scores { order: 2; }
+.gri-panneau--chat { order: 1; display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+@media (min-width: 900px) {
+  .gri-jeu { grid-template-columns: minmax(0, 1fr) 320px; }
+  .gri-haut { grid-column: 1 / -1; }
+  .gri-panneau--scores { order: 1; }
+  .gri-panneau--chat { order: 2; flex: 1 1 0; }
+  .gri-salon__corps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+
+/* ---------- Chrono segmenté ---------- */
+.gri-chrono { display: flex; align-items: center; gap: var(--e-3); }
+.gri-chrono__segments { flex: 1; display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 3px; }
+.gri-chrono__segments span { height: 16px; border: 2px solid var(--encre); background: var(--papier-ombre); }
+.gri-chrono__segments span.on { background: var(--pomme); }
+.gri-chrono__temps { font: 700 26px var(--police-pixel); font-variant-numeric: tabular-nums; min-width: 3.2ch; text-align: right; }
+.gri-chrono--urgent .gri-chrono__segments span.on { background: var(--brique); }
+.gri-chrono--urgent .gri-chrono__temps { color: var(--brique); }
+
+/* ---------- Masque du mot ---------- */
+.gri-masque { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-height: 48px; }
+.gri-case { display: grid; place-items: center; width: 40px; height: 52px; border: var(--trait); background: #FFFDF4; font: 700 30px var(--police-pixel); text-transform: uppercase; }
+.gri-case--vide { background: var(--papier-ombre); }
+.gri-case--espace { width: 18px; border: 0; background: none; }
+.gri-case--fixe { border-color: transparent; background: none; width: 20px; }
+.gri-case--revele { animation: gri-revele 240ms var(--ease-out) both; }
+@keyframes gri-revele { from { transform: scale(.5) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- Toile ---------- */
+.gri-toile { position: relative; width: 100%; aspect-ratio: 4 / 3; border: var(--trait); background: #fff; box-shadow: var(--epaisseur); overflow: hidden; }
+.gri-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: default; }
+.gri-toile--dessin .gri-canvas { touch-action: none; cursor: crosshair; }
+.gri-voile { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--e-3); overflow-y: auto; background: color-mix(in srgb, var(--parchemin) 90%, transparent); }
+.gri-voile[hidden], .gri-tampon[hidden] { display: none; }
+.gri-voile__boite { width: min(100%, 440px); display: grid; gap: var(--e-3); text-align: center; }
+.gri-attente { font: 700 22px var(--police-pixel); margin: 0; }
+.gri-cartes { display: grid; gap: var(--e-2); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gri-carte { min-height: 64px; padding: var(--e-2); border: var(--trait); border-radius: var(--rayon-touche); background: var(--bouton-dor); color: var(--encre); font: 700 20px var(--police-pixel); box-shadow: var(--epaisseur-petite); cursor: pointer; text-transform: capitalize; overflow-wrap: anywhere; animation: arrive 200ms var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); }
+.gri-carte:active { transform: translateY(3px); box-shadow: none; }
+.gri-carte:disabled { opacity: .6; cursor: default; }
+.gri-mot-final { text-transform: uppercase; }
+.gri-raison { margin: 0; color: var(--monde-texte-doux); }
+.gri-gains { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.gri-gain { display: flex; justify-content: space-between; gap: var(--e-3); padding: 4px var(--e-3); background: #FFFDF4; border: 2px solid var(--encre); border-radius: var(--rayon-champ); font-weight: 600; }
+.gri-gain__nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gri-gain__pts { font: 700 18px var(--police-pixel); font-variant-numeric: tabular-nums; }
+
+/* Tampon et confettis (quand je trouve) */
+.gri-tampon { position: absolute; left: 50%; top: 40%; translate: -50% -50%; rotate: -8deg; padding: 6px 18px; border: 4px solid var(--pomme); color: var(--pomme); background: color-mix(in srgb, var(--parchemin) 85%, transparent); font: 700 clamp(28px, 7vw, 48px) var(--police-pixel); text-transform: uppercase; pointer-events: none; }
+.gri-tampon--on { animation: gri-tampon 1.2s var(--ease-out) both; }
+@keyframes gri-tampon { 0% { scale: 1.8; opacity: 0; } 18% { scale: 1; opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.gri-confetti { position: absolute; left: 50%; top: 40%; width: 10px; height: 10px; background: var(--cc); border: 2px solid var(--encre); pointer-events: none; animation: gri-confetti 900ms var(--ease-out) both; animation-delay: var(--dl); }
+@keyframes gri-confetti { from { transform: translate(0, 0) rotate(0); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; } }
+
+/* ---------- Outils de dessin ---------- */
+.gri-outils { background: var(--parchemin); padding: var(--e-3); display: grid; gap: var(--e-3); }
+.gri-outils[hidden] { display: none; }
+.gri-palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--e-2); }
+.gri-pastille { min-height: 44px; border: var(--trait); border-radius: var(--rayon-champ); background: var(--p); cursor: pointer; padding: 0; }
+.gri-pastille[aria-pressed="true"] { outline: 4px solid var(--monde-focus); outline-offset: 2px; box-shadow: inset 0 0 0 3px var(--parchemin); }
+.gri-outils__bas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.gri-epaisseurs { display: flex; gap: var(--e-2); margin-right: auto; }
+.gri-epaisseur { width: 44px; height: 44px; display: grid; place-items: center; border: var(--trait); border-radius: var(--rayon-champ); background: #FFFDF4; cursor: pointer; padding: 0; }
+.gri-epaisseur span { width: var(--d); height: var(--d); border-radius: 50%; background: var(--encre); }
+.gri-epaisseur[aria-pressed="true"] { background: var(--bouton-dor); outline: 4px solid var(--monde-focus); outline-offset: 2px; }
+.gri-pastille:focus-visible, .gri-epaisseur:focus-visible, .gri-carte:focus-visible { outline: 4px solid var(--monde-focus); outline-offset: 3px; }
+
+/* ---------- Scores ---------- */
+.gri-scores { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.gri-score { display: flex; align-items: center; gap: var(--e-2); padding: 4px var(--e-2); border-radius: var(--rayon-champ); }
+.gri-score--moi { background: color-mix(in srgb, var(--bonbon) 45%, transparent); }
+.gri-score--trouve { background: color-mix(in srgb, var(--pomme) 45%, transparent); }
+.gri-score--hors { opacity: .55; }
+.gri-score__marque { width: 1.2em; text-align: center; font-weight: 700; }
+.gri-score__nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.gri-score__pts { font: 700 18px var(--police-pixel); font-variant-numeric: tabular-nums; }
+
+/* ---------- Chat ---------- */
+.gri-messages { list-style: none; margin: 0 0 var(--e-3); padding: var(--e-2); height: 200px; overflow-y: auto; background: #FFFDF4; border: 2px solid var(--encre); border-radius: var(--rayon-champ); display: flex; flex-direction: column; gap: 4px; overscroll-behavior: contain; }
+@media (min-width: 900px) { .gri-messages { height: auto; flex: 1 1 0; min-height: 160px; } }
+.gri-msg { overflow-wrap: anywhere; font-size: 15px; }
+.gri-msg__nom { font-weight: 700; }
+.gri-msg--correct { color: #3F6A15; font-weight: 700; }
+.gri-msg--proche { color: var(--faience); font-weight: 600; font-style: italic; }
+.gri-msg--trouveurs { background: color-mix(in srgb, var(--pomme) 30%, transparent); border-left: 4px solid var(--pomme); padding-left: var(--e-2); }
+.gri-form { display: flex; gap: var(--e-2); }
+.gri-champ { flex: 1; min-width: 0; }
+.gri-champ--trouveurs { border-color: var(--pomme); }
+.gri-champ:disabled { opacity: .6; }
+
+/* ---------- Fin de partie : podium ---------- */
+.gri-fin { display: grid; gap: var(--e-5); max-width: 640px; margin: 0 auto; }
+.gri-podium { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; justify-content: center; gap: var(--e-2); min-height: 260px; }
+.gri-podium__col { flex: 1; max-width: 180px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; animation: gri-monte 500ms var(--ease-out) both; animation-delay: calc(var(--i) * 450ms); }
+.gri-podium__nom { font-weight: 700; overflow-wrap: anywhere; }
+.gri-podium__pts { font: 700 22px var(--police-pixel); font-variant-numeric: tabular-nums; }
+.gri-podium__socle { width: 100%; display: grid; place-items: center; border: var(--trait); background: var(--papier-ombre); font: 700 40px var(--police-pixel); }
+.gri-podium__col--1 .gri-podium__socle { height: 150px; background: var(--bouton-dor); }
+.gri-podium__col--2 .gri-podium__socle { height: 110px; background: var(--parchemin); }
+.gri-podium__col--3 .gri-podium__socle { height: 80px; background: var(--bonbon); }
+@keyframes gri-monte { from { opacity: 0; transform: translateY(40px); } }
+.gri-restes { margin: 0; padding: 0 0 0 var(--e-5); display: grid; gap: 4px; }
+.gri-reste { padding-left: var(--e-2); }
+.gri-reste::marker { font-weight: 700; }
+.gri-reste__nom { font-weight: 600; margin-right: var(--e-3); }
+.gri-fin__actions { display: grid; gap: var(--e-3); }
+.gri-remplace { display: grid; gap: var(--e-4); justify-items: start; }
+
+/* ---------- Mobile 360 px ---------- */
+@media (max-width: 520px) {
+  .gri { padding-top: var(--e-2); }
+  .gri-case { width: 30px; height: 40px; font-size: 22px; }
+  .gri-case--espace { width: 10px; }
+  .gri-case--fixe { width: 14px; }
+  .gri-masque { gap: 4px; }
+  .gri-palette { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+  .gri-cartes { grid-template-columns: 1fr; }
+  .gri-chrono__temps { font-size: 22px; }
+  .gri-podium__socle { font-size: 28px; }
+}
+
+/* ---------- Mouvement réduit ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .gri-case--revele, .gri-carte, .gri-joueur--arrive, .gri-podium__col, .gri-confetti { animation: none; }
+  .gri-confetti { display: none; }
+  .gri-tampon--on { animation: fondu 120ms ease both; opacity: 1; }
+}

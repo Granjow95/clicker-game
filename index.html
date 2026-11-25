@@ -38,6 +38,8 @@
     <main id="contenu" tabindex="-1">
       <!-- ====== Accueil ====== -->
       <section data-vue="accueil" class="accueil">
+        <!-- Reprise de partie : remplie par app.js si granReprise a une entrée valide -->
+        <div class="conteneur accueil-reprise-zone" id="accueil-reprise" role="status" hidden></div>
         <div class="conteneur hero">
           <div class="hero__haut">
             <h1 class="titre-affiche">Gran'<br />Games</h1>
@@ -47,7 +49,10 @@
             </div>
           </div>
 
-          <ul class="bandeaux" aria-label="Les jeux">
+          <section class="groupe" aria-labelledby="g-multi">
+            <h2 class="groupe__titre" id="g-multi">On joue à plusieurs</h2>
+            <p class="groupe__sous">Crée une salle, envoie le code, c'est parti.</p>
+          <ul class="bandeaux" aria-labelledby="g-multi">
             <li>
               <a class="bandeau bandeau--imposteur" href="#/imposteur" aria-labelledby="b-imposteur-titre" aria-describedby="b-imposteur-desc b-imposteur-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
@@ -63,12 +68,82 @@
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h2 class="bandeau__titre" id="b-imposteur-titre">Imposteur</h2>
+                  <h3 class="bandeau__titre" id="b-imposteur-titre">Imposteur</h3>
                   <p class="bandeau__desc" id="b-imposteur-desc">Chacun reçoit le même mot, sauf un. Donne un indice et démasque l’imposteur avant qu’il te démasque.</p>
                   <ul class="bandeau__reperes" id="b-imposteur-reperes"><li class="chip">max 8 joueurs</li><li class="chip">Bluff</li></ul>
                 </div>
               </a>
             </li>
+            <li>
+              <a class="bandeau bandeau--gribouille" href="#/gribouille" aria-labelledby="b-gribouille-titre" aria-describedby="b-gribouille-desc b-gribouille-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--gribouille">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Gribouille</span>
+                      <span class="cart__art" aria-hidden="true">
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><g class="art-corps"><rect x="4" y="11" width="1" height="1"></rect><rect x="5" y="10" width="1" height="1"></rect><rect x="6" y="9" width="1" height="1"></rect><rect x="7" y="8" width="1" height="1"></rect><rect x="8" y="7" width="1" height="1"></rect><rect x="9" y="6" width="1" height="1"></rect><rect x="10" y="5" width="1" height="1"></rect><rect x="5" y="11" width="1" height="1"></rect><rect x="6" y="10" width="1" height="1"></rect><rect x="7" y="9" width="1" height="1"></rect><rect x="8" y="8" width="1" height="1"></rect><rect x="9" y="7" width="1" height="1"></rect><rect x="10" y="6" width="1" height="1"></rect><rect x="11" y="5" width="1" height="1"></rect></g><g class="art-brique"><rect x="11" y="4" width="1" height="1"></rect><rect x="12" y="4" width="1" height="1"></rect><rect x="12" y="3" width="1" height="1"></rect><rect x="13" y="3" width="1" height="1"></rect></g><g class="art-encre"><rect x="3" y="12" width="1" height="1"></rect><rect x="4" y="12" width="1" height="1"></rect><rect x="3" y="11" width="1" height="1"></rect><rect x="7" y="14" width="1" height="1"></rect><rect x="8" y="13" width="1" height="1"></rect><rect x="9" y="13" width="1" height="1"></rect><rect x="10" y="14" width="1" height="1"></rect><rect x="11" y="14" width="1" height="1"></rect><rect x="12" y="13" width="1" height="1"></rect><rect x="13" y="13" width="1" height="1"></rect><rect x="14" y="14" width="1" height="1"></rect></g></svg>
+                    </span>
+                    </span>
+                    <span class="cart__contacts"></span>
+                  </span>
+                </div>
+                <div class="bandeau__texte">
+                  <h3 class="bandeau__titre" id="b-gribouille-titre">Gribouille</h3>
+                  <p class="bandeau__desc" id="b-gribouille-desc">Un joueur dessine le mot. Les autres devinent dans le chat, le plus rapide gagne.</p>
+                  <ul class="bandeau__reperes" id="b-gribouille-reperes"><li class="chip">max 8 joueurs</li><li class="chip">Dessin</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--petit-bac" href="#/petit-bac" aria-labelledby="b-petit-bac-titre" aria-describedby="b-petit-bac-desc b-petit-bac-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--petit-bac">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Petit Bac</span>
+                      <span class="cart__art" aria-hidden="true">
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect class="art-corps" x="3" y="1" width="10" height="14"></rect><rect class="art-etiquette" x="4" y="2" width="8" height="12"></rect><g class="art-encre"><rect x="2" y="3" width="2" height="1"></rect><rect x="2" y="6" width="2" height="1"></rect><rect x="2" y="9" width="2" height="1"></rect><rect x="2" y="12" width="2" height="1"></rect><rect x="6" y="4" width="1" height="1"></rect><rect x="6" y="5" width="1" height="1"></rect><rect x="6" y="6" width="1" height="1"></rect><rect x="6" y="7" width="1" height="1"></rect><rect x="6" y="8" width="1" height="1"></rect><rect x="6" y="9" width="1" height="1"></rect><rect x="6" y="10" width="1" height="1"></rect><rect x="6" y="11" width="1" height="1"></rect><rect x="7" y="4" width="1" height="1"></rect><rect x="8" y="4" width="1" height="1"></rect><rect x="9" y="5" width="1" height="1"></rect><rect x="9" y="6" width="1" height="1"></rect><rect x="8" y="7" width="1" height="1"></rect><rect x="7" y="7" width="1" height="1"></rect></g></svg>
+                    </span>
+                    </span>
+                    <span class="cart__contacts"></span>
+                  </span>
+                </div>
+                <div class="bandeau__texte">
+                  <h3 class="bandeau__titre" id="b-petit-bac-titre">Petit Bac</h3>
+                  <p class="bandeau__desc" id="b-petit-bac-desc">Une lettre, des catégories, un chrono. Les réponses valides et uniques rapportent des points.</p>
+                  <ul class="bandeau__reperes" id="b-petit-bac-reperes"><li class="chip">max 10 joueurs</li><li class="chip">Mots</li></ul>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a class="bandeau bandeau--karaoke" href="#/karaoke" aria-labelledby="b-karaoke-titre" aria-describedby="b-karaoke-desc b-karaoke-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--karaoke">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Karaoké</span>
+                      <span class="cart__art" aria-hidden="true">
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><g class="art-corps"><rect x="6" y="1" width="4" height="7"></rect><rect x="4" y="6" width="1" height="3"></rect><rect x="11" y="6" width="1" height="3"></rect><rect x="5" y="9" width="6" height="1"></rect><rect x="7" y="10" width="2" height="4"></rect><rect x="5" y="14" width="6" height="1"></rect></g><rect class="art-etiquette" x="7" y="2" width="2" height="1"></rect></svg>
+                    </span>
+                    </span>
+                    <span class="cart__contacts"></span>
+                  </span>
+                </div>
+                <div class="bandeau__texte">
+                  <h3 class="bandeau__titre" id="b-karaoke-titre">Karaoké</h3>
+                  <p class="bandeau__desc" id="b-karaoke-desc">Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps.</p>
+                  <ul class="bandeau__reperes" id="b-karaoke-reperes"><li class="chip">Solo ou salle</li><li class="chip">max 10 joueurs</li><li class="chip">Coopératif</li></ul>
+                </div>
+              </a>
+            </li>
+          </ul>
+          </section>
+
+          <section class="groupe" aria-labelledby="g-solo">
+            <h2 class="groupe__titre" id="g-solo">On joue tout seul</h2>
+            <p class="groupe__sous">Pas besoin d'amis. Juste de l'orgueil.</p>
+          <ul class="bandeaux" aria-labelledby="g-solo">
             <li>
               <a class="bandeau bandeau--lyrics" href="#/lyrics" aria-labelledby="b-lyrics-titre" aria-describedby="b-lyrics-desc b-lyrics-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
@@ -88,33 +163,58 @@
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h2 class="bandeau__titre" id="b-lyrics-titre">Lyrics</h2>
+                  <h3 class="bandeau__titre" id="b-lyrics-titre">Lyrics</h3>
                   <p class="bandeau__desc" id="b-lyrics-desc">Tous les mots de la chanson sont cachés. Tape ceux que tu connais pour les dévoiler un à un.</p>
-                  <ul class="bandeau__reperes" id="b-lyrics-reperes"><li class="chip">Solo</li></ul>
+                  <ul class="bandeau__reperes" id="b-lyrics-reperes"><li class="chip">Solo</li><li class="chip">~5 min</li></ul>
                 </div>
               </a>
             </li>
             <li>
-              <a class="bandeau bandeau--karaoke" href="#/karaoke" aria-labelledby="b-karaoke-titre" aria-describedby="b-karaoke-desc b-karaoke-reperes">
+              <a class="bandeau bandeau--mot-cache" href="#/mot-cache" aria-labelledby="b-mot-cache-titre" aria-describedby="b-mot-cache-desc b-mot-cache-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
-                  <span class="cart cart--karaoke">
+                  <span class="cart cart--mot-cache">
                     <span class="cart__stries"></span>
                     <span class="cart__etiquette">
-                      <span class="cart__nom">Karaoké</span>
+                      <span class="cart__nom">Mot Caché</span>
                       <span class="cart__art" aria-hidden="true">
-                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><g class="art-corps"><rect x="6" y="1" width="4" height="7"></rect><rect x="4" y="6" width="1" height="3"></rect><rect x="11" y="6" width="1" height="3"></rect><rect x="5" y="9" width="6" height="1"></rect><rect x="7" y="10" width="2" height="4"></rect><rect x="5" y="14" width="6" height="1"></rect></g><rect class="art-etiquette" x="7" y="2" width="2" height="1"></rect></svg>
+                      <svg width="45" height="51" viewBox="0 0 15 17" shape-rendering="crispEdges"><g class="art-corps"><rect x="0" y="0" width="2" height="2"></rect><rect x="3" y="0" width="2" height="2"></rect><rect x="6" y="0" width="2" height="2"></rect><rect x="9" y="0" width="2" height="2"></rect><rect x="12" y="0" width="2" height="2"></rect><rect x="0" y="3" width="2" height="2"></rect><rect x="3" y="3" width="2" height="2"></rect><rect x="6" y="3" width="2" height="2"></rect><rect x="9" y="3" width="2" height="2"></rect><rect x="12" y="3" width="2" height="2"></rect><rect x="0" y="9" width="2" height="2"></rect><rect x="3" y="9" width="2" height="2"></rect><rect x="6" y="9" width="2" height="2"></rect><rect x="9" y="9" width="2" height="2"></rect><rect x="12" y="9" width="2" height="2"></rect><rect x="0" y="12" width="2" height="2"></rect><rect x="3" y="12" width="2" height="2"></rect><rect x="6" y="12" width="2" height="2"></rect><rect x="9" y="12" width="2" height="2"></rect><rect x="12" y="12" width="2" height="2"></rect><rect x="0" y="15" width="2" height="2"></rect><rect x="3" y="15" width="2" height="2"></rect><rect x="6" y="15" width="2" height="2"></rect><rect x="9" y="15" width="2" height="2"></rect><rect x="12" y="15" width="2" height="2"></rect></g><rect class="art-pomme" x="0" y="6" width="2" height="2"></rect><rect class="art-dor" x="3" y="6" width="2" height="2"></rect><rect class="art-pomme" x="6" y="6" width="2" height="2"></rect><rect class="art-corps" x="9" y="6" width="2" height="2"></rect><rect class="art-pomme" x="12" y="6" width="2" height="2"></rect></svg>
                     </span>
                     </span>
                     <span class="cart__contacts"></span>
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h2 class="bandeau__titre" id="b-karaoke-titre">Karaoké</h2>
-                  <p class="bandeau__desc" id="b-karaoke-desc">Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps.</p>
-                  <ul class="bandeau__reperes" id="b-karaoke-reperes"><li class="chip">max 10 joueurs</li><li class="chip">Coopératif</li></ul>
+                  <h3 class="bandeau__titre" id="b-mot-cache-titre">Mot Caché</h3>
+                  <p class="bandeau__desc" id="b-mot-cache-desc">Trouve le mot de 5 lettres en 6 essais. Les couleurs te disent où chercher.</p>
+                  <ul class="bandeau__reperes" id="b-mot-cache-reperes"><li class="chip">Solo</li><li class="chip">~5 min</li></ul>
                 </div>
               </a>
             </li>
+            <li>
+              <a class="bandeau bandeau--echo" href="#/echo" aria-labelledby="b-echo-titre" aria-describedby="b-echo-desc b-echo-reperes">
+                <div class="bandeau__cart" aria-hidden="true">
+                  <span class="cart cart--echo">
+                    <span class="cart__stries"></span>
+                    <span class="cart__etiquette">
+                      <span class="cart__nom">Écho</span>
+                      <span class="cart__art" aria-hidden="true">
+                      <svg width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect class="art-dor" x="5" y="0" width="5" height="5"></rect><rect class="art-etiquette" x="6" y="1" width="1" height="1"></rect><g class="art-corps"><rect x="0" y="5" width="5" height="5"></rect><rect x="11" y="5" width="5" height="5"></rect><rect x="5" y="11" width="5" height="5"></rect></g></svg>
+                    </span>
+                    </span>
+                    <span class="cart__contacts"></span>
+                  </span>
+                </div>
+                <div class="bandeau__texte">
+                  <h3 class="bandeau__titre" id="b-echo-titre">Écho</h3>
+                  <p class="bandeau__desc" id="b-echo-desc">Retiens la séquence de couleurs et de sons, puis rejoue-la. Elle s’allonge à chaque tour.</p>
+                  <ul class="bandeau__reperes" id="b-echo-reperes"><li class="chip">Solo</li></ul>
+                </div>
+              </a>
+            </li>
+          </ul>
+            <p class="groupe__prepa" id="g-prepa">En préparation</p>
+            <p class="groupe__sous">Pas tout à fait prêts. À tester, pas à croire.</p>
+          <ul class="bandeaux bandeaux--prepa" aria-labelledby="g-prepa">
             <li>
               <a class="bandeau bandeau--plus-ou-moins" href="#/plus-ou-moins" aria-labelledby="b-plus-ou-moins-titre" aria-describedby="b-plus-ou-moins-desc b-plus-ou-moins-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
@@ -130,9 +230,9 @@
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h2 class="bandeau__titre" id="b-plus-ou-moins-titre">Plus ou Moins</h2>
+                  <h3 class="bandeau__titre" id="b-plus-ou-moins-titre">Plus ou Moins</h3>
                   <p class="bandeau__desc" id="b-plus-ou-moins-desc">Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net.</p>
-                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip">Aperçu</li></ul>
+                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip chip--apercu">Aperçu</li></ul>
                 </div>
               </a>
             </li>
@@ -151,32 +251,15 @@
                   </span>
                 </div>
                 <div class="bandeau__texte">
-                  <h2 class="bandeau__titre" id="b-frappe-titre">Course de frappe</h2>
+                  <h3 class="bandeau__titre" id="b-frappe-titre">Course de frappe</h3>
                   <p class="bandeau__desc" id="b-frappe-desc">Tape la phrase plus vite que les autres voitures. Une faute te bloque tant que tu ne l’as pas corrigée.</p>
-                  <ul class="bandeau__reperes" id="b-frappe-reperes"><li class="chip">Course</li><li class="chip">Aperçu</li></ul>
+                  <ul class="bandeau__reperes" id="b-frappe-reperes"><li class="chip">Rapidité</li><li class="chip chip--apercu">Aperçu</li></ul>
                 </div>
               </a>
             </li>
           </ul>
+          </section>
         </div>
-
-        <section class="conteneur" aria-labelledby="h-salle">
-          <form class="rejoindre px" id="form-rejoindre" novalidate>
-            <div class="rejoindre__intro">
-              <h2 id="h-salle" class="rejoindre__titre">On t'a donné un code ?</h2>
-              <p class="rejoindre__texte">Tape-le ici, on t'emmène directement dans la bonne salle, quel que soit le jeu.</p>
-            </div>
-            <div class="field">
-              <label class="field__label" for="h-code">Code de salle</label>
-              <input class="field__input field__input--code" id="h-code" maxlength="30" placeholder="KRAB" autocomplete="off" autocapitalize="characters" spellcheck="false" />
-            </div>
-            <div class="field">
-              <label class="field__label" for="h-pseudo">Ton pseudo</label>
-              <input class="field__input field__pseudo" id="h-pseudo" maxlength="20" placeholder="Comme tes amis t'appellent" autocomplete="off" />
-            </div>
-            <button type="submit" class="key key--sombre">Rejoindre</button>
-          </form>
-        </section>
 
         <section class="conteneur zone-fiche">
           <aside class="fiche px" id="fiche-joueur" aria-label="Fiche de joueur">
@@ -315,104 +398,17 @@
       <!-- ====== Jeux (habillage final aux étapes 4 à 6) ====== -->
       <section data-vue="imposteur" hidden>
         <div id="impostor-game" class="imp">
-          <p id="round-info" class="imp-manche hidden" aria-live="polite"></p>
-          <div id="word-bar" class="imp-mot hidden"></div>
-          <ol id="players-inputs" class="imp-tours"></ol>
-
-          <template id="player-template">
-            <li class="imp-tour">
-              <span class="imp-tour__tete">
-                <span class="imp-avatar imp-avatar--petit" aria-hidden="true"></span>
-                <span class="imp-tour__nom"></span>
-                <span class="imp-tour__etat"></span>
-                <span class="imp-tour__timer hidden"></span>
-              </span>
-              <span class="imp-tour__indices"></span>
-            </li>
-          </template>
-
-          <template id="vote-button-template">
-            <button type="button" role="radio" aria-checked="false" class="key imp-vote">
-              <span class="imp-avatar imp-avatar--grand" aria-hidden="true"></span>
-              <span class="imp-vote__nom"></span>
-            </button>
-          </template>
-
-          <div id="lobby-container" class="imp-zone">
-            <div id="lobby-setup" class="imp-entree ecran">
-              <div class="imp-dossier" aria-hidden="true">Dossier n° 1</div>
-              <h1 id="impostor-title" class="imp-titre">Imposteur</h1>
-              <p class="imp-intro">Tout le monde a le même mot. Sauf un. À toi de le trouver, ou de ne pas te faire prendre.</p>
-              <div class="field">
-                <label class="field__label" for="room-id">Code de salle</label>
-                <input class="field__input field__input--code" type="text" id="room-id" maxlength="30" placeholder="KRAB" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="room-id-err" />
-                <p class="field__erreur hidden" id="room-id-err" role="alert"></p>
-              </div>
-              <div class="field">
-                <label class="field__label" for="username">Ton pseudo</label>
-                <input class="field__input" type="text" id="username" maxlength="20" autocomplete="off" aria-describedby="username-err" />
-                <p class="field__erreur hidden" id="username-err" role="alert"></p>
-              </div>
-              <button type="button" id="join-button" class="key key--principal key--bloc">Rejoindre la salle</button>
-              <button type="button" id="create-button" class="key key--fantome key--bloc">Créer une nouvelle salle</button>
-            </div>
-
-            <div id="lobby-salon" class="imp-salon ecran hidden">
-              <div class="imp-fiche imp-fiche--code">
-                <div class="imp-fiche__code">
-                  <span class="imp-fiche__etiquette">Code de la salle</span>
-                  <span class="imp-code" id="room-code-text"></span>
-                </div>
-                <button type="button" id="copy-link" class="key key--principal key--compact">Copier le lien</button>
-              </div>
-
-              <div id="lobby-players" class="imp-joueurs hidden">
-                <div class="imp-joueurs__tete">
-                  <h2 class="imp-h2">Joueurs</h2>
-                  <span class="imp-compte" id="lobby-count">0/8</span>
-                </div>
-                <ul class="imp-liste" id="lobby-list"></ul>
-              </div>
-
-              <div id="lobby-options" class="imp-reglages hidden">
-                <div class="imp-reglage">
-                  <span class="imp-reglage__nom" id="lbl-rounds">Manches</span>
-                  <div class="stepper imp-stepper" role="group" aria-labelledby="lbl-rounds">
-                    <button type="button" data-step-for="round-count" data-step="-1" aria-label="Une manche de moins">-</button>
-                    <span class="imp-stepper__valeur"><input type="number" id="round-count" min="1" max="10" step="1" value="3" aria-labelledby="lbl-rounds" /></span>
-                    <button type="button" data-step-for="round-count" data-step="1" aria-label="Une manche de plus">+</button>
-                  </div>
-                </div>
-                <div class="imp-reglage">
-                  <span class="imp-reglage__nom" id="lbl-timer">Temps par tour</span>
-                  <div class="stepper imp-stepper" role="group" aria-labelledby="lbl-timer">
-                    <button type="button" data-step-for="round-timer" data-step="-10" aria-label="10 secondes de moins">-</button>
-                    <span class="imp-stepper__valeur"><input type="number" id="round-timer" min="10" max="120" step="10" value="60" aria-labelledby="lbl-timer" /><span aria-hidden="true">s</span></span>
-                    <button type="button" data-step-for="round-timer" data-step="10" aria-label="10 secondes de plus">+</button>
-                  </div>
-                </div>
-              </div>
-
-              <div id="start-button-container" class="imp-lancer">
-                <button type="button" id="new-game" class="key key--principal key--bloc hidden">Lancer la partie</button>
-                <p id="lobby-wait" class="imp-attente hidden" role="status"></p>
-              </div>
-            </div>
-          </div>
-
-          <button type="button" id="end-round" class="key key--secondaire key--bloc hidden">Passer aux votes</button>
-
-          <div id="hint-phase"></div>
-          <div id="reveal-phase"></div>
+          <div data-montage></div>
 
           <dialog class="fenetre" id="imp-quitter" aria-labelledby="imp-quitter-titre">
             <div class="fenetre__tete">
               <h2 class="fenetre__titre" id="imp-quitter-titre">Quitter la partie ?</h2>
             </div>
             <div class="fenetre__corps">
-              <p class="imp-quitter__texte">La manche est en cours. Si tu pars, les autres continuent sans toi.</p>
+              <p class="imp-quitter__texte">La partie est en cours. Tu peux partir et revenir, ou abandonner pour de bon.</p>
               <button type="button" class="key key--principal key--bloc" id="imp-rester">Rester</button>
-              <button type="button" class="key key--danger key--bloc" id="imp-partir">Quitter la partie</button>
+              <button type="button" class="key key--secondaire key--bloc" id="imp-partir">Quitter (tu pourras revenir pendant 2 min)</button>
+              <button type="button" class="key key--danger key--bloc" id="imp-abandon">Abandonner la partie</button>
             </div>
           </dialog>
         </div>
@@ -811,6 +807,19 @@
           </div>
         </div>
       </section>
+
+      <section data-vue="gribouille" hidden>
+        <div class="jeu-montage" data-montage></div>
+      </section>
+      <section data-vue="petit-bac" hidden>
+        <div class="jeu-montage" data-montage></div>
+      </section>
+      <section data-vue="mot-cache" hidden>
+        <div class="jeu-montage" data-montage></div>
+      </section>
+      <section data-vue="echo" hidden>
+        <div class="jeu-montage" data-montage></div>
+      </section>
     </main>
 
     <!-- Fenêtre de compte : contenu construit par javascript/account.js -->
@@ -830,6 +839,8 @@
     <script src="javascript/auth.js"></script>
     <script src="javascript/ui.js"></script>
     <script src="javascript/router.js"></script>
+    <script src="javascript/reprise.js"></script>
+    <script src="javascript/salle.js"></script>
     <script src="javascript/imposteur.js"></script>
     <script src="javascript/lyrics.js"></script>
     <script src="javascript/karaoke.js"></script>
@@ -837,6 +848,12 @@
     <script src="javascript/demo-data.js"></script>
     <script src="javascript/plus-ou-moins.js"></script>
     <script src="javascript/frappe.js"></script>
+    <script src="javascript/gribouille.js"></script>
+    <script src="javascript/petit-bac.js"></script>
+    <script src="javascript/mot-cache-mots.js"></script>
+    <script src="javascript/mot-cache-logique.js"></script>
+    <script src="javascript/mot-cache.js"></script>
+    <script src="javascript/echo.js"></script>
     <script src="javascript/app.js"></script>
   </body>
 </html>

@@ -16,17 +16,24 @@ function corpsAccueil() {
   return v404 === -1 ? corps : corps.slice(0, v404);
 }
 
-test("accueil : exactement 5 liens #/ distincts dans le corps, sans a/button imbriqué dans un bandeau", () => {
+test("accueil : exactement 9 liens #/ distincts dans le corps, sans a/button imbriqué dans un bandeau", () => {
   const corps = corpsAccueil();
   const tous = [...corps.matchAll(/<a\b[^>]*\bhref=(["'])#\/([^"']*)\1/g)].map((m) => m[2]);
   // Le seul lien hors jeu autorisé dans le corps : « Voir ma fiche complète » (#/profil) de la fiche joueur.
   assert.ok(tous.filter((h) => h === "profil").length <= 1, "plus d'un lien vers #/profil dans le corps");
   const hrefs = tous.filter((h) => h !== "profil");
-  assert.equal(hrefs.length, 5, `liens de jeu trouvés : ${hrefs.length} (${hrefs.join(", ")})`);
-  assert.equal(new Set(hrefs).size, 5, "les 5 liens doivent être distincts");
+  assert.equal(hrefs.length, 9, `liens de jeu trouvés : ${hrefs.length} (${hrefs.join(", ")})`);
+  assert.equal(new Set(hrefs).size, 9, "les 9 liens doivent être distincts");
   for (const m of corps.matchAll(/<a\b[^>]*\bclass="[^"]*\bbandeau\b[^"]*"[^>]*>([\s\S]*?)<\/a>/g)) {
     assert.doesNotMatch(m[1], /<(a|button)\b/, "a/button imbriqué dans un .bandeau");
   }
+});
+
+test("accueil : plus de formulaire de code, deux groupes h2, titres de jeux en h3", () => {
+  const corps = corpsAccueil();
+  assert.doesNotMatch(corps, /form-rejoindre|h-code|h-pseudo/);
+  assert.equal((corps.match(/<h2\b/g) || []).length, 2, "deux h2 de groupe");
+  assert.equal((corps.match(/<h3\b[^>]*bandeau__titre/g) || []).length, 9, "un h3 par jeu");
 });
 
 function fichiers(cible) {

@@ -21,8 +21,10 @@ test("clampInt borne et gère les valeurs invalides", () => {
 });
 
 test("sanitizeOptions impose des valeurs raisonnables", () => {
-  assert.deepEqual(sanitizeOptions({ rounds: 9999, timer: 1 }), { rounds: 10, timer: 10 });
-  assert.deepEqual(sanitizeOptions(null), { rounds: 3, timer: 60 });
+  assert.deepEqual(sanitizeOptions({ rounds: 9999, timer: 1 }), { rounds: 10, timer: 10, mrWhite: false });
+  assert.deepEqual(sanitizeOptions(null), { rounds: 3, timer: 60, mrWhite: false });
+  assert.equal(sanitizeOptions({ mrWhite: true }).mrWhite, true);
+  assert.equal(sanitizeOptions({ mrWhite: "true" }).mrWhite, false);
 });
 
 test("scoreVotes : l'imposteur démasqué ne gagne rien, les bons votants +100", () => {
@@ -41,6 +43,32 @@ test("scoreVotes : l'imposteur non démasqué gagne 100", () => {
   assert.equal(points.a, 0);
 });
 
+test("scoreVotes : égalité en tête = personne éliminé, l'imposteur gagne 100", () => {
+  const points = {};
+  const { mostVoted } = scoreVotes({ a: "b", b: "a", c: "imp" }, { impostorId: "imp" }, points);
+  assert.equal(mostVoted, null);
+  assert.equal(points.imp, 100);
+});
+
+test("scoreVotes : barème Mr White (+50 / +100 / +150)", () => {
+  // White non éliminé : +100 ; votants pour White : +50 ; imposteur démasqué : +100 aux votants
+  let p = {};
+  scoreVotes({ a: "imp", b: "w", c: "imp", w: "imp", imp: "a" }, { impostorId: "imp", whiteId: "w" }, p);
+  assert.deepEqual([p.a, p.b, p.c, p.w, p.imp], [100, 50, 100, 200, 0]);
+  // White éliminé : 0 sans mot trouvé, +150 avec
+  p = {};
+  scoreVotes({ a: "w", b: "w", imp: "w" }, { impostorId: "imp", whiteId: "w" }, p);
+  assert.deepEqual([p.a, p.imp, p.w], [50, 150, undefined]);
+  p = {};
+  scoreVotes({ a: "w", b: "w", imp: "w" }, { impostorId: "imp", whiteId: "w", whiteGuessCorrect: true }, p);
+  assert.equal(p.w, 150);
+});
+
+test("WORD_PAIRS : paires avec thème, mots distincts", () => {
+  assert.ok(WORD_PAIRS.length >= 20);
+  assert.ok(WORD_PAIRS.every((w) => w.normal && w.impostor && w.normal !== w.impostor));
+});
+
 test("pickWordPair utilise le générateur fourni", () => {
   assert.equal(pickWordPair(() => 0), WORD_PAIRS[0]);
   assert.ok(pickWordPair().normal);
@@ -49,6 +77,7 @@ test("pickWordPair utilise le générateur fourni", () => {
 test("buildRanking trie par score décroissant", () => {
   const r = buildRanking({ x: 10, y: 50 }, [{ id: "x", username: "X" }, { id: "y", username: "Y" }]);
   assert.deepEqual(r.map((e) => e.username), ["Y", "X"]);
+  assert.deepEqual(r.map((e) => e.id), ["y", "x"]);
 });
 
 test("rate limiter coupe après la rafale", () => {

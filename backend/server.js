@@ -10,6 +10,8 @@ const { authMiddleware, announceAuth, registerAccount } = require("./lib/auth");
 const { createResults } = require("./lib/results");
 const { createImposteur } = require("./games/imposteur");
 const { createKaraoke } = require("./games/karaoke");
+const { createGribouille } = require("./games/gribouille");
+const { createPetitBac } = require("./games/petit-bac");
 
 const app = express();
 app.disable("x-powered-by");
@@ -58,9 +60,13 @@ io.use(authMiddleware());
 const results = createResults();
 const imposteur = createImposteur(io, results);
 const karaoke = createKaraoke(io, results);
+const gribouille = createGribouille(io, results);
+const petitBac = createPetitBac(io, results);
+// Logs de connexion seulement quand le serveur est lancé directement (pas sous node --test).
+const verbose = require.main === module;
 
 io.on("connection", (socket) => {
-  console.log("✅ Un joueur s'est connecté :", socket.id);
+  if (verbose) console.log("✅ Un joueur s'est connecté :", socket.id);
 
   // Anti-flood : au-delà du quota, les messages du socket sont ignorés.
   const allow = createRateLimiter({ capacity: 30, perSecond: 15 });
@@ -73,15 +79,21 @@ io.on("connection", (socket) => {
     for (const s of io.sockets.sockets.values()) if (s.data.userId === uid) s.data.userId = null;
     imposteur.forgetUser(uid);
     karaoke.forgetUser(uid);
+    gribouille.forgetUser(uid);
+    petitBac.forgetUser(uid);
   });
   results.registerLyrics(socket);
   imposteur.register(socket);
   karaoke.register(socket);
+  gribouille.register(socket);
+  petitBac.register(socket);
 
   socket.on("disconnect", () => {
     imposteur.onDisconnect(socket);
     karaoke.onDisconnect(socket);
-    console.log("❌ Un joueur s'est déconnecté :", socket.id);
+    gribouille.onDisconnect(socket);
+    petitBac.onDisconnect(socket);
+    if (verbose) console.log("❌ Un joueur s'est déconnecté :", socket.id);
   });
 });
 

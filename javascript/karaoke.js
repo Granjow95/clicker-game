@@ -80,6 +80,7 @@ window.karaokeBackToMode = function () {
   if (kk.roomId && kk.mode === 'multi') {
     socket.emit('karaoke_leave', kk.roomId);
     kk.roomId = null;
+    granRouter.setLeaveGuard(null);
   }
   kk.mode = null;
   kkShow('karaoke-mode');
@@ -94,10 +95,15 @@ window.karaokeJoinRoom = function () {
   let code = document.getElementById('kk-roomcode').value.trim().slice(0, 30); // casse conservée : le serveur est sensible à la casse
 
   if (!username) { kkJoinError('Entre ton pseudo !'); return; }
-  if (!code) code = Math.random().toString(36).substr(2, 4).toUpperCase();
+  if (!code) {
+    // 6 caractères sans ambiguïté (le serveur accepte jusqu'à 30 caractères)
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rnd = crypto.getRandomValues(new Uint8Array(6));
+    code = Array.from(rnd, (n) => alphabet[n % alphabet.length]).join('');
+  }
 
   kk.username = username;
-  kk.roomId = code;
+  // kk.roomId n'est posé qu'à la confirmation du serveur (karaoke_joined)
   socket.emit('karaoke_join', { roomId: code, username });
 };
 
@@ -525,7 +531,8 @@ function kkRenderLyrics() {
 
   // Vérifier fin de chanson (en mode audio, c'est l'événement « fin de vidéo » qui décide)
   if (currentLine >= total - 1 && total > 0) {
-    setTimeout(() => {
+    clearTimeout(kk.endTimer);
+    kk.endTimer = setTimeout(() => {
       const overlay = document.getElementById('kk-end-overlay');
       if (overlay && !kk.autoPlay && !kk.audioActive) overlay.style.display = 'flex';
     }, 800);
@@ -996,6 +1003,7 @@ window.karaokeExitGame = function () {
     socket.emit('karaoke_leave', kk.roomId);
     kk.roomId = null;
     kk.players = [];
+    granRouter.setLeaveGuard(null);
   }
   kk.song = null;
   kkShow('karaoke-mode');
@@ -1010,6 +1018,7 @@ function kkWireSocket() {
 
   socket.on('karaoke_joined', ({ roomId, players, host, isHost, song, currentLine, started }) => {
     kk.roomId = roomId;
+    granRouter.setLeaveGuard(() => window.confirm('Quitter la salle de karaoké ?'));
     kk.isHost = isHost;
     kk.players = players;
 
@@ -1060,6 +1069,27 @@ function kkWireSocket() {
 
   socket.on('karaoke_error', (msg) => {
     kkJoinError(msg);
+    if (!kk.roomId || kk.mode !== 'multi') kk.roomId = null;
+  });
+
+  // Coupure réseau : le serveur nous a retiré de la salle, retour à l'écran de salle.
+  socket.on('disconnect', (reason) => {
+    if (reason === 'io client disconnect' || kk.mode !== 'multi' || !kk.roomId) return;
+    clearTimeout(kk.autoTimer);
+    clearTimeout(kk.endTimer);
+    kk.autoPlay = false;
+    kkHideGap();
+    kkDestroyAudio();
+    const code = kk.roomId;
+    kk.roomId = null;
+    kk.song = null;
+    kk.players = [];
+    kk.isHost = false;
+    granRouter.setLeaveGuard(null);
+    granUI.toast('Tu as été retiré de la salle. Rejoins-la avec le même code.', { type: 'erreur', titre: 'Connexion perdue.' });
+    window.karaokeShowRoom();
+    const codeInput = document.getElementById('kk-roomcode');
+    if (codeInput) codeInput.value = code;
   });
 }
 
@@ -1070,6 +1100,8 @@ function kkCleanup() {
   const drawer = document.getElementById('kk-audio-modal');
   if (drawer && drawer.open) drawer.close();
   clearTimeout(kk.autoTimer);
+  clearTimeout(kk.endTimer);
+  granRouter.setLeaveGuard(null);
   kkHideGap();
   kkDestroyAudio();
   kk.autoPlay = false;

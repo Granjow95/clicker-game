@@ -1,253 +1,209 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { io: connect } = require("socket.io-client");
-const { server, io } = require("../server");
+const { setup, wait, next, quiet } = require("./imposteur-helpers");
 
-let port;
-const clients = [];
-
-test.before(async () => {
-  await new Promise((r) => server.listen(0, r));
-  port = server.address().port;
-});
-
-test.after(async () => {
-  clients.forEach((c) => c.close());
-  io.close();
-});
-
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function client() {
-  const c = connect(`http://localhost:${port}`, { transports: ["websocket"], forceNew: true });
-  clients.push(c);
-  return new Promise((resolve) => c.on("connect", () => resolve(c)));
-}
-
-const once = (c, ev) => new Promise((r) => c.once(ev, r));
+const t = setup();
+test.before(() => t.start());
+test.after(() => t.stop());
 
 test("imposteur : un non-créateur ne peut pas lancer la partie ni forcer le vote", async () => {
-  const host = await client();
-  const guest = await client();
-  host.emit("join_or_create_room", { roomId: "T1", username: "host" });
-  await once(host, "room-created");
-  guest.emit("join_or_create_room", { roomId: "T1", username: "guest" });
-  await once(guest, "room-created");
-
-  let started = false;
-  guest.on("round_started", () => (started = true));
-  guest.emit("start_round", "T1");
-  await wait(150);
-  assert.equal(started, false, "un invité ne doit pas démarrer");
-
-  const roundP = once(guest, "round_started");
-  host.emit("start_round", "T1");
-  const round = await roundP;
-  assert.equal(round.players.length, 2);
+  const all = await t.lobby(3);
+  const [host, g1] = all;
+  g1.c.emit("start_round");
+  await quiet(g1.c, "round_started", 150);
+  host.c.emit("start_round");
+  const round = await next(g1.c, "round_started");
+  assert.equal(round.players.length, 3);
+  g1.c.emit("force_vote");
+  await quiet(host.c, "all_hints_done", 150);
 });
 
-test("imposteur : l'identité est celle du socket, pas celle envoyée", async () => {
-  const host = await client();
-  const guest = await client();
-  host.emit("join_or_create_room", { roomId: "T2", username: "h" });
-  await once(host, "room-created");
-  guest.emit("join_or_create_room", { roomId: "T2", username: "g" });
-  await once(guest, "room-created");
-  const turn = once(host, "next_turn");
-  host.emit("start_round", "T2");
-  await turn;
+test("imposteur : moins de 3 joueurs connectés → not_enough_players", async () => {
+  const host = await t.createRoom("h");
+  const g = await t.joinRoom(host.code, "g");
+  host.c.emit("start_round");
+  const e = await next(host.c, "imp:error");
+  assert.equal(e.code, "not_enough_players");
+  await quiet(g.c, "round_started", 100);
+});
 
-  // L'invité tente de jouer à la place de l'hôte (c'est le tour de l'hôte)
-  let leaked = false;
-  host.on("hint_submitted", () => (leaked = true));
-  guest.emit("submit_hint", { roomId: "T2", playerId: host.id, hint: "triche" });
-  await wait(150);
-  assert.equal(leaked, false);
+test("imposteur : l'identité est le pid serveur, pas ce que le client envoie", async () => {
+  const all = await t.lobby(3);
+  const { rs } = await t.startRound(all);
+  assert.ok(rs.every((r) => Array.isArray(r.order) && r.order.length === 3));
+  const turn = await next(all[0].c, "next_turn");
+  const speaker = all.find((p) => p.pid === turn.playerId);
+  const other = all.find((p) => p !== speaker);
 
-  // L'hôte joue, avec du HTML dans l'indice
-  const hintP = once(guest, "hint_submitted");
-  host.emit("submit_hint", { roomId: "T2", playerId: "nimporte", hint: "<b>mot</b>" });
-  const h = await hintP;
-  assert.equal(h.playerId, host.id);
+  other.c.emit("submit_hint", { playerId: speaker.pid, hint: "triche" });
+  await quiet(all[0].c, "hint_submitted", 150);
+
+  speaker.c.emit("submit_hint", { roomId: "autre", playerId: other.pid, hint: "<b>mot</b>" });
+  const h = await next(all[0].c, "hint_submitted");
+  assert.equal(h.playerId, speaker.pid);
   assert.equal(h.hint, "bmot/b");
+  assert.equal(turn.index, all.indexOf(speaker));
+  // Aucun socket.id ne circule dans les charges utiles.
+  const sockIds = all.map((p) => p.c.id);
+  assert.ok(!sockIds.some((id) => JSON.stringify([turn, h, rs]).includes(id)));
 });
 
-test("imposteur : pseudo nettoyé et salle pleine refusée", async () => {
-  const c = await client();
-  c.emit("join_or_create_room", { roomId: "T3", username: "<script>alert(1)</script>" });
-  const room = await once(c, "room-created");
-  assert.ok(!/[<>]/.test(room.players[0].username));
+test("imposteur : pseudo nettoyé", async () => {
+  const c = await t.createRoom("<script>alert(1)</script>");
+  assert.ok(!/[<>]/.test(c.joined.players[0].username));
 });
 
 test("karaoké : seul l'hôte choisit la chanson", async () => {
-  const host = await client();
-  const guest = await client();
+  const host = await t.client();
+  const guest = await t.client();
   host.emit("karaoke_join", { roomId: "K1", username: "h" });
-  await once(host, "karaoke_joined");
+  await next(host, "karaoke_joined");
   guest.emit("karaoke_join", { roomId: "K1", username: "g" });
-  await once(guest, "karaoke_joined");
+  await next(guest, "karaoke_joined");
+  host.q.length = 0;
 
-  let got = false;
-  host.on("karaoke_song_selected", () => (got = true));
   guest.emit("karaoke_select_song", { roomId: "K1", song: { title: "x", artist: "y" } });
-  await wait(150);
-  assert.equal(got, false);
+  await quiet(host, "karaoke_song_selected", 150);
 
-  const p = once(guest, "karaoke_song_selected");
   host.emit("karaoke_select_song", { roomId: "K1", song: { title: "T", artist: "A", evil: 1 } });
-  assert.deepEqual((await p).song, { title: "T", artist: "A" });
+  assert.deepEqual((await next(guest, "karaoke_song_selected")).song, { title: "T", artist: "A" });
 });
 
-// ── Correctifs issus de la relecture ──
+test("alias join_or_create_room : crée avec un code généré, puis rejoint si le code existe", async () => {
+  const a = await t.client();
+  a.emit("join_or_create_room", { roomId: "peu importe", username: "a" });
+  const ja = await next(a, "imp:joined");
+  assert.match(ja.code, /^[BCDFGHJKLMNPQRSTVWXZ]{4}$/);
+  assert.equal(ja.hostId, ja.you);
 
-async function lobby(roomId, n) {
-  const cs = [];
-  for (let i = 0; i < n; i++) {
-    const c = await client();
-    c.emit("join_or_create_room", { roomId, username: "p" + i });
-    await once(c, "room-created");
-    cs.push(c);
-  }
-  return cs;
-}
+  const b = await t.client();
+  b.emit("join_or_create_room", { roomId: ja.code.toLowerCase(), username: "b" });
+  const jb = await next(b, "imp:joined");
+  assert.equal(jb.code, ja.code);
+  assert.equal(jb.players.length, 2);
+  assert.equal((await next(a, "imp:room")).code, ja.code);
+});
 
-test("noms de salle « constructor » / « __proto__ » : le serveur ne plante pas", async () => {
+test("noms « constructor » / « __proto__ » : le serveur ne plante pas", async () => {
   for (const name of ["constructor", "__proto__", "toString"]) {
-    const c = await client();
+    const c = await t.client();
     c.emit("join_or_create_room", { roomId: name, username: "x" });
-    const room = await once(c, "room-created");
-    assert.equal(room.id, name);
+    await next(c, "imp:joined");
     c.emit("leave_room", name);
     c.emit("karaoke_join", { roomId: name, username: "x" });
-    await once(c, "karaoke_joined");
+    await next(c, "karaoke_joined");
     c.emit("karaoke_leave", name);
   }
-  const alive = await client();
-  assert.ok(alive.connected, "le serveur répond encore");
+  assert.ok((await t.client()).connected);
 });
 
-test("payloads invalides (non-chaînes) ignorés sans plantage", async () => {
-  const c = await client();
-  for (const bad of [null, 42, {}, [], { roomId: {} }, { roomId: ["a"], username: "u" }]) {
-    c.emit("join_or_create_room", bad);
-    c.emit("karaoke_join", bad);
-    c.emit("vote", bad);
-    c.emit("start_round", bad);
-    c.emit("force_vote", bad);
+test("payloads invalides ignorés sans plantage", async () => {
+  const c = await t.client();
+  for (const bad of [null, 42, {}, [], { roomId: {} }, { votedId: {}, username: ["u"] }, "x"]) {
+    for (const ev of ["join_or_create_room", "imp:create", "imp:join", "imp:resume", "karaoke_join", "vote", "start_round", "force_vote", "submit_hint", "imp:white_guess", "update_lobby_options"]) {
+      c.emit(ev, bad);
+    }
   }
   await wait(200);
   assert.ok(c.connected);
 });
 
-test("imposteur : round_started ne révèle pas l'imposteur", async () => {
-  const [host, guest] = await lobby("T5", 2);
-  const p = once(guest, "round_started");
-  host.emit("start_round", "T5");
-  const round = await p;
-  assert.equal("impostorIndex" in round, false);
+test("imposteur : aucun événement ne révèle l'imposteur avant reveal_results", async () => {
+  const all = await t.lobby(3);
+  const { rs } = await t.startRound(all);
+  assert.ok(rs.every((r) => !("impostorIndex" in r) && !("impostorId" in r)));
+  await t.oneTurn(all);
+  all[0].c.emit("force_vote");
+  await next(all[0].c, "all_hints_done");
+  for (const p of all) {
+    const seen = JSON.stringify(p.c.q);
+    assert.ok(!/impostorId|impostorIndex|impostorName/.test(seen), "fuite avant la révélation");
+  }
 });
 
-test("imposteur : pas de revote après la révélation, points non gonflés", async () => {
-  const [host, guest] = await lobby("T6", 2);
-  host.emit("start_round", "T6");
-  await once(host, "next_turn");
-  host.emit("submit_hint", { roomId: "T6", hint: "a" });
-  await once(guest, "next_turn");
-  guest.emit("submit_hint", { roomId: "T6", hint: "b" });
-  await wait(700);
-  host.emit("force_vote", "T6");
-  await once(guest, "all_hints_done");
-  host.emit("vote", { roomId: "T6", votedId: guest.id });
-  guest.emit("vote", { roomId: "T6", votedId: host.id });
-  const res = await once(host, "reveal_results");
-  const before = JSON.stringify(res.points);
-  let second = false;
-  host.on("reveal_results", () => (second = true));
-  for (let i = 0; i < 5; i++) host.emit("vote", { roomId: "T6", votedId: guest.id });
-  await wait(200);
-  assert.equal(second, false);
-  assert.equal(before, JSON.stringify(res.points));
+test("imposteur : pas de revote après la révélation, scores non gonflés", async () => {
+  const all = await t.lobby(3);
+  await t.startRound(all);
+  await t.voteAll(all, (p) => all.find((q) => q !== p).pid);
+  const res = await next(all[0].c, "reveal_results");
+  assert.ok(!("points" in res), "scores envoyés une seule fois");
+  const before = JSON.stringify(res.scores);
+  for (let i = 0; i < 4; i++) all[0].c.emit("vote", { votedId: all[1].pid });
+  await quiet(all[0].c, "reveal_results", 200);
+  assert.equal(JSON.stringify(res.scores), before);
 });
 
 test("imposteur : un joueur qui part pendant les votes ne bloque pas la manche", async () => {
-  const [host, g1, g2] = await lobby("T7", 3);
-  host.emit("start_round", "T7");
-  await once(host, "next_turn");
-  host.emit("force_vote", "T7");
-  await once(g1, "all_hints_done");
-  host.emit("vote", { roomId: "T7", votedId: g1.id });
-  g1.emit("vote", { roomId: "T7", votedId: g2.id });
-  const p = once(host, "reveal_results");
-  g2.close(); // g2 part sans voter : plus personne à attendre
-  const res = await p;
-  assert.equal(res.players.length >= 2, true);
+  const all = await t.lobby(3);
+  await t.startRound(all);
+  all[0].c.emit("force_vote");
+  await next(all[1].c, "all_hints_done");
+  all[0].c.emit("vote", { votedId: all[1].pid });
+  all[1].c.emit("vote", { votedId: all[2].pid });
+  await wait(50);
+  all[2].c.emit("imp:leave", { forfeit: true });
+  const res = await next(all[0].c, "reveal_results");
+  assert.ok(res.players.length >= 2);
 });
 
 test("imposteur : quand l'hôte part, le nouvel hôte est prévenu et peut forcer le vote", async () => {
-  const [host, g1] = await lobby("T8", 2);
-  host.emit("start_round", "T8");
-  await once(host, "next_turn");
-  const hc = once(g1, "host_changed");
-  host.close();
-  assert.equal((await hc).phase, "hints");
-  const done = once(g1, "all_hints_done");
-  g1.emit("force_vote", "T8");
-  await done;
+  const { all } = await t.startUntil(3, (a, info) => info.impostor !== a[0] && info.white !== a[0]);
+  const [host, g1] = all;
+  host.c.emit("imp:leave", { forfeit: true });
+  const hc = await next(g1.c, "host_changed");
+  assert.equal(hc.phase, "hints");
+  g1.c.emit("force_vote");
+  await next(g1.c, "all_hints_done");
 });
 
 test("imposteur : si le joueur dont c'est le tour part, le tour passe au suivant", async () => {
-  const [host, g1, g2] = await lobby("T9", 3);
-  host.emit("start_round", "T9");
-  await once(host, "next_turn");
-  const next = once(g1, "next_turn");
-  host.close(); // c'était son tour
-  await next;
-  g1.emit("submit_hint", { roomId: "T9", hint: "ok" });
-  await once(g2, "hint_submitted");
+  const { all, ok: first } = await t.startUntil(4, async (a, info) => {
+    const turn = await next(a[0].c, "next_turn");
+    const s = a.find((p) => p.pid === turn.playerId);
+    return s !== info.impostor && s !== info.white ? s : null;
+  });
+  all.forEach((p) => t.drain(p.c));
+  first.c.emit("imp:leave", { forfeit: true });
+  const rest = all.find((p) => p !== first);
+  const turn = await next(rest.c, "next_turn");
+  assert.notEqual(turn.playerId, first.pid);
 });
 
 test("salles isolées par jeu : un salon imposteur ne reçoit pas le karaoké", async () => {
-  const imp = await client();
-  imp.emit("join_or_create_room", { roomId: "SAME", username: "i" });
-  await once(imp, "room-created");
-  let leak = false;
-  for (const ev of ["karaoke_room_update", "karaoke_song_selected"]) imp.on(ev, () => (leak = true));
-  const kk = await client();
-  kk.emit("karaoke_join", { roomId: "SAME", username: "k" });
-  await once(kk, "karaoke_joined");
-  kk.emit("karaoke_select_song", { roomId: "SAME", song: { title: "t", artist: "a" } });
-  await once(kk, "karaoke_song_selected");
+  const imp = await t.createRoom("i");
+  const kk = await t.client();
+  kk.emit("karaoke_join", { roomId: imp.code, username: "k" });
+  await next(kk, "karaoke_joined");
+  kk.emit("karaoke_select_song", { roomId: imp.code, song: { title: "t", artist: "a" } });
+  await next(kk, "karaoke_song_selected");
   await wait(150);
-  assert.equal(leak, false);
+  assert.ok(!imp.c.q.some((e) => e[0].startsWith("karaoke")));
 });
 
-test("un socket n'occupe qu'une salle à la fois (pas de création en masse)", async () => {
-  const c = await client();
-  for (let i = 0; i < 5; i++) c.emit("join_or_create_room", { roomId: "M" + i, username: "u" });
-  await wait(300);
+test("un socket n'occupe qu'une salle imposteur à la fois", async () => {
+  const c = await t.client();
+  const codes = [];
+  for (let i = 0; i < 5; i++) {
+    c.emit("imp:create", { username: "u" });
+    codes.push((await next(c, "imp:joined")).code);
+  }
   const { rooms } = require("../server").io.sockets.adapter;
-  const mine = ["M0", "M1", "M2", "M3", "M4"].filter((r) => rooms.has("imp:" + r));
-  assert.deepEqual(mine, ["M4"]);
+  assert.deepEqual(codes.filter((k) => rooms.has("imp:" + k)), [codes[4]]);
 });
 
-test("salle avec caractères interdits : l'id nettoyé est renvoyé et utilisable", async () => {
-  const c = await client();
-  c.emit("join_or_create_room", { roomId: "a<b", username: "u" });
-  const room = await once(c, "room-created");
-  assert.equal(room.id, "ab");
-  const p = once(c, "round_started");
-  c.emit("start_round", room.id);
-  await p;
+test("le roomId envoyé par le client est ignoré (salle = celle du socket)", async () => {
+  const a = await t.lobby(3);
+  const b = await t.lobby(3);
+  b[0].c.emit("start_round", { roomId: a[0].code });
+  b[0].c.emit("start_round", a[0].code);
+  await next(b[1].c, "round_started");
+  await quiet(a[1].c, "round_started", 150);
 });
 
-test("karaoké : chanson invalide → erreur renvoyée, avance bornée", async () => {
-  const [host] = await (async () => {
-    const c = await client();
-    c.emit("karaoke_join", { roomId: "K9", username: "h" });
-    await once(c, "karaoke_joined");
-    return [c];
-  })();
-  const err = once(host, "karaoke_error");
-  host.emit("karaoke_select_song", { roomId: "K9", song: { nope: 1 } });
-  assert.match(await err, /invalide/i);
+test("karaoké : chanson invalide → erreur renvoyée", async () => {
+  const c = await t.client();
+  c.emit("karaoke_join", { roomId: "K9", username: "h" });
+  await next(c, "karaoke_joined");
+  c.emit("karaoke_select_song", { roomId: "K9", song: { nope: 1 } });
+  assert.match(await next(c, "karaoke_error"), /invalide/i);
 });

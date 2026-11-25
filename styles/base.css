@@ -99,6 +99,8 @@ a { color: var(--monde-accent); }
 a:hover { color: var(--monde-texte); }
 :focus-visible { outline: 3px solid var(--monde-focus); outline-offset: 3px; }
 .sur-papier :focus-visible { outline-color: var(--faience); } /* 4,75:1 sur parchemin */
+/* Cibles de focus programmatique (titres, conteneurs en tabindex=-1, focalisés au changement d'écran) : non interactives, pas de cadre. */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
 .lien-evitement { position: absolute; left: 12px; top: -80px; z-index: 100; padding: 12px 18px; background: var(--bouton-dor); color: var(--encre); font-weight: 800; border: var(--trait); border-radius: var(--rayon-touche); text-decoration: none; }
 .lien-evitement:focus { top: 12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -397,3 +399,18 @@ html.retour::view-transition-new(root) { animation: none; }
 .console__ariane [aria-hidden="true"] { opacity: .7; }
 a.key:hover { color: var(--encre); }
 a.key--danger:hover { color: var(--parchemin); }
+
+/* ---------- 18. Entrée de salle (javascript/salle.js : Imposteur, Gribouille, Petit Bac) ---------- */
+.jeu-montage { max-width: var(--largeur-max); margin-inline: auto; padding: var(--e-4) var(--e-4) var(--e-7); }
+.entree-salle { max-width: 480px; margin: var(--e-6) auto 0; display: flex; flex-direction: column; gap: 16px; color: var(--monde-texte); }
+.entree-salle__titre { margin: 0; font: 700 clamp(44px, 9vw, 72px)/1 var(--monde-police); }
+.entree-salle__intro { margin: 0; font-size: 18px; line-height: 1.5; color: var(--monde-texte-doux); }
+.entree-salle__reprise { display: flex; flex-direction: column; gap: 12px; padding: var(--e-4); background: var(--parchemin); color: var(--encre); }
+.entree-salle__reprise p { margin: 0; font-size: 17px; line-height: 1.5; }
+.entree-salle__reprise-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.entree-salle__reprise .key--fantome { color: var(--encre); border-color: var(--encre); }
+.entree-salle__reprise :focus-visible { outline-color: var(--faience); }
+.entree-salle__ou { margin: 0; text-align: center; font-size: 15px; color: var(--monde-texte-doux); }
+.entree-salle__rejoindre { display: flex; flex-direction: column; gap: 16px; }
+.entree-salle .field__input--code { text-align: center; }
+@media (max-width: 640px) { .entree-salle { margin-top: var(--e-4); } .entree-salle__reprise-actions .key { flex: 1 1 100%; } }

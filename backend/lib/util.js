@@ -26,11 +26,14 @@ function createRateLimiter({ capacity = 30, perSecond = 15 } = {}) {
 }
 
 // Limiteur à fenêtre fixe par clé (ex. IP) : `max` appels par `windowMs`.
+// Balayage des entrées expirées au plus une fois par fenêtre (coût amorti borné). `allow.delete(key)` oublie une clé.
 function createKeyedLimiter({ max, windowMs }) {
   const hits = new Map();
-  return function allow(key) {
+  let lastSweep = Date.now();
+  function allow(key) {
     const now = Date.now();
-    if (hits.size > 5000) {
+    if (now - lastSweep > windowMs) {
+      lastSweep = now;
       for (const [k, v] of hits) if (now - v.start > windowMs) hits.delete(k);
     }
     const h = hits.get(key);
@@ -40,7 +43,41 @@ function createKeyedLimiter({ max, windowMs }) {
     }
     h.count++;
     return h.count <= max;
-  };
+  }
+  allow.delete = (key) => hits.delete(key);
+  allow.size = () => hits.size;
+  return allow;
 }
 
-module.exports = { clean, clampInt, createRateLimiter, createKeyedLimiter };
+// IP du client : derrière le proxy Render (trust proxy = 1), dernière entrée de X-Forwarded-For ; sinon l'adresse du handshake.
+function clientIp(socket) {
+  const xff = String(socket.handshake?.headers?.["x-forwarded-for"] || "").split(",").pop().trim();
+  return xff || socket.handshake?.address || "?";
+}
+
+// Code de salle : majuscules, uniquement A-Z, 4 consonnes autorisées ; sinon null.
+function normalizeCode(value) {
+  const { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } = require("../config");
+  const code = clean(value, 10).toUpperCase().replace(/[^A-Z]/g, "");
+  if (code.length !== ROOM_CODE_LENGTH) return null;
+  for (const ch of code) if (!ROOM_CODE_ALPHABET.includes(ch)) return null;
+  return code;
+}
+
+// Comparaison de mots : sans accents ni casse, ponctuation réduite, article initial retiré.
+function normalizeWord(value) {
+  if (typeof value !== "string") return "";
+  let s = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\u2019\u2018`\u00b4]/g, "'")
+    .replace(/[-\u2010-\u2015_]/g, " ")
+    .replace(/\s*'\s*/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  const stripped = s.replace(/^(?:l'|(?:le|la|les|un|une|des) )/, "").trim();
+  return stripped || s;
+}
+
+module.exports = { clean, clampInt, createRateLimiter, createKeyedLimiter, clientIp, normalizeCode, normalizeWord };

@@ -10,9 +10,15 @@ const granRouter = (() => {
     { pattern: /^\/?$/, view: 'accueil', title: "Gran'Games" },
     { pattern: /^\/(jeux|nouveautes)$/, redirect: '#/' }, // anciennes adresses : renvoi vers l'accueil
     { pattern: /^\/profil$/, view: 'profil', title: "Ton profil, Gran'Games" },
-    // Code de salle : 4 lettres dans le design ; les salles actuelles ont un nom libre (30 car. max) tant que B1 n'est pas livré.
+    // Code de salle : 4 lettres (consonnes côté serveur ; le client accepte [A-Za-z]{4}, l'écran d'entrée valide).
     { pattern: /^\/imposteur$/, view: 'imposteur', monde: 'imposteur', css: 'imposteur', label: 'Imposteur', title: "Imposteur, Gran'Games" },
-    { pattern: /^\/imposteur\/([^/]{1,90})$/, view: 'imposteur', monde: 'imposteur', css: 'imposteur', label: 'Imposteur', title: 'Imposteur, salle {1}', params: ['code'] },
+    { pattern: /^\/imposteur\/([A-Za-z]{4})$/, upper: true, view: 'imposteur', monde: 'imposteur', css: 'imposteur', label: 'Imposteur', title: 'Imposteur, salle {1}', params: ['code'] },
+    { pattern: /^\/gribouille$/, view: 'gribouille', monde: 'gribouille', css: 'gribouille', label: 'Gribouille', title: "Gribouille, Gran'Games" },
+    { pattern: /^\/gribouille\/([A-Za-z]{4})$/, upper: true, view: 'gribouille', monde: 'gribouille', css: 'gribouille', label: 'Gribouille', title: 'Gribouille, salle {1}', params: ['code'] },
+    { pattern: /^\/petit-bac$/, view: 'petit-bac', monde: 'petit-bac', css: 'petit-bac', label: 'Petit Bac', title: "Petit Bac, Gran'Games" },
+    { pattern: /^\/petit-bac\/([A-Za-z]{4})$/, upper: true, view: 'petit-bac', monde: 'petit-bac', css: 'petit-bac', label: 'Petit Bac', title: 'Petit Bac, salle {1}', params: ['code'] },
+    { pattern: /^\/mot-cache$/, view: 'mot-cache', monde: 'mot-cache', css: 'mot-cache', label: 'Mot Caché', title: "Mot Caché, Gran'Games" },
+    { pattern: /^\/echo$/, view: 'echo', monde: 'echo', css: 'echo', label: 'Écho', title: "Écho, Gran'Games" },
     { pattern: /^\/lyrics$/, view: 'lyrics', monde: 'lyrics', css: 'lyrics', label: 'Lyrics', title: "Lyrics, Gran'Games" },
     { pattern: /^\/karaoke$/, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: "Karaoké, Gran'Games" },
     { pattern: /^\/karaoke\/salle\/([^/]{1,90})$/, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: 'Karaoké, salle {1}', params: ['code'] },
@@ -40,6 +46,7 @@ const granRouter = (() => {
       let bad = false;
       (r.params || []).forEach((p, i) => {
         try { params[p] = decodeURIComponent(m[i + 1]); } catch { bad = true; }
+        if (!bad && r.upper) params[p] = params[p].toUpperCase();
         if (!bad && params[p].length > 30) bad = true; // le serveur coupe à 30 caractères
       });
       if (bad) break;
@@ -167,6 +174,8 @@ const granRouter = (() => {
         if (old) old.hidden = true;
       }
       const section = sectionOf(route.view);
+      // Premier rendu (lien direct #/jeu/CODE) : aucune vue courante, l'accueil visible par défaut doit aussi être masqué.
+      document.querySelectorAll('[data-vue]').forEach((s) => { if (s !== section) s.hidden = true; });
       section.hidden = false;
       current = { key, route };
       paintConsole(route, path);

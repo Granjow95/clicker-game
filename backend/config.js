@@ -31,6 +31,15 @@ module.exports = {
   isOriginAllowed,
   MAX_BUFFER_BYTES: 200 * 1024, // une chanson (paroles) tient largement dedans
   MAX_ROOMS: 500,
+  // Plafonds par IP (surchargeables par env ; en test tout vient de 127.0.0.1).
+  ROOM_IP_ACTIONS_PER_MIN: Number.parseInt(process.env.ROOM_IP_ACTIONS_PER_MIN, 10) || 60,
+  ROOM_IP_MAX_ROOMS: Number.parseInt(process.env.ROOM_IP_MAX_ROOMS, 10) || 5,
   MAX_IMPOSTEUR_PLAYERS: 8,
   MAX_KARAOKE_PLAYERS: 10,
+  MAX_GRIBOUILLE_PLAYERS: 8,
+  MAX_PETITBAC_PLAYERS: 10,
+  ROOM_CODE_ALPHABET: "BCDFGHJKLMNPQRSTVWXZ",
+  ROOM_CODE_LENGTH: 4,
+  // Période de grâce avant retrait d'un joueur déconnecté en partie (surchargeable pour les tests).
+  RESUME_GRACE_MS: Number.parseInt(process.env.RESUME_GRACE_MS, 10) || 120000,
 };
