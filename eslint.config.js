@@ -10,9 +10,8 @@ const SHARED_GLOBALS = {
   topSongsWithCache: "readonly", searchWithCache: "readonly", getLyricsWithCache: "readonly",
   getSyncedLyrics: "readonly", _tryLyricsOvh: "readonly", _tryLrclibDirect: "readonly",
   _cacheStoreLyrics: "readonly", karaokeAdvance: "readonly", karaokeToggleAutoPlay: "readonly",
-  // Données fictives (demo-data.js) pour Plus ou Moins et Course de frappe
-  DEMO_POM_THEMES: "readonly", DEMO_POM_RECORD: "readonly", DEMO_POM_SOURCE: "readonly",
-  DEMO_FRAPPE_CODE: "readonly", DEMO_FRAPPE_PHRASES: "readonly", DEMO_FRAPPE_JOUEURS: "readonly",
+  // Données des jeux solo (pom-donnees.js, frappe-donnees.js)
+  POM_THEMES: "readonly", POM_SOURCE: "readonly", FRAPPE_PHRASES: "readonly",
   // Seule globale d'Imposteur : lue par granAuth.inGame() (auth.js)
   currentRoomId: "writable",
 };

@@ -1,5 +1,6 @@
 const { createRoomRegistry } = require("../lib/rooms");
 const { clean, clampInt, createRateLimiter, normalizeWord } = require("../lib/util");
+const { recordRanking } = require("../lib/results");
 const { MAX_GRIBOUILLE_PLAYERS } = require("../config");
 const { GRIBOUILLE_WORDS } = require("./gribouille-mots");
 
@@ -241,8 +242,10 @@ function createGribouille(io, results, opts = {}) {
   function gameOver(room) {
     const st = getSt(room);
     clearTimers(st);
+    const already = st.phase === "over";
     st.phase = "over";
     resetTurn(st);
+    if (!already) recordRanking(results, { game: "gribouille", players: room.players, scoreOf: (pid) => st.scores[pid], rounds: st.round });
     reg.toRoom(room, "game_over", { ranking: ranking(room, st) });
   }
 

@@ -149,10 +149,9 @@ input:checked + .kar-option__pastille { background: #6E1A1F; }
 .kk-gap-count { min-height: 1em; font: 700 clamp(48px, 8vw, 96px) var(--police-pixel); line-height: 1; color: var(--bouton-dor); }
 .kk-gap-label { font-size: 16px; font-weight: 600; color: var(--monde-texte-doux); }
 
-/* Lecteur YouTube en fond de scène (#kk-yt-host créé par karaoke.js, non interactif, assombri) */
-#kk-yt-host { display: none; position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-#kk-yt-host iframe { position: absolute; top: 50%; left: 50%; width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.78vh; transform: translate(-50%, -50%); border: 0; pointer-events: none; }
-#kk-yt-host::after { content: ""; position: absolute; inset: 0; background: var(--kar-voile); pointer-events: none; }
+/* Lecteur YouTube audio seul : invisible, hors écran (pas de display:none une fois affiché, l'API l'exige) */
+#kk-yt-host { display: none; position: fixed; left: -9999px; top: 0; width: 200px; height: 200px; opacity: 0; overflow: hidden; pointer-events: none; }
+#kk-yt-host iframe, #kk-yt-player { width: 200px; height: 200px; border: 0; pointer-events: none; }
 
 /* Bouton de secours quand l'autoplay avec son est bloqué */
 .kk-audio-start { display: none; position: absolute; bottom: 18px; left: 0; right: 0; margin-inline: auto; width: max-content; z-index: 8; }
@@ -184,3 +183,8 @@ input:checked + .kar-option__pastille { background: #6E1A1F; }
 @media (prefers-reduced-motion: reduce) {
   .ampoules--clignote, .kk-lyric-curr, .kk-gap-pulse { animation: none; }
 }
+
+/* Entrée de salle (granSalle) et garde de sortie */
+#kk-entree { max-width: 520px; width: 100%; }
+.kar-garde__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.public__joueur--absent { opacity: .55; }

@@ -164,8 +164,6 @@ test("re-join du même code en pleine manche : snapshot renvoyé, joueur non ret
   const j = await next(me.c, "imp:joined");
   assert.equal(j.you, me.pid);
   assert.equal(j.state.phase, "hints");
-  me.c.emit("join_or_create_room", { roomId: me.code, username: "autre" });
-  assert.equal((await next(me.c, "imp:joined")).you, me.pid);
   await quiet(all[0].c, "reveal_results", 250);
   await quiet(all[0].c, "imp:error", 50);
 });

@@ -1,11 +1,11 @@
 // Reprise de partie : mémorise dans localStorage la place du joueur dans une salle (ADR 0003 §4).
 // Globale : granReprise. Aucune socket ici : chaque jeu appelle save/touch/clear.
-// Clé : granGames:reprise:<prefix> (imp, gri, pb) = { code, pid, token, username, exp, max }.
+// Clé : granGames:reprise:<prefix> (imp, gri, pb, kk) = { code, pid, token, username, exp, max }.
 // exp = fin de la période de grâce (repoussée par touch), max = plafond absolu (jointure + 6 h).
 const granReprise = (() => {
   const PREFIX_CLE = 'granGames:reprise:';
   const PLAFOND_MS = 6 * 60 * 60 * 1000;
-  const PREFIXES = ['imp', 'gri', 'pb'];
+  const PREFIXES = ['imp', 'gri', 'pb', 'kk'];
 
   const cle = (prefix) => PREFIX_CLE + prefix;
   const lire = (prefix) => {

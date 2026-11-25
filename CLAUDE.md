@@ -1,6 +1,6 @@
 # granGames
 
-9 mini-jeux : Imposteur, Gribouille, Petit Bac, Karaoké en multi ; Lyrics, Mot Caché, Écho en solo ; Plus ou Moins et Course de frappe en aperçu sur données fictives. Front : HTML/CSS/JS vanilla (`index.html`, `javascript/`, `styles/`). Back : `backend/server.js` (Express 5 + Socket.io 4, `cd backend && npm start`).
+9 mini-jeux : Imposteur, Gribouille, Petit Bac, Karaoké en multi ; Lyrics, Mot Caché, Écho, Plus ou Moins et Course de frappe en solo. Front : HTML/CSS/JS vanilla (`index.html`, `javascript/`, `styles/`). Back : `backend/server.js` (Express 5 + Socket.io 4, `cd backend && npm start`).
 
 ## Équipe
 
@@ -24,7 +24,7 @@ Sous-agents définis dans `.claude/agents/`.
 
 - Le client est en scripts classiques qui partagent des globales (ordre des `<script>` dans `index.html`, config dans `javascript/config.js`). Toute nouvelle globale partagée doit être déclarée dans `eslint.config.js`.
 - Le serveur ne fait jamais confiance à l'identité envoyée par le client. Les actions de l'hôte sont vérifiées côté serveur. Toute chaîne reçue passe par `clean()`.
-- Salles des jeux multi (Imposteur, Gribouille, Petit Bac) : `backend/lib/rooms.js` (`createRoomRegistry`), codes de 4 lettres générés par le serveur, événements préfixés `imp:` / `gri:` / `pb:` (create/join/resume/leave). Identité = `pid` serveur obtenu par `reg.bySocket(socket)` (plus jamais `socket.id` dans les charges utiles) ; hôte = `room.hostPid`. Jeton de reprise secret (sha256 côté serveur), période de grâce `RESUME_GRACE_MS`. Le karaoké garde son ancien système de salle (`kk:`).
+- Salles des jeux multi (Imposteur, Gribouille, Petit Bac, Karaoké) : `backend/lib/rooms.js` (`createRoomRegistry`), codes de 4 lettres générés par le serveur, événements préfixés `imp:` / `gri:` / `pb:` / `kk:` (create/join/resume/leave). Identité = `pid` serveur obtenu par `reg.bySocket(socket)` (plus jamais `socket.id` dans les charges utiles) ; hôte = `room.hostPid`. Jeton de reprise secret (sha256 côté serveur), période de grâce `RESUME_GRACE_MS`.
 - Client : écran d'entrée commun `granSalle.mount` (`javascript/salle.js`), stockage de reprise `granReprise` (`javascript/reprise.js`). Les nouveaux jeux injectent leur markup depuis leur JS dans `section[data-vue] .jeu-montage`.
 - Minuteurs serveur : toujours `unref()`.
 - Côté client, tout pseudo ou indice affiché via `innerHTML` doit passer par `esc()` (ou utiliser `textContent`).

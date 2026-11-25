@@ -329,9 +329,9 @@ dialog.fenetre.ferme { opacity: 0; transform: scale(.96); transition-duration: v
 }
 
 /* ---------- 14. Transitions entre écrans ---------- */
-/* Écran -> écran dans un jeu : fondu + 8 px + flou 2 px, 200 ms */
+/* Écran -> écran dans un jeu : fondu + 8 px, 200 ms */
 .ecran { animation: ecran-entre var(--d-ecran) var(--ease-out) both; }
-@keyframes ecran-entre { from { opacity: 0; transform: translateY(8px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes ecran-entre { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 /* Arrivée d'un joueur dans une liste */
 .arrive { animation: arrive 200ms var(--ease-out) both; }
 @keyframes arrive { from { opacity: 0; transform: translateY(8px); } }

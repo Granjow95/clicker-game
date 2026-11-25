@@ -1,29 +1,30 @@
-# Textes des bandeaux de l'accueil (lot B)
+# Textes des bandeaux de l'accueil
 
-Gabarit : 2 phrases, 90 à 140 caractères (espace entre phrases compris), tutoiement, sentence case, sans tiret long ni mot interdit. Repères : forme fixe `max N joueurs · Type`, jamais de durée. Les nombres viennent de `backend/config.js` ou du client.
+Gabarit : 2 phrases, 90 à 140 caractères, tutoiement, sentence case, sans tiret long ni mot interdit. Repères : nombre de joueurs (pour les jeux multi, bornes issues de `backend/config.js` et des minimums serveur), puis type ; durée indicative pour les jeux solo courts. Les jeux sont rangés en deux groupes : « On joue à plusieurs » et « On joue tout seul ».
 
-| Jeu | Titre | Description (phrases / total) | Repères |
-|---|---|---|---|
-| Imposteur | Imposteur | Chacun reçoit le même mot, sauf un. Donne un indice et démasque l’imposteur avant qu’il te démasque. (35 + 64 / 100) | `max 8 joueurs` · `Bluff` |
-| Lyrics | Lyrics | Tous les mots de la chanson sont cachés. Tape ceux que tu connais pour les dévoiler un à un. (40 + 51 / 92) | `Solo` |
-| Karaoké | Karaoké | Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps. (64 + 53 / 118) | `max 10 joueurs` · `Coopératif` |
-| Plus ou Moins | Plus ou Moins | Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net. (49 + 42 / 92) | `Solo` · `Aperçu` |
-| Course de frappe | Course de frappe | Tape la phrase plus vite que les autres voitures. Une faute te bloque tant que tu ne l’as pas corrigée. (49 + 53 / 103) | `Course` · `Aperçu` |
+## On joue à plusieurs
 
-## Types tranchés (d'après le code)
+| Jeu | Description | Repères |
+|---|---|---|
+| Imposteur | Chacun reçoit le même mot, sauf un. Donne un indice et démasque l’imposteur avant qu’il te démasque. | `3 à 8 joueurs` · `Bluff` · `Mr White` |
+| Gribouille | Un joueur dessine le mot. Les autres devinent dans le chat, le plus rapide gagne. | `2 à 8 joueurs` · `Dessin` |
+| Petit Bac | Une lettre, des catégories, un chrono. Les réponses valides et uniques rapportent des points. | `2 à 10 joueurs` · `Mots` |
+| Karaoké | Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps. | `Solo ou salle` · `jusqu’à 10 joueurs` · `Coopératif` |
 
-- Imposteur : Bluff. Mot commun, un imposteur, indices puis vote (`imposteur.js`, `MAX_JOUEURS = 8` = `MAX_IMPOSTEUR_PLAYERS`).
-- Lyrics : Solo. Aucun socket, un seul joueur devine les mots d'une chanson (paroles réelles via lrclib/ovh), donc pas « Aperçu ».
-- Karaoké : Coopératif. En salle, l'hôte fait défiler les lignes (`karaoke_advance`) et chacun chante la même chanson, sans score ni adversaire ; il existe aussi un mode solo. Max 10 = `MAX_KARAOKE_PLAYERS`.
-- Plus ou Moins : Solo. Série et record personnels, données de `demo-data.js` (fictives), donc « Aperçu ». Pas de max joueurs.
-- Course de frappe : Course (pas Duel : une salle compte plusieurs voitures, pas deux). Aucun socket, les autres voitures viennent de `DEMO_FRAPPE_JOUEURS` (4 joueurs fictifs), donc « Aperçu ». Pas de nombre affiché : aucune limite réelle dans le code.
+## On joue tout seul
 
-## Points à valider
+| Jeu | Description | Repères |
+|---|---|---|
+| Lyrics | Tous les mots de la chanson sont cachés. Tape ceux que tu connais pour les dévoiler un à un. | `Solo` · `~5 min` |
+| Mot Caché | Trouve le mot de 5 lettres en 6 essais. Les couleurs te disent où chercher. | `Solo` · `~5 min` |
+| Écho | Retiens la séquence de couleurs et de sons, puis rejoue-la. Elle s’allonge à chaque tour. | `Solo` · `~3 min` · `Mémoire` |
+| Plus ou Moins | Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net. | `Solo` · `Culture G` |
+| Course de frappe | Tape la phrase plus vite que les robots et que ton propre record. Une faute te bloque tant que tu ne l’as pas corrigée. | `Solo` · `Rapidité` |
 
-- Le type « Course » s'ajoute aux types listés dans l'ADR (Bluff, Coopératif, Duel, Solo) ; si refusé, repli sur `Solo · Aperçu`.
-- Le test du lot A ne compte que les repères Imposteur (8) et Karaoké (10) : cohérent avec ce tableau.
-- Karaoké propose aussi du solo : si le propriétaire préfère l'afficher, `Solo` en second repère.
+## Sources des repères
 
-## Autres textes redondants de l'accueil
-
-Non audités dans ce lot (périmètre : les 5 descriptions). À examiner au lot D : `.jeux__compte`, `.etagere__glisse`, `.rejoindre__texte`. Ils disparaissent avec `.etagere` et `section.jeux` ; `.rejoindre__texte` est à garder s'il reste utile au formulaire « Rejoindre ».
+- Imposteur : `MAX_IMPOSTEUR_PLAYERS = 8`, au moins 3 joueurs connectés pour lancer, Mr White à partir de 4 (`backend/games/imposteur.js`).
+- Gribouille : `MAX_GRIBOUILLE_PLAYERS = 8`, au moins 2 joueurs. Petit Bac : `MAX_PETITBAC_PLAYERS = 10`, au moins 2.
+- Karaoké : `MAX_KARAOKE_PLAYERS = 10`, salle sur le registre commun (`kk:*`), l'hôte fait défiler les lignes ; mode solo disponible.
+- Plus ou Moins : valeurs arrondies de culture générale (`javascript/pom-donnees.js`), record dans le navigateur.
+- Course de frappe : solo contre trois robots et le fantôme de ton record (`javascript/frappe-donnees.js`).

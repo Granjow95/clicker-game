@@ -1,7 +1,7 @@
 const { clean, createRateLimiter, createKeyedLimiter } = require("./util");
 const { getSupabase } = require("./supabase");
 
-const GAMES = new Set(["imposteur", "lyrics", "karaoke"]);
+const GAMES = new Set(["imposteur", "lyrics", "karaoke", "gribouille", "petit-bac"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const MAX_SCORE = 1000; // plafond réaliste, toutes parties confondues
@@ -77,4 +77,38 @@ function createResults(getClient = getSupabase) {
   return { record, registerLyrics };
 }
 
-module.exports = { createResults, cleanMeta };
+// Au moins 2 comptes (userId) distincts parmi les joueurs : un compte + des invités ne suffit pas.
+function hasDistinctAccounts(players) {
+  const ids = new Set();
+  for (const p of players) if (p && p.userId) ids.add(p.userId);
+  return ids.size >= 2;
+}
+
+// Fin de partie classée (Gribouille, Petit Bac) : une ligne par compte, rien sous 2 identités distinctes.
+// players : { pid, userId } ; scoreOf(pid) -> score final. Gagnant = meilleur score (ex æquo compris).
+function recordRanking(results, { game, players, scoreOf, rounds }) {
+  if (!results || typeof results.record !== "function") return;
+  if (!hasDistinctAccounts(players)) return;
+  const identities = new Set(players.map((p) => p.userId || p.pid));
+  const score = (p) => scoreOf(p.pid) || 0;
+  const best = Math.max(...players.map(score));
+  const byUser = new Map(); // un seul enregistrement par compte : le meilleur score
+  for (const p of players) {
+    if (!p.userId) continue;
+    const cur = byUser.get(p.userId);
+    if (!cur || score(p) > score(cur)) byUser.set(p.userId, p);
+  }
+  for (const [userId, p] of byUser) {
+    const sc = score(p);
+    results.record({
+      userId,
+      game,
+      score: sc,
+      won: best > 0 && sc === best,
+      rounds,
+      meta: { place: 1 + players.filter((q) => score(q) > sc).length, players: identities.size },
+    });
+  }
+}
+
+module.exports = { createResults, cleanMeta, recordRanking, hasDistinctAccounts };

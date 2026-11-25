@@ -6,7 +6,12 @@
     <title>Gran'Games</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Pixelify+Sans:wght@400;600;700&family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://cdn.socket.io" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Pixelify+Sans:wght@400;600;700&display=swap" />
+    <!-- Polices des cartouches (accueil) : feuille non bloquante, chargée après le premier rendu -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap" /></noscript>
     <link rel="stylesheet" href="styles/base.css" />
     <link rel="stylesheet" href="styles/main-menu.css" />
     <link rel="stylesheet" href="styles/compte.css" />
@@ -70,7 +75,7 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-imposteur-titre">Imposteur</h3>
                   <p class="bandeau__desc" id="b-imposteur-desc">Chacun reçoit le même mot, sauf un. Donne un indice et démasque l’imposteur avant qu’il te démasque.</p>
-                  <ul class="bandeau__reperes" id="b-imposteur-reperes"><li class="chip">max 8 joueurs</li><li class="chip">Bluff</li></ul>
+                  <ul class="bandeau__reperes" id="b-imposteur-reperes"><li class="chip">3 à 8 joueurs</li><li class="chip">Bluff</li><li class="chip">Mr White</li></ul>
                 </div>
               </a>
             </li>
@@ -91,7 +96,7 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-gribouille-titre">Gribouille</h3>
                   <p class="bandeau__desc" id="b-gribouille-desc">Un joueur dessine le mot. Les autres devinent dans le chat, le plus rapide gagne.</p>
-                  <ul class="bandeau__reperes" id="b-gribouille-reperes"><li class="chip">max 8 joueurs</li><li class="chip">Dessin</li></ul>
+                  <ul class="bandeau__reperes" id="b-gribouille-reperes"><li class="chip">2 à 8 joueurs</li><li class="chip">Dessin</li></ul>
                 </div>
               </a>
             </li>
@@ -112,7 +117,7 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-petit-bac-titre">Petit Bac</h3>
                   <p class="bandeau__desc" id="b-petit-bac-desc">Une lettre, des catégories, un chrono. Les réponses valides et uniques rapportent des points.</p>
-                  <ul class="bandeau__reperes" id="b-petit-bac-reperes"><li class="chip">max 10 joueurs</li><li class="chip">Mots</li></ul>
+                  <ul class="bandeau__reperes" id="b-petit-bac-reperes"><li class="chip">2 à 10 joueurs</li><li class="chip">Mots</li></ul>
                 </div>
               </a>
             </li>
@@ -133,7 +138,7 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-karaoke-titre">Karaoké</h3>
                   <p class="bandeau__desc" id="b-karaoke-desc">Lance une chanson et suis les paroles qui défilent. En salle, tout le monde chante la même chanson en même temps.</p>
-                  <ul class="bandeau__reperes" id="b-karaoke-reperes"><li class="chip">Solo ou salle</li><li class="chip">max 10 joueurs</li><li class="chip">Coopératif</li></ul>
+                  <ul class="bandeau__reperes" id="b-karaoke-reperes"><li class="chip">Solo ou salle</li><li class="chip">jusqu’à 10 joueurs</li><li class="chip">Coopératif</li></ul>
                 </div>
               </a>
             </li>
@@ -207,14 +212,10 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-echo-titre">Écho</h3>
                   <p class="bandeau__desc" id="b-echo-desc">Retiens la séquence de couleurs et de sons, puis rejoue-la. Elle s’allonge à chaque tour.</p>
-                  <ul class="bandeau__reperes" id="b-echo-reperes"><li class="chip">Solo</li></ul>
+                  <ul class="bandeau__reperes" id="b-echo-reperes"><li class="chip">Solo</li><li class="chip">~3 min</li><li class="chip">Mémoire</li></ul>
                 </div>
               </a>
             </li>
-          </ul>
-            <p class="groupe__prepa" id="g-prepa">En préparation</p>
-            <p class="groupe__sous">Pas tout à fait prêts. À tester, pas à croire.</p>
-          <ul class="bandeaux bandeaux--prepa" aria-labelledby="g-prepa">
             <li>
               <a class="bandeau bandeau--plus-ou-moins" href="#/plus-ou-moins" aria-labelledby="b-plus-ou-moins-titre" aria-describedby="b-plus-ou-moins-desc b-plus-ou-moins-reperes">
                 <div class="bandeau__cart" aria-hidden="true">
@@ -232,7 +233,7 @@
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-plus-ou-moins-titre">Plus ou Moins</h3>
                   <p class="bandeau__desc" id="b-plus-ou-moins-desc">Compare deux choses et dis laquelle en a le plus. Une seule erreur et ta série s’arrête net.</p>
-                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip chip--apercu">Aperçu</li></ul>
+                  <ul class="bandeau__reperes" id="b-plus-ou-moins-reperes"><li class="chip">Solo</li><li class="chip">Culture G</li></ul>
                 </div>
               </a>
             </li>
@@ -252,8 +253,8 @@
                 </div>
                 <div class="bandeau__texte">
                   <h3 class="bandeau__titre" id="b-frappe-titre">Course de frappe</h3>
-                  <p class="bandeau__desc" id="b-frappe-desc">Tape la phrase plus vite que les autres voitures. Une faute te bloque tant que tu ne l’as pas corrigée.</p>
-                  <ul class="bandeau__reperes" id="b-frappe-reperes"><li class="chip">Rapidité</li><li class="chip chip--apercu">Aperçu</li></ul>
+                  <p class="bandeau__desc" id="b-frappe-desc">Tape la phrase plus vite que les robots et que ton propre record. Une faute te bloque tant que tu ne l’as pas corrigée.</p>
+                  <ul class="bandeau__reperes" id="b-frappe-reperes"><li class="chip">Solo</li><li class="chip">Rapidité</li></ul>
                 </div>
               </a>
             </li>
@@ -347,7 +348,7 @@
             <section aria-labelledby="h-stats" class="profil__bloc">
               <h2 id="h-stats" class="titre-section titre-section--profil">Par jeu</h2>
               <div class="stats" id="p-stats"></div>
-              <p class="profil__note" id="p-note">Plus ou Moins et Course de frappe n'enregistrent aucune partie : leur record reste dans ce navigateur et n'apparaît pas ici.</p>
+              <p class="profil__note" id="p-note">Mot Caché, Écho, Plus ou Moins et Course de frappe gardent leur record dans ce navigateur : il n'apparaît pas ici.</p>
             </section>
             <section aria-labelledby="h-recentes" class="profil__bloc">
               <h2 id="h-recentes" class="titre-section titre-section--profil">Parties récentes</h2>
@@ -362,6 +363,8 @@
                     <option value="imposteur">Imposteur</option>
                     <option value="lyrics">Lyrics</option>
                     <option value="karaoke">Karaoké</option>
+                    <option value="gribouille">Gribouille</option>
+                    <option value="petit-bac">Petit Bac</option>
                   </select>
                 </label>
               </div>
@@ -536,29 +539,17 @@
             Modes
           </button>
         </div>
-        <h1 class="kar-titre kar-titre--moyen">Salle</h1>
-
-        <div id="kk-join-form" class="kar-formulaire">
-          <div class="field">
-            <label class="field__label" for="kk-username">Ton pseudo</label>
-            <input class="field__input" id="kk-username" type="text" maxlength="20" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label class="field__label" for="kk-roomcode">Code de la salle</label>
-            <input class="field__input" id="kk-roomcode" type="text" maxlength="6" autocomplete="off" aria-describedby="kk-roomcode-aide" />
-            <span class="field__aide" id="kk-roomcode-aide">Laisse vide pour créer une salle.</span>
-          </div>
-          <p id="kk-join-error" class="field__erreur" role="alert"></p>
-          <button type="button" class="key key--principal" onclick="karaokeJoinRoom()">Rejoindre la salle</button>
-        </div>
+        <!-- Entrée de salle : monté par granSalle (pseudo, créer, rejoindre, reprendre) -->
+        <div id="kk-entree"></div>
 
         <div id="kk-lobby" class="kar-salon">
+          <h1 class="kar-titre kar-titre--moyen">Salle</h1>
           <div class="kar-code">
             <div class="kar-code__bloc">
               <span class="kar-code__label">Code de la salle</span>
               <strong id="kk-room-code-text" class="kar-code__valeur"></strong>
             </div>
-            <button type="button" class="key key--compact key--principal kk-copy-btn" onclick="kk_copyCode()">Copier</button>
+            <button type="button" class="key key--compact key--principal kk-copy-btn" onclick="kk_copyLink()">Copier le lien</button>
           </div>
           <h2 id="kk-players-title" class="kar-sous-titre">Dans la salle</h2>
           <ul id="kk-players-list" class="joueurs kar-joueurs" aria-labelledby="kk-players-title"></ul>
@@ -677,31 +668,42 @@
             <p class="kar-fin__texte">Le public est encore sous le choc. Dans le bon sens, on suppose.</p>
             <div class="kar-fin__barres" aria-hidden="true"><span></span><span></span><span></span></div>
           </div>
-          <div class="kar-fin__actions">
+          <div id="kk-end-actions" class="kar-fin__actions">
             <button type="button" onclick="karaokeRestartSong()" class="key key--principal">Recommencer</button>
-            <button type="button" onclick="karaokeExitGame()" class="key key--secondaire">Changer de musique</button>
+            <button type="button" onclick="karaokeChangeSong()" class="key key--secondaire">Changer de musique</button>
           </div>
         </div>
       </div>
 
+      <!-- Garde de sortie en chanson -->
+      <dialog id="kk-garde" class="fenetre" aria-labelledby="kk-garde-titre">
+        <div class="fenetre__tete"><h2 id="kk-garde-titre" class="fenetre__titre">Quitter la chanson ?</h2></div>
+        <div class="fenetre__corps">
+          <p>La chanson est en cours. Si tu pars, tu pourras revenir dans la salle pendant 2 minutes.</p>
+          <div class="kar-garde__actions">
+            <button type="button" class="key key--principal" onclick="kk_gardeChoix('rester')">Rester</button>
+            <button type="button" class="key key--secondaire" onclick="kk_gardeChoix('quitter')">Quitter (retour possible 2 min)</button>
+            <button type="button" class="key key--fantome" onclick="kk_gardeChoix('abandonner')">Abandonner</button>
+          </div>
+        </div>
+      </dialog>
+
       </section>
 
-      <!-- ====== Plus ou Moins : « La Une » (aperçu sur données fictives, voir javascript/demo-data.js) ====== -->
+      <!-- ====== Plus ou Moins : « La Une » (solo : robots et fantôme de record, phrases dans javascript/frappe-donnees.js) ====== -->
       <section data-vue="plus-ou-moins" class="pom" hidden>
         <div class="pom__ecran pom__depart" data-ecran="depart">
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
           <div class="pom__une"><span>Édition du jour</span><span>Prix : gratuit</span></div>
           <h1 class="pom-titre">Plus<br><mark>ou</mark><br>Moins</h1>
           <p class="pom__regle">Deux choses du quotidien. Laquelle a le plus ? Une bonne réponse prolonge la série, une erreur la termine.</p>
           <div class="pom__cases">
             <div class="pom__case pom__case--papier"><span class="pom__case-lib">Ton record</span><span class="pom__case-val" id="pom-record-depart">0</span></div>
-            <div class="pom__case"><span class="pom__case-lib">Thèmes</span><span class="pom__case-txt" id="pom-themes">Population, prix, durée, taille</span></div>
+            <div class="pom__case"><span class="pom__case-lib">Thèmes</span><span class="pom__case-txt" id="pom-themes"></span></div>
           </div>
           <button type="button" class="key key--pom key--pom-sombre pom__lancer" id="pom-lancer">Lancer une série</button>
         </div>
 
         <div class="pom__ecran pom__jeu" data-ecran="jeu" hidden>
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
           <div class="pom__entete">
             <span class="pom-serie" id="pom-serie">Série 0</span>
             <span class="pom__record">Record : <span id="pom-record-jeu">0</span></span>
@@ -730,7 +732,6 @@
         </div>
 
         <div class="pom__ecran pom__fin" data-ecran="fin" hidden>
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Rien n'est enregistré ni envoyé.</p>
           <div class="pom__une"><span>Dernière minute</span><span>Plus ou Moins</span></div>
           <h1 class="pom__fin-titre" id="pom-fin-titre">La série s'arrête à 0</h1>
           <p class="pom__explication" id="pom-explication"></p>
@@ -746,29 +747,20 @@
         </div>
       </section>
 
-      <!-- ====== Course de frappe : « Le circuit » (aperçu sur données fictives, voir javascript/demo-data.js) ====== -->
+      <!-- ====== Course de frappe : « Le circuit » (solo : robots et fantôme de record, phrases dans javascript/frappe-donnees.js) ====== -->
       <section data-vue="frappe" class="fra" hidden>
         <div class="fra__ecran fra__depart" data-ecran="depart">
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
           <div class="damier-course fra__damier" aria-hidden="true"></div>
           <h1 class="fra-titre">Course<br>de frappe_</h1>
-          <div class="onglets fra__onglets" role="tablist" aria-label="Mode">
-            <button type="button" role="tab" id="fra-tab-solo" aria-selected="false" aria-controls="fra-panneau">Solo</button>
-            <button type="button" role="tab" id="fra-tab-salle" aria-selected="true" aria-controls="fra-panneau">En salle</button>
+          <div class="fra__panneau">
+            <p class="fra__aide fra__aide--gauche">Course solo contre des robots et ton fantôme de record.</p>
+            <ol class="couloirs" id="fra-couloirs" aria-label="Adversaires"></ol>
           </div>
-          <div id="fra-panneau" role="tabpanel" class="fra__panneau">
-            <div class="fra__code" id="fra-code-bloc">
-              <div><span class="fra__code-lib">Code</span><span class="fra__code-val" id="fra-code">ZOOM</span></div>
-              <button type="button" class="key key--compact" id="fra-copier">Copier</button>
-            </div>
-            <ol class="couloirs" id="fra-couloirs" aria-label="Joueurs"></ol>
-          </div>
-          <button type="button" class="key key--fra" id="fra-pret">Je suis prêt</button>
-          <p class="fra__aide" id="fra-aide">Départ automatique quand tout le monde est prêt.</p>
+          <button type="button" class="key key--fra" id="fra-pret">Démarrer</button>
+          <p class="fra__aide" id="fra-aide">Tu pars quand tu es prêt.</p>
         </div>
 
         <div class="fra__ecran fra__decompte" data-ecran="decompte" hidden>
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
           <h1 class="sr-only">Compte à rebours</h1>
           <div class="feux" id="fra-feux" aria-hidden="true"><span></span><span></span><span></span></div>
           <p class="decompte" id="fra-chiffre" role="timer" aria-live="polite">3</p>
@@ -777,7 +769,6 @@
         </div>
 
         <div class="fra__ecran fra__course" data-ecran="course" hidden>
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
           <h1 class="sr-only">Course en cours</h1>
           <section class="piste" id="fra-piste" aria-label="Piste"></section>
           <section class="fra__phrase-bloc" aria-label="Phrase à taper">
@@ -795,15 +786,15 @@
         </div>
 
         <div class="fra__ecran fra__resultats" data-ecran="resultats" hidden>
-          <p class="bandeau-demo" role="note">Aperçu : données fictives. Aucune vraie salle, rien n'est envoyé.</p>
           <div class="damier-course fra__damier" aria-hidden="true"></div>
           <h1 class="fra-titre fra-titre--arrivee">Arrivée_</h1>
           <div class="podium" id="fra-podium" aria-hidden="true"></div>
+          <p class="fra__aide" id="fra-resume" role="status"></p>
           <ol class="fra__classement" id="fra-classement" aria-label="Classement"></ol>
           <p class="fra__aide">Vitesse en mots par minute, puis précision.</p>
           <div class="fra__actions">
-            <button type="button" class="key key--fra" id="fra-revanche">Revanche</button>
-            <a class="key key--fantome" href="#/" id="fra-quitter">Quitter la salle</a>
+            <button type="button" class="key key--fra" id="fra-revanche">Rejouer</button>
+            <a class="key key--fantome" href="#/" id="fra-quitter">Autre jeu</a>
           </div>
         </div>
       </section>
@@ -829,31 +820,25 @@
     <div class="toasts" aria-live="polite"></div>
 
     <!-- Chargement des scripts JavaScript (l'ordre compte : voir eslint.config.js) -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
     <script
+      defer
       src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"
       integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ"
       crossorigin="anonymous"
     ></script>
-    <script src="javascript/config.js"></script>
-    <script src="javascript/auth.js"></script>
-    <script src="javascript/ui.js"></script>
-    <script src="javascript/router.js"></script>
-    <script src="javascript/reprise.js"></script>
-    <script src="javascript/salle.js"></script>
-    <script src="javascript/imposteur.js"></script>
-    <script src="javascript/lyrics.js"></script>
-    <script src="javascript/karaoke.js"></script>
-    <script src="javascript/account.js"></script>
-    <script src="javascript/demo-data.js"></script>
-    <script src="javascript/plus-ou-moins.js"></script>
-    <script src="javascript/frappe.js"></script>
-    <script src="javascript/gribouille.js"></script>
-    <script src="javascript/petit-bac.js"></script>
-    <script src="javascript/mot-cache-mots.js"></script>
-    <script src="javascript/mot-cache-logique.js"></script>
-    <script src="javascript/mot-cache.js"></script>
-    <script src="javascript/echo.js"></script>
-    <script src="javascript/app.js"></script>
+    <script defer src="javascript/config.js"></script>
+    <script defer src="javascript/auth.js"></script>
+    <script defer src="javascript/ui.js"></script>
+    <script defer src="javascript/router.js"></script>
+    <script defer src="javascript/reprise.js"></script>
+    <script defer src="javascript/salle.js"></script>
+    <script defer src="javascript/imposteur.js"></script>
+    <script defer src="javascript/lyrics.js"></script>
+    <script defer src="javascript/karaoke.js"></script>
+    <script defer src="javascript/account.js"></script>
+    <script defer src="javascript/gribouille.js"></script>
+    <script defer src="javascript/petit-bac.js"></script>
+    <script defer src="javascript/app.js"></script>
   </body>
 </html>

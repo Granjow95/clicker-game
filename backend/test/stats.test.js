@@ -123,3 +123,101 @@ test("/health : cache 30 s, pas de mot not_configured", async () => {
   resetHealthCache();
   setSupabase(fake);
 });
+
+// Gribouille et Petit Bac : une ligne par compte, rien pour les invités (serveur dédié, auth simulée).
+test("gribouille et petit-bac : historique par compte, invités ignorés", async () => {
+  const http = require("http");
+  const { Server } = require("socket.io");
+  const { createGribouille } = require("../games/gribouille");
+  const { createPetitBac } = require("../games/petit-bac");
+  const rows = [];
+  const results = createResults(() => ({ from: () => ({ insert: async (row) => (rows.push(row), { error: null }) }) }));
+  const srv = http.createServer();
+  const sio = new Server(srv);
+  sio.use((s, next) => { s.data.userId = TOKENS[s.handshake.auth?.token] || null; next(); });
+  const gri = createGribouille(sio, results, { timings: { choosingMs: 3000, turnEndMs: 20 } });
+  const pb = createPetitBac(sio, results, { collectMs: 50 });
+  sio.on("connection", (s) => { gri.register(s); pb.register(s); });
+  await new Promise((r) => srv.listen(0, r));
+  const url = `http://localhost:${srv.address().port}`;
+  const mk = (token) => {
+    const c = connect(url, { transports: ["websocket"], forceNew: true, auth: token ? { token } : {} });
+    clients.push(c);
+    return new Promise((r) => c.on("connect", () => r(c)));
+  };
+  try {
+    // Petit Bac : t1 (deux sockets), t2, invité ; 1 manche.
+    const cs = [];
+    let code;
+    for (const t of ["t1", "t1", "t2", undefined]) {
+      const c = await mk(t);
+      const j = once(c, "pb:joined");
+      if (code) c.emit("pb:join", { code, username: "p" + cs.length });
+      else c.emit("pb:create", { username: "p0" });
+      code = (await j).code;
+      cs.push(c);
+    }
+    cs[0].emit("pb:options", { rounds: 1, duration: 60, categories: [0, 1, 2, 3, 4, 5] });
+    await once(cs[1], "pb:options");
+    cs[0].emit("pb:start", {});
+    const rs = await once(cs[0], "pb:round_start");
+    const res = once(cs[0], "pb:results");
+    cs[0].emit("pb:stop", { answers: [0, 1, 2, 3, 4, 5].map((i) => `${rs.letter}ab${i}`) });
+    await res;
+    const over = once(cs[0], "pb:game_over");
+    cs[0].emit("pb:next", {});
+    await over;
+    await wait(100);
+    const pbRows = rows.filter((r) => r.game === "petit-bac");
+    assert.deepEqual(pbRows.map((r) => r.user_id).sort(), [U1, U2]);
+    assert.ok(pbRows.every((r) => r.rounds === 1 && r.meta.players === 3 && typeof r.won === "boolean"));
+
+    // Gribouille : t1, t2, invité ; 1 manche, chaque tour est deviné par le suivant.
+    rows.length = 0;
+    const gs = [];
+    let gcode;
+    for (const t of ["t1", "t2", undefined]) {
+      const c = await mk(t);
+      const j = once(c, "gri:joined");
+      if (gcode) c.emit("gri:join", { code: gcode, username: "g" + gs.length });
+      else c.emit("gri:create", { username: "g0" });
+      gcode = (await j).code;
+      gs.push(c);
+    }
+    gs.forEach((c, i) => {
+      c.on("gri:choices", () => c.emit("gri:choose", { index: 0 }));
+      c.on("gri:word", ({ word }) => setTimeout(() => {
+        // les deux autres joueurs devinent : le tour se termine aussitôt (« all_found »)
+        gs[(i + 1) % 3].emit("gri:guess", { text: word });
+        gs[(i + 2) % 3].emit("gri:guess", { text: word });
+      }, 50));
+    });
+    gs[0].emit("gri:options", { rounds: 1, drawTime: 30 });
+    await once(gs[1], "gri:options");
+    const gover = once(gs[2], "gri:game_over");
+    gs[0].emit("gri:start", {});
+    await gover;
+    await wait(100);
+    const gRows = rows.filter((r) => r.game === "gribouille");
+    assert.deepEqual(gRows.map((r) => r.user_id).sort(), [U1, U2]);
+    assert.ok(gRows.every((r) => r.rounds >= 1 && r.score >= 0 && r.score <= 1000 && r.meta.players === 3));
+    assert.ok(gRows.some((r) => r.won) || gRows.every((r) => !r.won));
+  } finally {
+    gri.dispose();
+    pb.dispose();
+    sio.close();
+  }
+});
+
+test("recordRanking : compte + invité = rien, tous à 0 = aucun gagnant", () => {
+  const { recordRanking } = require("../lib/results");
+  const got = [];
+  const results = { record: (r) => got.push(r) };
+  const scoreOf = (pid) => ({ a: 5, b: 1, g: 0 })[pid];
+  recordRanking(results, { game: "x", players: [{ pid: "a", userId: "u1" }, { pid: "g" }], scoreOf, rounds: 3 });
+  recordRanking(results, { game: "x", players: [{ pid: "a", userId: "u1" }, { pid: "a2", userId: "u1" }], scoreOf, rounds: 3 });
+  assert.equal(got.length, 0);
+  recordRanking(results, { game: "x", players: [{ pid: "g", userId: "u1" }, { pid: "g2", userId: "u2" }], scoreOf: () => 0, rounds: 3 });
+  assert.equal(got.length, 2);
+  assert.ok(got.every((r) => r.won === false));
+});

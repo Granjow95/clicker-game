@@ -17,14 +17,15 @@ const granRouter = (() => {
     { pattern: /^\/gribouille\/([A-Za-z]{4})$/, upper: true, view: 'gribouille', monde: 'gribouille', css: 'gribouille', label: 'Gribouille', title: 'Gribouille, salle {1}', params: ['code'] },
     { pattern: /^\/petit-bac$/, view: 'petit-bac', monde: 'petit-bac', css: 'petit-bac', label: 'Petit Bac', title: "Petit Bac, Gran'Games" },
     { pattern: /^\/petit-bac\/([A-Za-z]{4})$/, upper: true, view: 'petit-bac', monde: 'petit-bac', css: 'petit-bac', label: 'Petit Bac', title: 'Petit Bac, salle {1}', params: ['code'] },
-    { pattern: /^\/mot-cache$/, view: 'mot-cache', monde: 'mot-cache', css: 'mot-cache', label: 'Mot Caché', title: "Mot Caché, Gran'Games" },
-    { pattern: /^\/echo$/, view: 'echo', monde: 'echo', css: 'echo', label: 'Écho', title: "Écho, Gran'Games" },
+    { pattern: /^\/mot-cache$/, js: ['mot-cache-mots.js', 'mot-cache-logique.js', 'mot-cache.js'], view: 'mot-cache', monde: 'mot-cache', css: 'mot-cache', label: 'Mot Caché', title: "Mot Caché, Gran'Games" },
+    { pattern: /^\/echo$/, js: ['echo.js'], view: 'echo', monde: 'echo', css: 'echo', label: 'Écho', title: "Écho, Gran'Games" },
     { pattern: /^\/lyrics$/, view: 'lyrics', monde: 'lyrics', css: 'lyrics', label: 'Lyrics', title: "Lyrics, Gran'Games" },
     { pattern: /^\/karaoke$/, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: "Karaoké, Gran'Games" },
-    { pattern: /^\/karaoke\/salle\/([^/]{1,90})$/, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: 'Karaoké, salle {1}', params: ['code'] },
-    { pattern: /^\/plus-ou-moins$/, view: 'plus-ou-moins', monde: 'plus-ou-moins', css: 'plus-ou-moins', label: 'Plus ou Moins', title: "Plus ou Moins, Gran'Games" },
-    { pattern: /^\/frappe$/, view: 'frappe', monde: 'frappe', css: 'frappe', label: 'Course de frappe', title: "Course de frappe, Gran'Games" },
-    { pattern: /^\/frappe\/([\w-]{1,6})$/, view: 'frappe', monde: 'frappe', css: 'frappe', label: 'Course de frappe', title: 'Course de frappe, salle {1}', params: ['code'] },
+    { pattern: /^\/karaoke\/salle\/[^/]+$/, redirect: '#/karaoke' }, // ancienne forme : renvoi vers l'entrée du jeu
+    { pattern: /^\/karaoke\/([A-Za-z]{4})$/, upper: true, view: 'karaoke', monde: 'karaoke', css: 'karaoke', label: 'Karaoké', title: 'Karaoké, salle {1}', params: ['code'] },
+    { pattern: /^\/plus-ou-moins$/, js: ['pom-donnees.js', 'plus-ou-moins.js'], view: 'plus-ou-moins', monde: 'plus-ou-moins', css: 'plus-ou-moins', label: 'Plus ou Moins', title: "Plus ou Moins, Gran'Games" },
+    { pattern: /^\/frappe$/, js: ['frappe-donnees.js', 'frappe.js'], view: 'frappe', monde: 'frappe', css: 'frappe', label: 'Course de frappe', title: "Course de frappe, Gran'Games" },
+    { pattern: /^\/frappe\/[^/]*$/, redirect: '#/frappe' }, // pas de salle à code pour ce jeu : renvoi vers l'entrée
   ];
   const NOT_FOUND = { view: '404', title: "Page introuvable, Gran'Games", params: {} };
 
@@ -42,6 +43,7 @@ const granRouter = (() => {
     for (const r of ROUTES) {
       const m = path.match(r.pattern);
       if (!m) continue;
+      if (r.redirect) return { redirect: r.redirect }; // pas de vue ni de titre sur une redirection
       const params = {};
       let bad = false;
       (r.params || []).forEach((p, i) => {
@@ -69,6 +71,26 @@ const granRouter = (() => {
       cssLinks.set(name, link);
       document.head.appendChild(link);
     });
+  }
+
+  // Scripts d'un jeu chargés à la première entrée (champ `js` de la route). Une Promise par fichier ;
+  // async = false garde l'ordre d'exécution. Ces fichiers appellent register() à leur chargement,
+  // donc avant le enter() de renderNow (qui attend cette Promise). En cas d'échec on retire la balise pour pouvoir réessayer.
+  const jsLoads = new Map(); // nom de fichier -> Promise
+  function loadJs(files) {
+    return Promise.all((files || []).map((f) => {
+      if (jsLoads.has(f)) return jsLoads.get(f);
+      const p = new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = `javascript/${f}`;
+        el.async = false;
+        el.onload = resolve;
+        el.onerror = () => { el.remove(); jsLoads.delete(f); reject(new Error(`chargement impossible : ${f}`)); };
+        document.head.appendChild(el);
+      });
+      jsLoads.set(f, p);
+      return p;
+    }));
   }
 
   function paintConsole(route, path) {
@@ -105,15 +127,21 @@ const granRouter = (() => {
     if (route.monde) document.body.dataset.monde = route.monde; else delete document.body.dataset.monde;
   }
 
-  let rendering = false; // verrou de ré-entrance : un hashchange pendant le garde est rejoué ensuite
+  // Verrou de ré-entrance. Boucle : tant qu'un hashchange est arrivé pendant le rendu, ou que location.hash
+  // diffère du hash traité, on rejoue : la vue affichée finit toujours par correspondre au hash courant.
+  let rendering = false;
   let rerender = false;
+  let handledHash = null;
   async function render() {
     if (rendering) { rerender = true; return; }
     rendering = true;
-    try { await renderNow(); } finally {
-      rendering = false;
-      if (rerender) { rerender = false; render(); }
-    }
+    try {
+      for (let i = 0; i < 10; i++) {
+        rerender = false;
+        try { await renderNow(); } catch (e) { console.error(e); }
+        if (!rerender && location.hash === handledHash) break;
+      }
+    } finally { rendering = false; }
   }
 
   // Position dans l'historique (history.state.gi) : permet de revenir sur place si le garde refuse.
@@ -128,6 +156,7 @@ const granRouter = (() => {
 
   async function renderNow() {
     const hash = location.hash;
+    handledHash = hash;
     let path;
     if (hash === '' || hash === '#') path = '/';
     else if (hash.startsWith('#/')) path = hash.slice(1);
@@ -150,6 +179,17 @@ const granRouter = (() => {
       return;
     }
 
+    // Scripts du jeu (lazy) avant le garde et le changement de vue : en cas d'échec on reste sur place puis retour accueil.
+    if (route.js) {
+      try { await loadJs(route.js); } catch (e) {
+        console.error(e);
+        granUI.toast('Impossible de charger le jeu. Réessaie.', { type: 'erreur' });
+        location.replace('#/'); // hashchange relance render() ; sans effet si on est déjà sur l'accueil
+        return;
+      }
+      if (location.hash !== hash) return; // l'adresse a changé pendant le chargement : la boucle de render() traitera la nouvelle
+    }
+
     if (leaveGuard && current) {
       const ok = await leaveGuard();
       if (!ok) { // on reste : retour sur l'entrée d'origine (retour, avant ou nouveau lien) sans empiler
@@ -166,7 +206,10 @@ const granRouter = (() => {
     const isGame = Boolean(route.monde);
     const goingBack = previousIsGame && !isGame;
 
+    let swapped = false;
     const swap = () => {
+      if (swapped) return;
+      swapped = true;
       if (current) {
         const h = handlers.get(current.route.view);
         if (h && h.leave) h.leave();
@@ -189,10 +232,23 @@ const granRouter = (() => {
 
     const animate = document.startViewTransition && isGame !== previousIsGame && !granUI.reducedMotion();
     document.documentElement.classList.toggle('retour', goingBack);
-    if (animate) await document.startViewTransition(swap).finished.catch(() => {});
-    else swap();
-    document.documentElement.classList.remove('retour');
-    previousIsGame = isGame;
+    try {
+    if (animate) {
+      // Garde-fou : une transition qui ne démarre pas (onglet en arrière-plan) ne doit jamais bloquer le routeur.
+      let timer;
+      const timeout = new Promise((res) => { timer = setTimeout(res, 1000); });
+      const vt = document.startViewTransition(swap);
+      // Une transition interrompue par la suivante rejette ready/updateCallbackDone : sans effet, on évite l'erreur console.
+      vt.ready.catch(() => {});
+      if (vt.updateCallbackDone) vt.updateCallbackDone.catch(() => {});
+      await Promise.race([vt.finished.catch(() => {}), timeout]);
+      clearTimeout(timer);
+      swap();
+    } else swap();
+    } finally { // même si enter() lève une erreur : pas de classe « retour » orpheline
+      document.documentElement.classList.remove('retour');
+      previousIsGame = isGame;
+    }
   }
 
   return {

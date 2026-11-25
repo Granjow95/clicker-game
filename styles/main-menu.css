@@ -38,11 +38,6 @@
 .groupe:first-of-type { margin-top: 24px; }
 .groupe__titre { margin: 0; font: 700 clamp(30px, 4vw, 44px)/1.05 var(--police-pixel); }
 .groupe__sous { margin: 0 0 8px; font-size: 17px; line-height: 1.5; color: var(--texte-doux-clair); }
-.groupe__prepa { margin: 32px 0 0; font: 700 22px/1.2 var(--police-pixel); color: var(--parchemin); }
-/* En préparation : bandeau atténué par ses couleurs (pas d'opacity : le contraste du texte reste >= 4,5:1) */
-.bandeaux--prepa .bandeau { background: var(--papier-ombre); border-style: dashed; box-shadow: none; }
-.bandeaux--prepa .bandeau__reperes .chip { background: var(--parchemin); }
-.bandeau__reperes .chip--apercu { background: var(--bonbon); }
 
 /* --- Les jeux : un bandeau par jeu (cartouche à gauche, texte à droite) --- */
 /* Grille : 2 colonnes dès que la place le permet (un bandeau pleine largeur laissait 2/3 de vide), 1 sur mobile. */

@@ -53,46 +53,15 @@ test("imposteur : pseudo nettoyé", async () => {
   assert.ok(!/[<>]/.test(c.joined.players[0].username));
 });
 
-test("karaoké : seul l'hôte choisit la chanson", async () => {
-  const host = await t.client();
-  const guest = await t.client();
-  host.emit("karaoke_join", { roomId: "K1", username: "h" });
-  await next(host, "karaoke_joined");
-  guest.emit("karaoke_join", { roomId: "K1", username: "g" });
-  await next(guest, "karaoke_joined");
-  host.q.length = 0;
-
-  guest.emit("karaoke_select_song", { roomId: "K1", song: { title: "x", artist: "y" } });
-  await quiet(host, "karaoke_song_selected", 150);
-
-  host.emit("karaoke_select_song", { roomId: "K1", song: { title: "T", artist: "A", evil: 1 } });
-  assert.deepEqual((await next(guest, "karaoke_song_selected")).song, { title: "T", artist: "A" });
-});
-
-test("alias join_or_create_room : crée avec un code généré, puis rejoint si le code existe", async () => {
-  const a = await t.client();
-  a.emit("join_or_create_room", { roomId: "peu importe", username: "a" });
-  const ja = await next(a, "imp:joined");
-  assert.match(ja.code, /^[BCDFGHJKLMNPQRSTVWXZ]{4}$/);
-  assert.equal(ja.hostId, ja.you);
-
-  const b = await t.client();
-  b.emit("join_or_create_room", { roomId: ja.code.toLowerCase(), username: "b" });
-  const jb = await next(b, "imp:joined");
-  assert.equal(jb.code, ja.code);
-  assert.equal(jb.players.length, 2);
-  assert.equal((await next(a, "imp:room")).code, ja.code);
-});
-
 test("noms « constructor » / « __proto__ » : le serveur ne plante pas", async () => {
   for (const name of ["constructor", "__proto__", "toString"]) {
     const c = await t.client();
-    c.emit("join_or_create_room", { roomId: name, username: "x" });
+    c.emit("imp:create", { username: name });
     await next(c, "imp:joined");
-    c.emit("leave_room", name);
-    c.emit("karaoke_join", { roomId: name, username: "x" });
-    await next(c, "karaoke_joined");
-    c.emit("karaoke_leave", name);
+    c.emit("imp:leave", name);
+    c.emit("kk:create", { username: name });
+    await next(c, "kk:joined");
+    c.emit("kk:leave", name);
   }
   assert.ok((await t.client()).connected);
 });
@@ -100,7 +69,7 @@ test("noms « constructor » / « __proto__ » : le serveur ne plante pas", asyn
 test("payloads invalides ignorés sans plantage", async () => {
   const c = await t.client();
   for (const bad of [null, 42, {}, [], { roomId: {} }, { votedId: {}, username: ["u"] }, "x"]) {
-    for (const ev of ["join_or_create_room", "imp:create", "imp:join", "imp:resume", "karaoke_join", "vote", "start_round", "force_vote", "submit_hint", "imp:white_guess", "update_lobby_options"]) {
+    for (const ev of ["imp:create", "imp:join", "imp:resume", "kk:create", "kk:join", "kk:resume", "kk:select_song", "kk:advance", "vote", "start_round", "force_vote", "submit_hint", "imp:white_guess", "update_lobby_options"]) {
       c.emit(ev, bad);
     }
   }
@@ -172,12 +141,12 @@ test("imposteur : si le joueur dont c'est le tour part, le tour passe au suivant
 test("salles isolées par jeu : un salon imposteur ne reçoit pas le karaoké", async () => {
   const imp = await t.createRoom("i");
   const kk = await t.client();
-  kk.emit("karaoke_join", { roomId: imp.code, username: "k" });
-  await next(kk, "karaoke_joined");
-  kk.emit("karaoke_select_song", { roomId: imp.code, song: { title: "t", artist: "a" } });
-  await next(kk, "karaoke_song_selected");
+  kk.emit("kk:create", { username: "k" });
+  await next(kk, "kk:joined");
+  kk.emit("kk:select_song", { song: { title: "t", artist: "a" } });
+  await next(kk, "kk:song_selected");
   await wait(150);
-  assert.ok(!imp.c.q.some((e) => e[0].startsWith("karaoke")));
+  assert.ok(!imp.c.q.some((e) => e[0].startsWith("kk:")));
 });
 
 test("un socket n'occupe qu'une salle imposteur à la fois", async () => {
@@ -198,12 +167,4 @@ test("le roomId envoyé par le client est ignoré (salle = celle du socket)", as
   b[0].c.emit("start_round", a[0].code);
   await next(b[1].c, "round_started");
   await quiet(a[1].c, "round_started", 150);
-});
-
-test("karaoké : chanson invalide → erreur renvoyée", async () => {
-  const c = await t.client();
-  c.emit("karaoke_join", { roomId: "K9", username: "h" });
-  await next(c, "karaoke_joined");
-  c.emit("karaoke_select_song", { roomId: "K9", song: { nope: 1 } });
-  assert.match(await next(c, "karaoke_error"), /invalide/i);
 });

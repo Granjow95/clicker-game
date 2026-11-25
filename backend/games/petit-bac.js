@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { createRoomRegistry } = require("../lib/rooms");
+const { recordRanking } = require("../lib/results");
 const { clean, clampInt, createRateLimiter, normalizeWord } = require("../lib/util");
 const { MAX_PETITBAC_PLAYERS } = require("../config");
 
@@ -217,7 +218,9 @@ function createPetitBac(io, results, opts = {}) {
 
   function gameOver(room) {
     const st = room.state;
+    const already = st.phase === "over";
     st.phase = "over";
+    if (!already) recordRanking(results, { game: "petit-bac", players: room.players, scoreOf: (pid) => st.scores[pid], rounds: st.round });
     reg.toRoom(room, "game_over", { ranking: ranking(room) });
   }
 

@@ -286,42 +286,57 @@ function _mergeSongs(deezerSongs, itunesSongs, lrclibSongs, ovhSongs = []) {
   const itMap = new Map(itunesSongs.map(s => [_matchKey(s.title, s.artist), s]));
   const seen  = new Set();
   const out   = [];
+  const tidy  = (v) => (v || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  // Clés d'une chanson : titre:artiste et sa version inversée (« Yellow Coldplay » / « Coldplay - Yellow »)
+  const keysOf = (s) => {
+    const k = _matchKey(tidy(s.title), tidy(s.artist));
+    const [t, a] = k.split(':');
+    return [k, `${a}:${t}`];
+  };
+  // true si déjà vu (et mémorise sinon)
+  const dup = (s) => {
+    const ks = keysOf(s);
+    if (ks.some(k => seen.has(k))) return true;
+    ks.forEach(k => seen.add(k));
+    return false;
+  };
 
   function push(base, dz, it) {
     out.push({
       ...base,
+      title:  tidy(base.title),
       cover:  dz?.cover  || it?.cover  || base.cover  || '',
       year:   dz?.year   || it?.year   || base.year   || null,
       genre:  it?.genre  || dz?.genre  || base.genre  || null,
-      artist: base.artist || dz?.artist || it?.artist || '',
+      artist: tidy(base.artist || dz?.artist || it?.artist || ''),
     });
   }
 
   // 1. lrclib (paroles déjà dans _lyrics)
   for (const s of lrclibSongs) {
     const k = _matchKey(s.title, s.artist);
-    if (seen.has(k)) continue; seen.add(k);
+    if (dup(s)) continue;
     push(s, dzMap.get(k), itMap.get(k));
   }
 
   // 2. lyrics.ovh suggest (paroles garanties, bon pour le rap FR)
   for (const s of ovhSongs) {
     const k = _matchKey(s.title, s.artist);
-    if (seen.has(k)) continue; seen.add(k);
+    if (dup(s)) continue;
     push(s, dzMap.get(k), itMap.get(k));
   }
 
   // 3. Deezer (paroles à vérifier)
   for (const s of deezerSongs) {
     const k = _matchKey(s.title, s.artist);
-    if (seen.has(k)) continue; seen.add(k);
+    if (dup(s)) continue;
     push(s, null, itMap.get(k));
   }
 
   // 4. iTunes exclusifs
   for (const s of itunesSongs) {
     const k = _matchKey(s.title, s.artist);
-    if (seen.has(k)) continue; seen.add(k);
+    if (dup(s)) continue;
     push(s, null, null);
   }
 

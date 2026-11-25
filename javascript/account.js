@@ -422,7 +422,7 @@ const granAccount = (() => {
     const played = rows.reduce((n, r) => n + (r.games_played || 0), 0);
     const wins = rows.reduce((n, r) => n + (r.wins || 0), 0);
     const jeux = rows.filter((r) => r.games_played > 0 && GAMES[r.game]).length;
-    if (!played) { P.global.replaceChildren(el('p', { class: 'profil__vide' }, "Aucune partie enregistrée pour l'instant. Joue à Imposteur, Lyrics ou Karaoké : tes chiffres s'afficheront ici.")); return; }
+    if (!played) { P.global.replaceChildren(el('p', { class: 'profil__vide' }, "Aucune partie enregistrée pour l'instant. Joue à Imposteur, Gribouille, Petit Bac, Lyrics ou Karaoké : tes chiffres s'afficheront ici.")); return; }
     P.global.replaceChildren(el('div', { class: 'stat-global' }, el('dl', {},
       statCell('Parties jouées', played), statCell('Victoires', wins), statCell(`Jeux essayés sur ${GAME_IDS.length}`, jeux))));
   }

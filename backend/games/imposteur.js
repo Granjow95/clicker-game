@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { clean, clampInt, normalizeCode, normalizeWord } = require("../lib/util");
+const { clean, clampInt, normalizeWord } = require("../lib/util");
 const { createRoomRegistry } = require("../lib/rooms");
 const { MAX_IMPOSTEUR_PLAYERS } = require("../config");
 const { WORD_PAIRS } = require("./imposteur-mots");
@@ -461,18 +461,6 @@ function createImposteur(io, results = { record() {} }) {
 
   function register(socket) {
     reg.register(socket);
-
-    // Alias de migration (ADR 0003) : rejoint si le code existe, sinon crée une salle au code généré.
-    // Le `roomId` du client n'est plus qu'un code candidat : il n'est jamais utilisé comme identifiant.
-    socket.on("join_or_create_room", (data) => {
-      const d = data && typeof data === "object" ? data : {};
-      const code = normalizeCode(d.roomId ?? d.code);
-      const ev = code && reg._rooms.has(code) ? "imp:join" : "imp:create";
-      for (const fn of socket.listeners(ev)) fn({ code, username: d.username });
-    });
-    socket.on("leave_room", () => {
-      for (const fn of socket.listeners("imp:leave")) fn({});
-    });
 
     const withRoom = (handler) => (data) => {
       const cur = reg.bySocket(socket);

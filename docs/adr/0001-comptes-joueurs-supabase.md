@@ -27,6 +27,7 @@ Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot 
 - Le socket client est créé après `auth.js` avec `auth: (cb) => cb({ token })`. À la connexion ou déconnexion d'un compte, on refait le handshake hors partie uniquement.
 - Les scores lyrics ne sont pas fiables et sont marqués comme tels.
 - GitHub suspend les cron après 60 jours sans activité sur le dépôt.
+- Note : Gribouille et Petit Bac enregistrent leurs parties (une ligne par compte, au moins 2 identités distinctes). La migration `docs/sql/0002-game-results-nouveaux-jeux.sql` élargit la contrainte `game_results_game_check` ; elle n'est pas encore appliquée (d'ici là, insertions refusées et erreurs loguées sans bloquer la partie).
 
 ## Conventional Commits
 

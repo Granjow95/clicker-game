@@ -15,7 +15,6 @@
 .pom__ecran[hidden] { display: none; }
 
 /* Bandeau « données fictives » */
-.bandeau-demo { margin: 0; padding: 6px 12px; border: 2px dashed var(--encre); background: var(--parchemin); font-size: 13px; font-weight: 600; }
 
 /* Titre et chapeau */
 .pom-titre { margin: 0; font-family: "Anton", sans-serif; font-weight: 400; font-size: clamp(80px, 13vw, 208px); line-height: .9; }

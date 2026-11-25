@@ -49,6 +49,7 @@
   let timerId = 0;
   let annonce = -1;
   let ro = null;
+  let rafRedim = 0;
   const sel = { c: 0, w: 1 };
   const D = { active: false, pid: -1, id: 0, c: 0, w: 1, buf: [], lastSent: null, prev: null, timer: 0, lastEmit: 0, nextId: 0 };
   const attentes = new Set();
@@ -221,9 +222,8 @@
     canvas.addEventListener('pointermove', onMove);
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onUp);
-    ro = new ResizeObserver(() => redimensionner());
+    ro = new ResizeObserver(planifierRedim);
     ro.observe(toile);
-    window.addEventListener('resize', redimensionner);
     redimensionner();
   }
 
@@ -379,6 +379,11 @@
   }
 
   /* ---------- Canvas ---------- */
+  function planifierRedim() {
+    if (rafRedim) return;
+    rafRedim = requestAnimationFrame(() => { rafRedim = 0; redimensionner(); });
+  }
+
   function redimensionner() {
     if (!G) return;
     const r = G.toile.getBoundingClientRect();
@@ -386,7 +391,8 @@
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.round(r.width * dpr);
     const h = Math.round(r.height * dpr);
-    if (G.canvas.width !== w || G.canvas.height !== h) { G.canvas.width = w; G.canvas.height = h; }
+    if (G.dessine && G.canvas.width === w && G.canvas.height === h) return;
+    G.canvas.width = w; G.canvas.height = h; G.dessine = true;
     toutRedessiner();
   }
 
@@ -537,7 +543,7 @@
     if (voulu !== screen) {
       stopTimer(); abortStroke();
       if (ro) { ro.disconnect(); ro = null; }
-      window.removeEventListener('resize', redimensionner);
+      if (rafRedim) { cancelAnimationFrame(rafRedim); rafRedim = 0; }
       G = null; L = null;
       if (voulu === 'lobby') construireSalon();
       else if (voulu === 'over') construireFin();
@@ -762,8 +768,8 @@
       enregistres.forEach(([ev, fn]) => socket.off(ev, fn));
       enregistres = [];
       window.removeEventListener('pagehide', surPageHide);
-      window.removeEventListener('resize', redimensionner);
       if (ro) { ro.disconnect(); ro = null; }
+      if (rafRedim) { cancelAnimationFrame(rafRedim); rafRedim = 0; }
       if (G && G.canvas) {
         G.canvas.removeEventListener('pointerdown', onDown);
         G.canvas.removeEventListener('pointermove', onMove);

@@ -1,5 +1,20 @@
-const { clean } = require("../lib/util");
-const { MAX_ROOMS, MAX_KARAOKE_PLAYERS } = require("../config");
+const { createRoomRegistry } = require("../lib/rooms");
+const { clean, clampInt } = require("../lib/util");
+const { hasDistinctAccounts } = require("../lib/results");
+const { MAX_KARAOKE_PLAYERS } = require("../config");
+
+const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g;
+const COVER_HOSTS = ["dzcdn.net", "mzstatic.com"];
+
+// Pochette : https uniquement, sur les domaines réellement utilisés par le client (Deezer, iTunes).
+function safeCover(value) {
+  if (typeof value !== "string" || value.length > 500) return null;
+  let u;
+  try { u = new URL(value); } catch { return null; }
+  if (u.protocol !== "https:" || u.username || u.password) return null;
+  const host = u.hostname.toLowerCase();
+  return COVER_HOSTS.some((d) => host === d || host.endsWith("." + d)) ? u.href : null;
+}
 
 // Ne garde que les champs attendus de la chanson, avec des longueurs bornées.
 function sanitizeSong(song) {
@@ -8,134 +23,135 @@ function sanitizeSong(song) {
   const artist = clean(song.artist, 150);
   if (!title || !artist) return null;
   const out = { title, artist };
-  if (typeof song.lyrics === "string") out.lyrics = song.lyrics.slice(0, 30000);
-  if (typeof song.syncedLyrics === "string") out.syncedLyrics = song.syncedLyrics.slice(0, 60000);
-  if (typeof song.cover === "string" && /^https?:\/\//.test(song.cover)) out.cover = song.cover.slice(0, 500);
-  if (Number.isFinite(song.duration)) out.duration = song.duration;
-  if (Number.isFinite(song.year)) out.year = song.year;
+  if (typeof song.lyrics === "string") out.lyrics = song.lyrics.slice(0, 20000).replace(CONTROL_CHARS, "");
+  if (typeof song.syncedLyrics === "string") out.syncedLyrics = song.syncedLyrics.slice(0, 30000).replace(CONTROL_CHARS, "");
+  const cover = safeCover(song.cover);
+  if (cover) out.cover = cover;
+  if (Number.isFinite(song.duration)) out.duration = clampInt(song.duration, 0, 3600, 0);
+  if (Number.isFinite(song.year)) out.year = clampInt(song.year, 1900, 2100, 0) || undefined;
   return out;
 }
 
-const ns = (roomId) => `kk:${roomId}`;
-const cid = (v) => clean(v, 30);
+// Seau à jetons par clé (salle) : `burst` en rafale, puis 1 appel par `intervalMs`.
+function createKeyedLimiterBurst(intervalMs, burst) {
+  const buckets = new Map();
+  return (key) => {
+    const now = Date.now();
+    const b = buckets.get(key) || { tokens: burst, last: now };
+    b.tokens = Math.min(burst, b.tokens + (now - b.last) / intervalMs);
+    b.last = now;
+    buckets.set(key, b);
+    if (buckets.size > 5000) for (const [k, v] of buckets) if (now - v.last > intervalMs * burst) buckets.delete(k);
+    if (b.tokens < 1) return false;
+    b.tokens -= 1;
+    return true;
+  };
+}
+
 const MAX_LINE = 5000;
+const PARTICIPATION_GAP_MS = 60000;
 
-function createKaraoke(io, results = { record() {} }) {
-  const rooms = Object.create(null); // sans prototype : « constructor » est un nom de salle valide
+// opts (tests) : { graceMs, ipLimiter, maxRoomsPerIp }
+function createKaraoke(io, results = { record() {} }, opts = {}) {
+  let reg;
+  const allowSelect = createKeyedLimiterBurst(opts.selectIntervalMs ?? 2000, 2);
 
-  const snapshot = (room) => ({
-    players: room.players,
-    host: room.host,
-    song: room.song,
-    currentLine: room.currentLine,
-    started: room.started,
+  const getSt = (room) => {
+    const st = room.state;
+    if (st.song === undefined) {
+      st.song = null;
+      st.currentLine = 0;
+      st.started = false;
+      st.lastRecorded = 0;
+    }
+    return st;
+  };
+
+  const inGame = (room) => getSt(room).started;
+
+  // État de reprise : chanson, ligne courante, lecture en cours, heure serveur pour resynchroniser.
+  function snapshotFor(room) {
+    const st = getSt(room);
+    return { song: st.song, started: st.started, currentLine: st.currentLine, serverTime: Date.now() };
+  }
+
+  reg = createRoomRegistry(io, {
+    prefix: "kk",
+    ipLimiter: opts.ipLimiter,
+    maxRoomsPerIp: opts.maxRoomsPerIp,
+    maxPlayers: MAX_KARAOKE_PLAYERS,
+    graceMs: opts.graceMs,
+    inGame,
+    snapshotFor,
   });
 
-  function removePlayer(socket, roomId) {
-    const room = rooms[roomId];
-    if (!room) return;
-    const before = room.players.length;
-    room.players = room.players.filter((p) => p.id !== socket.id);
-    if (room.players.length === 0) { delete rooms[roomId]; return; }
-    if (room.players.length === before) return;
-    if (room.host === socket.id) room.host = room.players[0].id;
-    io.to(ns(roomId)).emit("karaoke_room_update", snapshot(room));
-  }
-
-  function leaveRoom(socket) {
-    const roomId = socket.data.kkRoom;
-    if (!roomId) return;
-    socket.data.kkRoom = undefined;
-    socket.leave(ns(roomId));
-    removePlayer(socket, roomId);
-  }
-
   function register(socket) {
-    socket.on("karaoke_join", (data) => {
-      const roomId = cid(data?.roomId);
-      const username = clean(data?.username, 20);
-      if (!roomId || !username) return;
-      if (socket.data.kkRoom === roomId && rooms[roomId]?.players.some((p) => p.id === socket.id)) return;
-      leaveRoom(socket); // un socket = une salle à la fois
+    reg.register(socket);
 
-      const creating = !rooms[roomId];
-      if (creating) {
-        if (Object.keys(rooms).length >= MAX_ROOMS) {
-          socket.emit("karaoke_error", "Serveur plein, réessaie plus tard.");
-          return;
-        }
-        rooms[roomId] = { host: socket.id, players: [], song: null, currentLine: 0, started: false };
-      } else if (rooms[roomId].players.length >= MAX_KARAOKE_PLAYERS) {
-        socket.emit("karaoke_error", "Salle pleine (max 10 joueurs).");
-        return;
+    const asHost = (handler) => (data) => {
+      const cur = reg.bySocket(socket);
+      if (!cur) return;
+      if (cur.room.hostPid !== cur.player.pid) {
+        return reg.toPlayer(cur.player, "error", { code: "not_host", message: "Réservé à l'hôte." });
       }
+      handler(cur.room, cur.player, data && typeof data === "object" ? data : {});
+    };
 
-      socket.join(ns(roomId));
-      socket.data.kkRoom = roomId;
-      const room = rooms[roomId];
-      const player = { id: socket.id, username };
-      Object.defineProperty(player, "userId", { value: socket.data.userId || null, enumerable: false, writable: true });
-      room.players.push(player);
+    socket.on("kk:select_song", asHost((room, player, d) => {
+      if (!allowSelect(room.code)) return reg.toPlayer(player, "error", { code: "rate_limited", message: "Trop de changements de chanson." });
+      const song = sanitizeSong(d.song);
+      if (!song) return reg.toPlayer(player, "error", { code: "invalid", message: "Chanson invalide." });
+      const st = getSt(room);
+      st.song = song;
+      st.currentLine = 0;
+      st.started = false;
+      reg.toRoom(room, "song_selected", { song });
+    }));
 
-      socket.emit("karaoke_joined", { roomId, isHost: creating, ...snapshot(room) });
-      io.to(ns(roomId)).emit("karaoke_room_update", snapshot(room));
-    });
-
-    socket.on("karaoke_select_song", (data) => {
-      const roomId = cid(data?.roomId);
-      const room = rooms[roomId];
-      if (!room || room.host !== socket.id) return;
-      const song = sanitizeSong(data.song);
-      if (!song) {
-        socket.emit("karaoke_error", "Chanson invalide.");
-        return;
-      }
-      room.song = song;
-      room.currentLine = 0;
-      room.started = false;
-      io.to(ns(roomId)).emit("karaoke_song_selected", { song });
-    });
-
-    socket.on("karaoke_start", (rawRoomId) => {
-      const roomId = cid(rawRoomId);
-      const room = rooms[roomId];
-      if (!room || room.host !== socket.id || !room.song) return;
-      room.started = true;
-      room.currentLine = 0;
-      // Participation enregistrée au plus une fois par minute et par salle (anti-spam de lignes).
-      if (!room.lastRecorded || Date.now() - room.lastRecorded > 60000) {
-        room.lastRecorded = Date.now();
+    socket.on("kk:start", asHost((room) => {
+      const st = getSt(room);
+      if (!st.song) return;
+      st.started = true;
+      st.currentLine = 0;
+      // Participation enregistrée au plus une fois par minute et par salle (anti-spam).
+      if (Date.now() - st.lastRecorded > PARTICIPATION_GAP_MS) {
+        st.lastRecorded = Date.now();
         const seen = new Set();
-        room.players.forEach((p) => {
-          if (!p.userId || seen.has(p.userId)) return;
+        const online = room.players.filter((p) => p.connected);
+        for (const p of hasDistinctAccounts(online) ? online : []) {
+          if (!p.userId || seen.has(p.userId)) continue;
           seen.add(p.userId);
           results.record({ userId: p.userId, game: "karaoke", score: 0, won: false, rounds: 1, meta: { participation: true } });
-        });
+        }
       }
-      io.to(ns(roomId)).emit("karaoke_started", { currentLine: 0 });
-    });
+      reg.toRoom(room, "started", { currentLine: 0 });
+    }));
 
-    socket.on("karaoke_advance", (data) => {
-      const roomId = cid(data?.roomId);
-      const room = rooms[roomId];
-      if (!room || room.host !== socket.id) return;
-      if (data.direction === "next" && room.currentLine < MAX_LINE) room.currentLine++;
-      else if (data.direction === "prev" && room.currentLine > 0) room.currentLine--;
-      io.to(ns(roomId)).emit("karaoke_line_changed", { currentLine: room.currentLine });
-    });
+    socket.on("kk:advance", asHost((room, player, d) => {
+      const st = getSt(room);
+      if (!st.started) return;
+      if (d.direction === "next" && st.currentLine < MAX_LINE) st.currentLine++;
+      else if (d.direction === "prev" && st.currentLine > 0) st.currentLine--;
+      reg.toRoom(room, "line_changed", { currentLine: st.currentLine });
+    }));
 
-    socket.on("karaoke_leave", () => leaveRoom(socket));
+    // Fin de la chanson : retour au lobby (la salle n'est plus « en partie »).
+    socket.on("kk:stop", asHost((room) => {
+      const st = getSt(room);
+      if (!st.started) return;
+      st.started = false;
+      st.currentLine = 0;
+      reg.toRoom(room, "stopped", {});
+    }));
   }
 
-  function onDisconnect(socket) {
-    leaveRoom(socket);
-  }
-
-  function forgetUser(uid) {
-    for (const id in rooms) for (const p of rooms[id].players) if (p.userId === uid) p.userId = null;
-  }
-
-  return { register, onDisconnect, forgetUser, _rooms: rooms };
+  return {
+    register,
+    onDisconnect: reg.onSocketDisconnect,
+    forgetUser: reg.forgetUser,
+    dispose: reg.dispose,
+    reg,
+  };
 }
 
 module.exports = { createKaraoke, sanitizeSong };

@@ -151,7 +151,7 @@ Front (Netlify) et back (Render) se déploient séparément : le serveur est dé
 
 - `CLAUDE.md` (Conventions) doit être mis à jour : identité = `reg.bySocket(socket).player.pid` (plus `socket.id`), hôte = `room.hostPid`, salles `gri:`/`pb:`, événements préfixés `P:`.
 - Tests backend : `rooms.test.js`, `imposteur-reprise.test.js`, `imposteur-white.test.js`, `imposteur-mots.test.js`, `gribouille.test.js`, `petit-bac.test.js`, `mot-cache.test.js` ; `socket.test.js` et `imposteur-fixes.test.js` réécrits avec un helper `createRoom()`/`joinRoom(code)`. `accueil.test.js` passe à 9 liens et vérifie `MAX_GRIBOUILLE_PLAYERS` et `MAX_PETITBAC_PLAYERS`. Les repères de l'ADR 0002 gagnent les types `Dessin` et `Mots`.
-- Le karaoké garde son entrée actuelle ; sa migration vers `rooms.js` est un lot ultérieur.
+- Le karaoké a ensuite été migré sur `rooms.js` (préfixe `kk:`, codes de 4 lettres, reprise ; routes `#/karaoke/CODE`, l'ancienne forme `#/karaoke/salle/X` redirige vers `#/karaoke`). L'alias `join_or_create_room` a été retiré.
 - Risques : jeton en `localStorage` (lisible en cas de XSS : portée limitée à une place de salle, 120 s, renouvelé à chaque reprise) ; volume de traits ; minuteurs serveur non libérés en test.
 
 ## Conventional Commits

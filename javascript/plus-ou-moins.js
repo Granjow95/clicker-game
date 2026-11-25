@@ -1,22 +1,22 @@
-// Plus ou Moins : écrans seulement (départ, jeu, fin) sur données fictives (demo-data.js).
+/* global POM_THEMES */
+// Plus ou Moins : duels sur les thèmes de pom-donnees.js (POM_THEMES).
 // Aucun socket, aucun appel réseau : le record personnel est gardé dans le localStorage du navigateur.
 (() => {
   const $ = (id) => document.getElementById(id);
   const root = () => document.querySelector('[data-vue="plus-ou-moins"]');
 
-  // Paires consécutives de chaque thème ; l'ordre des duels est mélangé à chaque partie (lancer).
-  const paires = DEMO_POM_THEMES.flatMap((t) => t.items.slice(0, -1).map((a, i) => ({ theme: t, a, b: t.items[i + 1] })));
   const CLE_RECORD = 'granGames:pom-record';
   const lireRecord = () => {
     try {
       const v = parseInt(localStorage.getItem(CLE_RECORD), 10);
-      return Number.isFinite(v) && v > DEMO_POM_RECORD ? Math.min(v, 1000) : DEMO_POM_RECORD;
-    } catch { return DEMO_POM_RECORD; }
+      return Number.isFinite(v) && v > 0 ? Math.min(v, 100000) : 0;
+    } catch { return 0; }
   };
   const ecrireRecord = (v) => { try { localStorage.setItem(CLE_RECORD, String(v)); } catch { /* stockage indisponible */ } };
   let record = lireRecord();
   let serie = 0;
-  let index = 0;
+  let duel = null; // { theme, a, b } : duel en cours
+  let recents = [];
   let verrou = false;
   let timer = null;
   let session = 0; // change à chaque sortie de la vue : ignore les réponses en vol
@@ -31,21 +31,46 @@
     if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   }
 
-  const fmt = (v, unite) => `${v.toLocaleString('fr-FR')} ${unite}`;
+  const fmt = (v, theme) => {
+    const n = theme.brut ? String(v) : v.toLocaleString('fr-FR');
+    return theme.unite ? `${n} ${theme.unite}` : n;
+  };
+  const hasard = (tab) => tab[Math.floor(Math.random() * tab.length)];
+
+  // Choisit un élément du thème, de valeur différente de `a`, en évitant les derniers vus si possible.
+  function tirerB(theme, a) {
+    const possibles = theme.items.filter((i) => i.valeur !== a.valeur);
+    const frais = possibles.filter((i) => !recents.includes(i.nom));
+    return hasard(frais.length ? frais : possibles);
+  }
+  function nouveauDuel(changerTheme) {
+    let theme = duel ? duel.theme : hasard(POM_THEMES);
+    if (!duel || changerTheme) {
+      const autres = POM_THEMES.filter((t) => t !== theme);
+      theme = duel ? hasard(autres) : theme;
+      recents = [];
+      const a = hasard(theme.items);
+      return { theme, a, b: tirerB(theme, a) };
+    }
+    const a = duel.b;
+    return { theme, a, b: tirerB(theme, a) };
+  }
+
 
   function remplir(panneau, theme, item, valeur) {
     panneau.querySelector('[data-champ="cat"]').textContent = theme.categorie;
     panneau.querySelector('[data-champ="nom"]').textContent = item.nom;
     const v = panneau.querySelector('[data-champ="valeur"]');
-    v.textContent = valeur ? fmt(item.valeur, theme.unite) : `? ${theme.unite}`;
+    v.textContent = valeur ? fmt(item.valeur, theme) : `? ${theme.unite}`;
     const src = panneau.querySelector('[data-champ="source"]');
-    if (src) src.textContent = `Source : ${DEMO_POM_SOURCE}`;
+    if (src) src.textContent = `Source : ${theme.source}`;
   }
 
   function afficherDuel() {
-    const { theme, a, b } = paires[index % paires.length];
-    const duel = $('pom-duel');
-    duel.classList.remove('glisse');
+    const { theme, a, b } = duel;
+    recents = [...recents, a.nom, b.nom].slice(-6);
+    const zone = $('pom-duel');
+    zone.classList.remove('glisse');
     $('pom-annonce').textContent = '';
     ['pom-a', 'pom-b'].forEach((id) => $(id).classList.remove('juste', 'faux'));
     $('pom-question').textContent = theme.question;
@@ -55,13 +80,14 @@
     $('pom-moins').querySelector('[data-champ="moins"]').textContent = theme.moins;
     $('pom-serie').textContent = `Série ${serie}`;
     $('pom-record-jeu').textContent = record;
-    if (!granUI.reducedMotion()) { void duel.offsetWidth; duel.classList.add('glisse'); }
+    if (!granUI.reducedMotion()) { void zone.offsetWidth; zone.classList.add('glisse'); }
     verrou = false;
   }
 
   function lancer() {
     serie = 0;
-    index = 0;
+    duel = null;
+    duel = nouveauDuel(false);
     montrer('jeu');
     afficherDuel();
   }
@@ -70,15 +96,15 @@
     if (verrou) return;
     verrou = true;
     const mienne = session;
-    const { theme, a, b } = paires[index % paires.length];
+    const { theme, a, b } = duel;
     const juste = (b.valeur > a.valeur) === (choix === 'plus');
     const label = choix === 'plus' ? theme.plus : theme.moins;
-    await granUI.countUp($('pom-b').querySelector('[data-champ="valeur"]'), b.valeur, { format: (n) => fmt(n, theme.unite) });
+    await granUI.countUp($('pom-b').querySelector('[data-champ="valeur"]'), b.valeur, { format: (n) => fmt(n, theme) });
     if (mienne !== session) return;
     $('pom-b').classList.add(juste ? 'juste' : 'faux');
     $('pom-annonce').textContent = juste ? 'Juste.' : 'Faux.';
     timer = setTimeout(() => {
-      if (juste) { serie += 1; index += 1; afficherDuel(); } else finir(theme, a, b, label);
+      if (juste) { serie += 1; duel = nouveauDuel(serie % 5 === 0 || Math.random() < 0.12); afficherDuel(); } else finir(theme, a, b, label);
     }, granUI.reducedMotion() ? 600 : 900);
   }
 
@@ -88,7 +114,7 @@
     if (battu) { record = serie; ecrireRecord(record); }
     $('pom-fin-titre').textContent = `La série s'arrête à ${serie}`;
     $('pom-explication').replaceChildren(
-      `${b.nom} fait `, granUI.el('b', {}, fmt(b.valeur, theme.unite)), `. Tu as dit « ${label.toLowerCase()} » que ${a.nom}.`);
+      `${b.nom} fait `, granUI.el('b', {}, fmt(b.valeur, theme)), `. Tu as dit « ${label.toLowerCase()} » que ${a.nom}.`);
     $('pom-fin-serie').textContent = serie;
     $('pom-fin-record').textContent = record;
     const ancienNode = $('pom-fin-ancien');
@@ -121,6 +147,7 @@
       document.addEventListener('keydown', onKey);
       record = lireRecord();
       $('pom-record-depart').textContent = record;
+      $('pom-themes').textContent = POM_THEMES.map((t) => t.categorie.toLowerCase()).join(', ');
       montrer('depart');
     },
     leave() {

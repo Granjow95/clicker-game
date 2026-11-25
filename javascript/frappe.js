@@ -1,16 +1,20 @@
-// Course de frappe : écrans seulement (départ, compte à rebours, course, résultats) sur données fictives.
-// Aucun socket, aucun appel réseau : les autres voitures avancent selon DEMO_FRAPPE_JOUEURS.
+/* global FRAPPE_PHRASES */
+// Course de frappe, mode solo : départ, compte à rebours, course, résultats.
+// Aucun socket, aucun appel réseau : tu cours contre 3 robots (vitesse fixe) et ton fantôme de record.
 // La frappe ne déclenche aucune animation : seules les couleurs des lettres changent.
 (() => {
   const $ = (id) => document.getElementById(id);
   const root = () => document.querySelector('[data-vue="frappe"]');
   const el = granUI.el;
 
-  let mode = 'salle';
-  let moiPret = false;
-  let phraseIdx = 0;
+  const ROBOTS = [
+    { id: 'lent', nom: 'Robot lent', mpm: 30 },
+    { id: 'moyen', nom: 'Robot moyen', mpm: 45 },
+    { id: 'rapide', nom: 'Robot rapide', mpm: 65 },
+  ];
   let phrase = '';
-  let joueurs = [];
+  let derniere = -1; // index de la dernière phrase, pour ne pas la rejouer d'affilée
+  let adversaires = []; // robots + fantôme de record éventuel
   let timers = []; // setTimeout / setInterval à purger dans leave()
   let debut = 0;
   let frappes = 0;
@@ -37,47 +41,35 @@
     if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
   }
 
-  const liste = () => (mode === 'solo' ? DEMO_FRAPPE_JOUEURS.filter((j) => j.moi) : DEMO_FRAPPE_JOUEURS);
-  const moiNom = () => DEMO_FRAPPE_JOUEURS.find((j) => j.moi).nom;
+  const MOI = { id: 'moi', nom: 'Toi', moi: true };
+  const liste = () => [MOI, ...adversaires];
   const rang = (n) => (n === 1 ? '1er' : `${n}e`);
 
+  function preparer() {
+    const record = lireRecord();
+    adversaires = [...ROBOTS];
+    if (record) adversaires.push({ id: 'fantome', nom: 'Fantôme de ton record', mpm: record, fantome: true });
+  }
+
+  const etiquette = (j) => `${j.nom} ${j.mpm} mpm`;
+
   /* ---------- Ligne de départ ---------- */
-  function statut(j) {
-    const pret = j.moi ? moiPret : j.pret;
-    if (j.hote) return { texte: pret ? 'Hôte, prête' : 'Hôte', classe: 'badge--hote' };
-    if (j.moi) return { texte: pret ? 'Prêt' : 'Pas prêt', classe: pret ? 'badge--pret' : 'badge--absent' };
-    return { texte: pret ? (j.nom === 'Léa' ? 'Prête' : 'Prêt') : 'Pas prêt', classe: pret ? 'badge--pret' : 'badge--absent' };
-  }
-
   function rendreDepart() {
-    $('fra-couloirs').replaceChildren(...liste().map((j, i) => {
-      const s = statut(j);
-      return el('li', {},
-        el('span', { class: 'couloirs__num' }, i + 1),
-        el('span', { class: `joueur__avatar c-${(DEMO_FRAPPE_JOUEURS.indexOf(j) % 5) + 1}`, 'aria-hidden': 'true' }, j.nom[0]),
-        el('span', { class: 'couloirs__nom' }, j.moi ? `${j.nom} (toi)` : j.nom),
-        el('span', { class: `badge ${s.classe}` }, s.texte));
-    }));
-    ['solo', 'salle'].forEach((m) => $(`fra-tab-${m}`).setAttribute('aria-selected', String(m === mode)));
-    $('fra-code-bloc').hidden = mode === 'solo';
-    $('fra-aide').textContent = mode === 'solo' ? `Tu pars quand tu es prêt.${lireRecord() ? ` Record : ${lireRecord()} mpm.` : ''}` : 'Départ automatique quand tout le monde est prêt.';
-    const bouton = $('fra-pret');
-    bouton.textContent = moiPret ? (mode === 'solo' ? 'C\'est parti' : 'Prêt, on attend les autres') : (mode === 'solo' ? 'Démarrer' : 'Je suis prêt');
-    bouton.setAttribute('aria-pressed', String(moiPret));
-  }
-
-  function choisirMode(m) {
-    clearTimers(); // annule un décompte déjà programmé par pret()
-    mode = m;
-    moiPret = false;
-    rendreDepart();
+    preparer();
+    const record = lireRecord();
+    $('fra-couloirs').replaceChildren(...liste().map((j, i) => el('li', {},
+      el('span', { class: 'couloirs__num' }, i + 1),
+      el('span', { class: `joueur__avatar c-${(i % 5) + 1}`, 'aria-hidden': 'true' }, j.moi ? 'T' : j.fantome ? 'F' : 'R'),
+      el('span', { class: 'couloirs__nom' }, j.moi ? 'Toi' : etiquette(j)),
+      j.moi ? null : el('span', { class: `badge ${j.fantome ? 'badge--fantome' : 'badge--robot'}` }, j.fantome ? 'Fantôme' : 'Robot'))));
+    $('fra-aide').textContent = record ? `Record : ${record} mpm. Ton fantôme court à cette vitesse.` : 'Pas encore de record : termine une course pour créer ton fantôme.';
   }
 
   function pret() {
-    if (moiPret) return;
-    moiPret = true;
-    rendreDepart();
-    timers.push(setTimeout(decompte, 700));
+    const bouton = $('fra-pret');
+    if (bouton.disabled) return;
+    bouton.disabled = true;
+    timers.push(setTimeout(decompte, 400));
   }
 
   /* ---------- Compte à rebours ---------- */
@@ -107,19 +99,18 @@
   /* ---------- Course ---------- */
   function piste() {
     $('fra-piste').replaceChildren(...liste().map((j, i) => {
-      const c = DEMO_FRAPPE_JOUEURS.indexOf(j) % 5 + 1;
-      const pct = el('span', { class: 'piste__pct', 'data-pct': j.nom }, '0 %');
-      return el('div', { class: 'piste__couloir', 'data-nom': j.nom },
+      const pct = el('span', { class: 'piste__pct' }, '0 %');
+      return el('div', { class: 'piste__couloir' },
         el('span', { class: 'piste__num', 'aria-hidden': 'true' }, i + 1),
         el('div', { class: 'piste__rail' },
-          el('span', { class: `piste__voiture c-${c}${j.moi ? ' piste__voiture--moi' : ''}`, 'data-voiture': j.nom },
-            el('span', { class: 'piste__initiale', 'aria-hidden': 'true' }, j.nom[0]), j.moi ? 'Toi' : j.nom, pct)),
+          el('span', { class: `piste__voiture c-${(i % 5) + 1}${j.moi ? ' piste__voiture--moi' : ''}`, 'data-voiture': j.id },
+            el('span', { class: 'piste__initiale', 'aria-hidden': 'true' }, j.moi ? 'T' : j.fantome ? 'F' : 'R'), j.nom, pct)),
         el('span', { class: 'piste__arrivee damier-course', 'aria-hidden': 'true' }));
     }));
   }
 
-  function avancer(nom, p) {
-    const v = $('fra-piste').querySelector(`[data-voiture="${nom}"]`);
+  function avancer(id, p) {
+    const v = $('fra-piste').querySelector(`[data-voiture="${id}"]`);
     if (!v) return;
     v.style.setProperty('--avance', `${Math.round(p * 100)}%`);
     v.querySelector('.piste__pct').textContent = `${Math.round(p * 100)} %`;
@@ -138,16 +129,26 @@
     return erreur ? [...phrase].findIndex((c, i) => valeur[i] !== car(c)) : valeur.length; // caractères justes consécutifs
   }
 
-  const tempsBot = (j) => (j.mpm ? (phrase.length * 12) / j.mpm : Infinity); // 5 caractères = 1 mot
+  const tempsBot = (j) => (phrase.length * 12) / j.mpm; // 5 caractères = 1 mot
+  const progresBot = (j, s) => Math.min(1, s / tempsBot(j));
+
+  function choisirPhrase() {
+    let i = Math.floor(Math.random() * FRAPPE_PHRASES.length);
+    if (FRAPPE_PHRASES.length > 1 && i === derniere) i = (i + 1 + Math.floor(Math.random() * (FRAPPE_PHRASES.length - 1))) % FRAPPE_PHRASES.length;
+    derniere = i;
+    return FRAPPE_PHRASES[i];
+  }
+
+  // Place actuelle : adversaires strictement devant moi + 1.
+  const position = (s, moi) => 1 + adversaires.filter((j) => progresBot(j, s) > moi).length;
 
   function course() {
-    phrase = DEMO_FRAPPE_PHRASES[phraseIdx % DEMO_FRAPPE_PHRASES.length];
-    phraseIdx += 1;
+    phrase = choisirPhrase();
     fini = false;
     frappes = 0; fautes = 0; avant = '';
     $('fra-mpm').textContent = '0';
     $('fra-precision').textContent = '100';
-    $('fra-position').textContent = '1er';
+    $('fra-position').textContent = `1er / ${liste().length}`;
     piste();
     rendrePhrase('');
     montrer('course');
@@ -156,18 +157,11 @@
     saisie.setAttribute('maxlength', String(phrase.length));
     saisie.focus();
     debut = performance.now();
-    // Voitures fictives : progression linéaire d'après leur vitesse
+    // Robots et fantôme : progression linéaire d'après leur vitesse
     timers.push(setInterval(() => {
       const s = (performance.now() - debut) / 1000;
-      liste().filter((j) => !j.moi && j.mpm).forEach((j) => avancer(j.nom, Math.min(1, s / tempsBot(j))));
-      $('fra-position').textContent = `${rang(position(s, null))} / ${liste().length}`;
+      adversaires.forEach((j) => avancer(j.id, progresBot(j, s)));
     }, 300));
-  }
-
-  // Position actuelle : joueurs devant moi + 1 (mon avancement lu sur la piste).
-  function position(s, maProgression) {
-    const moi = maProgression ?? (parseInt($('fra-piste').querySelector(`[data-voiture="${moiNom()}"] .piste__pct`)?.textContent, 10) / 100 || 0);
-    return 1 + liste().filter((j) => !j.moi && j.mpm && Math.min(1, s / tempsBot(j)) > moi).length;
   }
 
   function surSaisie() {
@@ -180,10 +174,11 @@
     avant = valeur;
     const justes = Math.min(rendrePhrase(valeur), phrase.length);
     const s = Math.max(0.001, (performance.now() - debut) / 1000);
-    avancer(moiNom(), justes / phrase.length);
+    avancer('moi', justes / phrase.length);
     $('fra-mpm').textContent = Math.round(justes / 5 / (s / 60));
     $('fra-precision').textContent = frappes ? Math.round(((frappes - fautes) / frappes) * 100) : 100;
     $('fra-position').textContent = `${rang(position(s, justes / phrase.length))} / ${liste().length}`;
+    $('fra-annonce').textContent = '';
     if ([...phrase].map(car).join('') === valeur) { fini = true; clearTimers(); timers.push(setTimeout(() => resultats(s), 500)); }
   }
 
@@ -197,50 +192,38 @@
       if (!premier) granUI.toast(`Nouveau record : ${mpm} mpm.`, { type: 'succes' });
     }
     const lignes = liste().map((j) => (j.moi
-      ? { nom: j.nom, moi: true, t: secondes, mpm, precision }
-      : { nom: j.nom, t: tempsBot(j), mpm: j.mpm, precision: j.precision }));
+      ? { nom: 'Toi', moi: true, t: secondes, mpm, precision }
+      : { nom: j.nom, t: tempsBot(j), mpm: j.mpm }));
     lignes.sort((a, b) => a.t - b.t);
-    $('fra-classement').replaceChildren(...lignes.map((l, i) => el('li', { class: `fra__rang${l.moi ? ' fra__rang--moi' : ''}${l.mpm ? '' : ' fra__rang--abandon'}` },
+    const place = lignes.findIndex((l) => l.moi) + 1;
+    $('fra-resume').textContent = `${rang(place)} sur ${lignes.length} : ${mpm} mpm, ${precision} % de précision, ${secondes.toFixed(1).replace('.', ',')} s.`;
+    $('fra-classement').replaceChildren(...lignes.map((l, i) => el('li', { class: `fra__rang${l.moi ? ' fra__rang--moi' : ''}` },
       el('span', { class: 'fra__rang-num' }, i + 1),
-      el('span', { class: 'fra__rang-nom' }, l.moi ? `${l.nom} (toi)` : l.nom),
-      el('span', { class: 'fra__rang-mpm' }, l.mpm ? `${l.mpm} mpm` : 'abandon'),
-      el('span', { class: 'fra__rang-prec' }, l.mpm ? `${l.precision} %` : ''))));
-    const marches = [{ i: 1, h: 'moyen' }, { i: 0, h: 'haut' }, { i: 2, h: 'bas' }].filter((m) => lignes[m.i] && lignes[m.i].mpm);
+      el('span', { class: 'fra__rang-nom' }, l.nom),
+      el('span', { class: 'fra__rang-mpm' }, `${l.mpm} mpm`),
+      el('span', { class: 'fra__rang-prec' }, l.moi ? `${l.precision} %` : ''))));
+    const marches = [{ i: 1, h: 'moyen' }, { i: 0, h: 'haut' }, { i: 2, h: 'bas' }].filter((m) => lignes[m.i]);
     $('fra-podium').replaceChildren(...marches.map((m) => el('div', { class: 'podium__colonne' },
       el('span', { class: 'podium__nom' }, lignes[m.i].nom),
       el('span', { class: `podium__marche podium__marche--${m.h}` }, m.i + 1))));
-    $('fra-quitter').textContent = mode === 'solo' ? 'Autre jeu' : 'Quitter la salle';
     montrer('resultats');
   }
 
   function revanche() {
-    moiPret = false;
+    $('fra-pret').disabled = false;
     rendreDepart();
     montrer('depart');
   }
 
-  async function copier() {
-    try {
-      await navigator.clipboard.writeText($('fra-code').textContent);
-      granUI.toast(`Code ${$('fra-code').textContent} copié.`);
-    } catch {
-      granUI.toast('Copie impossible ici. Recopie le code à la main.', { type: 'erreur' });
-    }
-  }
-
-  $('fra-tab-solo').addEventListener('click', () => choisirMode('solo'));
-  $('fra-tab-salle').addEventListener('click', () => choisirMode('salle'));
   $('fra-pret').addEventListener('click', pret);
-  $('fra-copier').addEventListener('click', copier);
   $('fra-saisie').addEventListener('input', surSaisie);
   $('fra-revanche').addEventListener('click', revanche);
   $('fra-phrase').closest('section').addEventListener('click', () => $('fra-saisie').focus());
 
   granRouter.register('frappe', {
-    enter(params) {
-      $('fra-code').textContent = params && params.code ? params.code.toUpperCase() : DEMO_FRAPPE_CODE;
-      mode = 'salle';
-      moiPret = false;
+    enter() {
+      clearTimers();
+      $('fra-pret').disabled = false;
       rendreDepart();
       montrer('depart');
     },

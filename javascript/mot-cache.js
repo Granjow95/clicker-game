@@ -102,7 +102,7 @@
     ui.finTexte = el('p', { class: 'mc-fin-texte' });
     ui.finGrille = el('pre', { class: 'mc-partage-apercu', 'aria-label': 'Aperçu du résultat à partager' });
     const fin = el('section', { class: 'mc-ecran mc-fin', 'data-ecran': 'fin', 'aria-labelledby': 'mc-fin-titre' },
-      ui.finTitre, ui.finMot, ui.finTexte, ui.finGrille,
+      ui.finTitre, ui.finTexte, ui.finMot, ui.finGrille,
       el('div', { class: 'mc-choix' },
         bouton('key--principal mc-bouton', 'Rejouer', () => lancer('libre')),
         bouton('key--secondaire mc-bouton', 'Partager', partager),
@@ -318,12 +318,26 @@
   async function partager() {
     const d = new Date();
     const titre = `Mot Caché ${partie.mode === 'jour' ? cleDuJour(d) : '(libre)'} ${partie.gagne ? partie.essais.length : 'X'}/${ESSAIS}`;
+    const texte = `${titre}\n\n${grillePartage()}`;
     try {
-      await navigator.clipboard.writeText(`${titre}\n\n${grillePartage()}`);
-      granUI.toast('Résultat copié dans le presse-papiers.');
-    } catch {
-      granUI.toast('Copie impossible. Sélectionne la grille pour la copier à la main.', { type: 'erreur' });
+      await navigator.clipboard.writeText(texte);
+      granUI.toast('Résultat copié', { type: 'succes' });
+      return;
+    } catch { /* repli ci-dessous */ }
+    if (navigator.share) {
+      try { await navigator.share({ text: texte }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
+    // Dernier recours : zone de texte sélectionnable, à copier à la main
+    let zone = ui.finGrille.parentNode.querySelector('.mc-partage-zone');
+    if (!zone) {
+      zone = el('textarea', { class: 'mc-partage-zone', readonly: '', rows: '6', 'aria-label': 'Résultat à copier' });
+      zone.style.cssText = 'width:100%;margin-top:.5rem;font:inherit;resize:none';
+      ui.finGrille.after(zone);
+    }
+    zone.value = texte;
+    zone.focus();
+    zone.select();
+    granUI.toast('Copie impossible. Le résultat est sélectionné : copie-le à la main.', { type: 'erreur' });
   }
 
   /* ---------- Clavier physique ---------- */

@@ -223,8 +223,13 @@ body[data-monde="imposteur"] {
 
 /* Tours */
 .imp-tour--absent { opacity: .55; }
-.imp-tour--actif { animation: imp-pulse 1.8s var(--ease-in-out) infinite; }
-@keyframes imp-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(242,182,48,0); } 50% { box-shadow: 0 0 0 6px rgba(242,182,48,.35); } }
+.imp-tour { position: relative; }
+.imp-tour--actif::after {
+  content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 0 6px rgba(242,182,48,.35); opacity: 0; will-change: opacity, transform;
+  animation: imp-pulse 1.8s var(--ease-in-out) infinite;
+}
+@keyframes imp-pulse { 0%, 100% { opacity: 0; transform: scale(.97); } 50% { opacity: 1; transform: scale(1); } }
 .imp-indice--passe { font-style: italic; opacity: .75; }
 .imp-indice--ecrit { display: inline-block; overflow: hidden; white-space: nowrap; animation: imp-ecrit calc(var(--n, 6) * 45ms) steps(var(--n, 6)) both; }
 @keyframes imp-ecrit { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
@@ -276,7 +281,8 @@ body[data-monde="imposteur"] {
 
 @media (prefers-reduced-motion: reduce) {
   .imp-tampon, .imp-mot__tampon--blanc, .imp-verdict .imp-tampon { animation: none; }
-  .imp-tour--actif { transform: none; animation: none; }
+  .imp-tour--actif { transform: none; }
+  .imp-tour--actif::after { animation: none; opacity: 0; }
   .imp-indice--ecrit, .imp-marche { animation: none; }
   .imp-confettis { display: none; }
   .imp-bulletin { transition: none; }

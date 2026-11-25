@@ -11,6 +11,7 @@
     imp: { route: '/imposteur', label: "d'Imposteur" },
     gri: { route: '/gribouille', label: 'de Gribouille' },
     pb: { route: '/petit-bac', label: 'de Petit Bac' },
+    kk: { route: '/karaoke', label: 'de Karaoké' },
   };
   // La reprise elle-même est faite par l'écran d'entrée du jeu ; ici on ne fait que l'y envoyer.
   function renderReprise() {
@@ -42,12 +43,7 @@
   granRouter.register('karaoke', {
     enter(params) {
       hide('karaoke-game');
-      show('karaoke-mode');
-      if (params && params.code) {
-        // Lien de salle : on affiche le formulaire avec le code pré-rempli, sans rejoindre.
-        window.karaokeShowRoom();
-        $('kk-roomcode').value = params.code;
-      }
+      window.karaokeEnter(params);
     },
     leave() {
       kkCleanup();
