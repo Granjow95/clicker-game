@@ -97,7 +97,8 @@ body {
 img, svg { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--monde-accent); }
-a:hover { color: var(--monde-texte); }
+/* Survol : la couleur ne change jamais (un lien peut être posé sur un fond clair ou sombre), seul le soulignement s'épaissit. */
+a:hover { text-decoration-thickness: 3px; }
 :focus-visible { outline: 3px solid var(--monde-focus); outline-offset: 3px; }
 .sur-papier :focus-visible { outline-color: var(--faience); } /* 4,75:1 sur parchemin */
 /* Cibles de focus programmatique (titres, conteneurs en tabindex=-1, focalisés au changement d'écran) : non interactives, pas de cadre. */
@@ -406,8 +407,6 @@ html.retour::view-transition-new(root) { animation: none; }
 }
 /* Écrans de jeux encore à l'ancien habillage (étapes 4 à 6) : texte sombre sur leur fond clair */
 .vue--heritee { color: var(--encre); }
-a.key:hover { color: var(--encre); }
-a.key--danger:hover { color: var(--parchemin); }
 
 /* ---------- 18. Entrée de salle (javascript/salle.js : Imposteur, Gribouille, Petit Bac) ---------- */
 .jeu-montage { max-width: var(--largeur-max); margin-inline: auto; padding: var(--e-4) var(--e-4) var(--e-7); }
