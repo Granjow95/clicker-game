@@ -35,11 +35,26 @@ const granAccount = (() => {
   function safeAvatar(url) {
     try { const u = new URL(url); return u.protocol === 'https:' ? u.href : null; } catch (_) { return null; }
   }
-  // Avatar : image https seulement, sinon la première lettre du pseudo.
+  // Sources d'avatar par ordre de préférence : celle du profil, puis celle du fournisseur (Discord la tient à jour
+  // à chaque connexion, alors que celle du profil est figée à l'inscription). https seulement, sans doublon.
+  function avatarSources(url) {
+    const u = granAuth.user();
+    const m = (u && u.user_metadata) || {};
+    return [url, m.avatar_url, m.picture]
+      .map((x) => (typeof x === 'string' && x ? safeAvatar(x) : null))
+      .filter((x, i, all) => x && all.indexOf(x) === i);
+  }
+  // Avatar : première image qui se charge, sinon la première lettre du pseudo (plus jamais d'image cassée).
   function paintAvatar(box, url, name) {
-    const safe = url ? safeAvatar(url) : null;
-    if (safe) box.replaceChildren(el('img', { src: safe, alt: '', referrerpolicy: 'no-referrer', width: 64, height: 64 }));
-    else box.textContent = (name || '?').charAt(0).toUpperCase();
+    const lettre = () => { box.textContent = (name || '?').charAt(0).toUpperCase(); };
+    const sources = avatarSources(url);
+    const essayer = (i) => {
+      if (i >= sources.length) { lettre(); return; }
+      const img = el('img', { src: sources[i], alt: '', referrerpolicy: 'no-referrer', width: 64, height: 64, decoding: 'async' });
+      img.addEventListener('error', () => { if (box.contains(img)) essayer(i + 1); }, { once: true });
+      box.replaceChildren(img);
+    };
+    essayer(0);
   }
   function displayName() {
     const u = granAuth.user();
@@ -401,7 +416,6 @@ const granAccount = (() => {
     root: document.querySelector('section[data-vue="profil"]'),
     invite: document.getElementById('p-invite'),
     global: document.getElementById('p-global'),
-    recentes: document.getElementById('p-recentes'),
     form: document.getElementById('profil-form'),
     pseudo: document.getElementById('p-pseudo'),
     pseudoErr: document.getElementById('p-pseudo-err'),
@@ -458,15 +472,11 @@ const granAccount = (() => {
   function paintStats(rows, erreur) {
     const lignes = fusion(rows);
     paintGlobal(lignes);
-    const cartes = lignes.map((l) => {
+    // Jeux joués en cartes détaillées ; les autres en pastilles compactes « À essayer » (plus de mur de cartes vides).
+    const cartes = lignes.filter((l) => l.parties).map((l) => {
       const { jeu } = l;
-      const carte = el('div', { class: `stat-jeu stat-jeu--${jeu.id}${l.parties ? '' : ' stat-jeu--vide'}` },
+      const carte = el('div', { class: `stat-jeu stat-jeu--${jeu.id}` },
         el('span', { class: 'stat-jeu__nom' }, jeu.nom));
-      if (!l.parties) {
-        carte.append(el('p', { class: 'stat-jeu__vide' }, 'Pas encore joué'),
-          el('a', { class: 'key key--fantome stat-jeu__jouer', href: `#${jeu.route}`, 'aria-label': `Jouer à ${jeu.nom}` }, 'Jouer'));
-        return carte;
-      }
       const meilleur = el('dd', {}, '0');
       granUI.countUp(meilleur, l.meilleur);
       meilleur.append(el('span', { class: 'stat-jeu__unite' }, jeu.unite || ''));
@@ -478,20 +488,14 @@ const granAccount = (() => {
       }
       return carte;
     });
+    const aEssayer = lignes.filter((l) => !l.parties);
+    const essais = aEssayer.length ? [el('div', { class: 'stat-essayer' },
+      el('p', { class: 'stat-essayer__titre' }, cartes.length ? 'À essayer' : 'Aucun jeu lancé pour l\'instant : choisis-en un'),
+      el('ul', { class: 'stat-essayer__liste' }, aEssayer.map(({ jeu }) => el('li', {},
+        el('a', { class: 'stat-essayer__jeu', href: `#${jeu.route}`, 'aria-label': `Jouer à ${jeu.nom}` },
+          el('span', { class: `pastille-jeu pastille-jeu--${jeu.id}`, 'aria-hidden': 'true' }), jeu.nom)))))] : [];
     const alerte = erreur ? [el('p', { class: 'profil__statut profil__statut--erreur', role: 'alert' }, 'Statistiques du compte indisponibles : seuls les chiffres de ce navigateur sont affichés.')] : [];
-    P.stats.replaceChildren(...alerte, ...cartes);
-  }
-
-  function paintRecentes() {
-    const enAttente = new Set(Array.from(pending).map((e) => e.id));
-    const rows = history.filter((r) => !enAttente.has(r.id)).slice(0, 20);
-    if (!rows.length) { P.recentes.replaceChildren(el('p', { class: 'profil__vide' }, 'Aucune partie récente.')); return; }
-    P.recentes.replaceChildren(el('ol', { class: 'recentes__liste' }, rows.map((r) => el('li', { class: 'recentes__ligne' },
-      el('span', { class: `pastille-jeu pastille-jeu--${r.game}`, 'aria-hidden': 'true' }),
-      el('span', { class: 'recentes__jeu' }, GAMES[r.game] || r.game),
-      resultTag(r),
-      el('span', { class: 'historique__score' }, String(r.score)),
-      el('time', { class: 'historique__quand', datetime: r.created_at }, new Date(r.created_at).toLocaleDateString('fr-FR'))))));
+    P.stats.replaceChildren(...alerte, ...cartes, ...essais);
   }
 
   const trash = () => svg('<svg aria-hidden="true" viewBox="0 0 10 10" shape-rendering="crispEdges"><path class="illustration-doux" d="M3 0h4v1H3zM1 1h8v1H1zM2 2h6v8H2z"></path><path class="illustration-parchemin" d="M3 3h1v6H3zM6 3h1v6H6z"></path></svg>');
@@ -535,14 +539,13 @@ const granAccount = (() => {
       if (error) { tr.hidden = false; granUI.toast('Suppression impossible.', { type: 'erreur' }); return; }
       history = history.filter((x) => x.id !== r.id);
       tr.remove();
-      if (profilActive) { getStats(true).then((rows) => paintStats(rows, !rows)); paintRecentes(); if (!history.length) paintHistory(); }
+      if (profilActive) { getStats(true).then((rows) => paintStats(rows, !rows)); if (!history.length) paintHistory(); }
     };
     entry.timer = setTimeout(entry.commit, UNDO_MS);
     pending.add(entry);
-    if (profilActive) paintRecentes();
     granUI.toast('Partie supprimée.', {
       duree: UNDO_MS,
-      action: { label: 'Annuler', onClick: () => { clearTimeout(entry.timer); pending.delete(entry); tr.hidden = false; if (profilActive) paintRecentes(); } },
+      action: { label: 'Annuler', onClick: () => { clearTimeout(entry.timer); pending.delete(entry); tr.hidden = false; } },
     });
   }
   function flushPending() { return Promise.all(Array.from(pending).map((e) => e.commit())); }
@@ -554,7 +557,6 @@ const granAccount = (() => {
     if (!u || !sb) return;
     const erreur = () => {
       P.hist.replaceChildren(el('p', { class: 'historique__vide profil__statut--erreur', role: 'alert' }, 'Historique indisponible.'));
-      P.recentes.replaceChildren(el('p', { class: 'profil__vide profil__statut--erreur', role: 'alert' }, 'Parties récentes indisponibles.'));
     };
     try {
       const { data, error } = await sb.from('game_results')
@@ -564,7 +566,6 @@ const granAccount = (() => {
       if (error) { erreur(); return; }
       history = data || [];
       paintHistory();
-      paintRecentes();
       P.annonce.textContent = `${history.length} partie${history.length > 1 ? 's' : ''} chargée${history.length > 1 ? 's' : ''}`;
     } catch (_) {
       if (granAuth.user() && granAuth.user().id === u.id) erreur();
@@ -580,11 +581,13 @@ const granAccount = (() => {
     P.root.classList.toggle('profil--invite', !u);
     P.invite.hidden = Boolean(u);
     P.annonce.textContent = '';
-    if (!u) { // invité : stats et parties locales, invitation à créer un compte
-      P.nom.textContent = 'Ton profil';
+    if (!u) { // invité : même en-tête (sans réglages), stats et parties locales, invitation à créer un compte
+      P.nom.textContent = 'Invité';
+      P.depuis.textContent = 'Chiffres gardés dans ce navigateur';
+      P.email.textContent = '';
+      paintAvatar(P.avatar, null, '?');
       paintStats(null);
       history = localHistory();
-      paintRecentes();
       paintHistory();
       return;
     }
@@ -593,7 +596,6 @@ const granAccount = (() => {
     setStatus(P.delStatut, '');
     P.global.replaceChildren(el('div', { class: 'skel stat-global' }));
     P.stats.replaceChildren(el('div', { class: 'skel stat-jeu' }));
-    P.recentes.replaceChildren(el('p', { class: 'profil__vide' }, 'Chargement…'));
     P.hist.replaceChildren(el('p', { class: 'historique__vide' }, 'Chargement…'));
     if (!profile) loadProfile();
     getStats(true).then((rows) => paintStats(rows, !rows));

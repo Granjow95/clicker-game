@@ -292,13 +292,49 @@
       <!-- ====== Profil (#/profil) ====== -->
       <section data-vue="profil" hidden>
         <div class="conteneur profil">
-          <aside class="profil__fiche">
-            <div class="panneau px profil__carte">
-              <span class="profil__avatar" id="profil-avatar" aria-hidden="true"></span>
+          <div class="profil__invite" id="p-invite" hidden>
+            <p>Tu joues sans compte : ces chiffres restent dans ce navigateur. Crée un compte gratuit pour garder tes parties, ton historique et tes scores partout.</p>
+            <div class="profil__invite-actions">
+              <button type="button" class="key key--principal" id="p-invite-creer">Créer un compte</button>
+              <button type="button" class="key key--fantome" id="p-invite-connexion">J'ai déjà un compte</button>
+            </div>
+          </div>
+
+          <!-- En-tête : identité à gauche, chiffres clés à droite -->
+          <div class="panneau px profil__entete">
+            <span class="profil__avatar" id="profil-avatar" aria-hidden="true"></span>
+            <div class="profil__identite">
               <h1 class="profil__nom" id="profil-nom" tabindex="-1">Ton profil</h1>
-              <p class="profil__email" id="profil-email"></p>
               <p class="profil__depuis" id="profil-depuis"></p>
-              <form class="profil__form sur-papier" id="profil-form" novalidate>
+              <p class="profil__email" id="profil-email"></p>
+            </div>
+            <section class="profil__global" aria-labelledby="h-global">
+              <h2 id="h-global" class="sr-only">Vue d'ensemble</h2>
+              <div id="p-global"></div>
+            </section>
+          </div>
+
+          <section aria-labelledby="h-stats" class="profil__bloc">
+            <h2 id="h-stats" class="titre-section titre-section--profil">Par jeu</h2>
+            <div class="stats" id="p-stats"></div>
+          </section>
+
+          <section aria-labelledby="h-hist" class="profil__bloc">
+            <div class="profil__tete-hist">
+              <h2 id="h-hist" class="titre-section titre-section--profil">Historique</h2>
+              <label class="filtre-jeu" for="p-filtre">Jeu
+                <select class="filtre-jeu__select" id="p-filtre"></select>
+              </label>
+            </div>
+            <div class="historique" id="p-historique" tabindex="0" role="region" aria-label="Historique des parties"></div>
+            <p class="sr-only" id="p-annonce" role="status"></p>
+          </section>
+
+          <!-- Réglages du compte : repliés par défaut, ils ne prennent plus toute une colonne -->
+          <details class="profil__reglages" id="p-reglages">
+            <summary class="profil__reglages-titre">Réglages du compte</summary>
+            <div class="profil__reglages-corps">
+              <form class="panneau px profil__form sur-papier" id="profil-form" novalidate>
                 <div class="field">
                   <label class="field__label" for="p-pseudo">Pseudo</label>
                   <input class="field__input" id="p-pseudo" type="text" maxlength="20" autocomplete="nickname" required />
@@ -307,53 +343,24 @@
                 <div class="field">
                   <label class="field__label" for="p-avatar">Avatar (adresse d'une image)</label>
                   <input class="field__input" id="p-avatar" type="url" inputmode="url" maxlength="500" placeholder="https://…" aria-describedby="p-avatar-aide p-avatar-err" />
-                  <span class="field__aide" id="p-avatar-aide">Vide : on garde ta lettre sur fond bonbon.</span>
+                  <span class="field__aide" id="p-avatar-aide">Vide : on prend l'avatar de ton compte de connexion, sinon ta lettre sur fond bonbon.</span>
                   <span class="field__erreur" id="p-avatar-err" hidden></span>
                 </div>
                 <button type="submit" class="key key--principal key--bloc" id="p-enregistrer">Enregistrer</button>
                 <p class="profil__statut" id="p-statut" role="status"></p>
               </form>
-            </div>
-            <div class="profil__compte">
-              <button type="button" class="key key--fantome key--bloc" id="p-deconnexion">Me déconnecter</button>
-              <div class="zone-danger">
-                <p class="zone-danger__titre">Supprimer mon compte</p>
-                <p class="zone-danger__texte">Stats et historique effacés pour de bon. Garde le bouton appuyé 2 secondes pour confirmer.</p>
-                <button type="button" class="key key--danger key--bloc maintenir" id="p-supprimer" aria-describedby="p-suppr-aide"><span class="maintenir__remplissage" aria-hidden="true"></span><span class="maintenir__texte">Maintenir pour supprimer</span></button>
-                <span class="sr-only" id="p-suppr-aide">Maintiens 2 secondes</span>
-                <p class="profil__statut profil__statut--clair" id="p-suppr-statut" role="status"></p>
+              <div class="profil__compte">
+                <button type="button" class="key key--fantome key--bloc" id="p-deconnexion">Me déconnecter</button>
+                <div class="zone-danger">
+                  <p class="zone-danger__titre">Supprimer mon compte</p>
+                  <p class="zone-danger__texte">Stats et historique effacés pour de bon. Garde le bouton appuyé 2 secondes pour confirmer.</p>
+                  <button type="button" class="key key--danger key--bloc maintenir" id="p-supprimer" aria-describedby="p-suppr-aide"><span class="maintenir__remplissage" aria-hidden="true"></span><span class="maintenir__texte">Maintenir pour supprimer</span></button>
+                  <span class="sr-only" id="p-suppr-aide">Maintiens 2 secondes</span>
+                  <p class="profil__statut profil__statut--clair" id="p-suppr-statut" role="status"></p>
+                </div>
               </div>
             </div>
-          </aside>
-          <div class="profil__contenu">
-            <div class="profil__invite" id="p-invite" hidden>
-              <p>Tu joues sans compte : ces chiffres restent dans ce navigateur. Crée un compte gratuit pour garder tes parties, ton historique et tes scores partout.</p>
-              <button type="button" class="key key--principal" id="p-invite-creer">Créer un compte</button>
-              <button type="button" class="key key--fantome" id="p-invite-connexion">J'ai déjà un compte</button>
-            </div>
-            <section aria-labelledby="h-global" class="profil__bloc">
-              <h2 id="h-global" class="titre-section titre-section--profil">Vue d'ensemble</h2>
-              <div class="stats stats--global" id="p-global"></div>
-            </section>
-            <section aria-labelledby="h-stats" class="profil__bloc">
-              <h2 id="h-stats" class="titre-section titre-section--profil">Par jeu</h2>
-              <div class="stats" id="p-stats"></div>
-            </section>
-            <section aria-labelledby="h-recentes" class="profil__bloc">
-              <h2 id="h-recentes" class="titre-section titre-section--profil">Parties récentes</h2>
-              <div class="recentes" id="p-recentes"></div>
-            </section>
-            <section aria-labelledby="h-hist" class="profil__bloc">
-              <div class="profil__tete-hist">
-                <h2 id="h-hist" class="titre-section titre-section--profil">Historique</h2>
-                <label class="filtre-jeu" for="p-filtre">Jeu
-                  <select class="filtre-jeu__select" id="p-filtre"></select>
-                </label>
-              </div>
-              <div class="historique" id="p-historique" tabindex="0" role="region" aria-label="Historique des parties"></div>
-              <p class="sr-only" id="p-annonce" role="status"></p>
-            </section>
-          </div>
+          </details>
         </div>
       </section>
 

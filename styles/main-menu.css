@@ -118,8 +118,8 @@
 }
 
 /* --- Fiche de joueur --- */
-.zone-fiche { padding-top: 96px; max-width: 560px; margin-inline: auto; }
-@media (max-width: 640px) { 
+.zone-fiche { padding-top: 96px; }
+
 /* --- Pied de page "GG" --- */
 .pied { margin-top: 120px; background: var(--encre); border-top: 4px solid var(--lichen-bord); }
 .pied__dedans { padding-block: 56px 40px; display: flex; flex-wrap: wrap; gap: 32px 64px; align-items: end; justify-content: space-between; }
@@ -178,6 +178,15 @@
 .fiche__actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .fiche .key { min-height: 52px; font-size: 16px; }
 .fiche .key--principal { font-size: 18px; }
+/* Grand écran : identité et chiffres à gauche, invitation ou lien vers le profil à droite (plus de carte isolée au centre) */
+@media (min-width: 900px) {
+  .fiche { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "tete action" "stats action"; gap: 20px 48px; align-items: center; }
+  .fiche__tete { grid-area: tete; }
+  .fiche__stats { grid-area: stats; }
+  .fiche__invite, #fiche-connecte { grid-area: action; }
+  #fiche-connecte { justify-content: flex-end; }
+  .fiche__texte { margin-bottom: 16px; }
+}
 
 /* Pied de page */
 .pied__gauche { display: flex; flex-direction: column; gap: 8px; }
@@ -210,7 +219,7 @@
   .titre-section { font-size: 52px; }
   .titre-section--moyen { font-size: 44px; }
   .zone-fiche { padding-top: 56px; }
-        .fiche { padding: 24px 20px; }
+  .fiche { padding: 24px 20px; }
   .fiche .key { width: 100%; }
   .pied { margin-top: 64px; }
   .pied__dedans { padding-block: 32px 40px; }
