@@ -5,7 +5,7 @@
 
 ## Contexte
 
-Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot de passe de 6 caractères minimum, Discord ; Google écarté : configuration trop lourde) pour conserver l'historique des parties. La base Supabase existe déjà : `profiles`, `game_results`, la vue `player_stats`, la RLS (lecture, modification et suppression de ses propres lignes ; `game_results` n'a aucune policy INSERT ni UPDATE, seul le DELETE de ses propres lignes est permis) et le trigger `handle_new_user`.
+Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot de passe de 8 caractères minimum depuis le 2026-11-26, 6 auparavant, Discord ; Google écarté : configuration trop lourde) pour conserver l'historique des parties. La base Supabase existe déjà : `profiles`, `game_results`, la vue `player_stats`, la RLS (lecture, modification et suppression de ses propres lignes ; `game_results` n'a aucune policy INSERT ni UPDATE, seul le DELETE de ses propres lignes est permis) et le trigger `handle_new_user`.
 
 ## Décisions
 
@@ -27,8 +27,8 @@ Les invités jouent avec un pseudo. On ajoute des comptes optionnels (email/mot 
 - Le socket client est créé après `auth.js` avec `auth: (cb) => cb({ token })`. À la connexion ou déconnexion d'un compte, on refait le handshake hors partie uniquement.
 - Les scores lyrics ne sont pas fiables et sont marqués comme tels.
 - GitHub suspend les cron après 60 jours sans activité sur le dépôt.
-- Note : Gribouille et Petit Bac enregistrent leurs parties (une ligne par compte, au moins 2 identités distinctes). La migration `docs/sql/0002-game-results-nouveaux-jeux.sql` élargit la contrainte `game_results_game_check` ; elle n'est pas encore appliquée (d'ici là, insertions refusées et erreurs loguées sans bloquer la partie).
-- Note : les jeux solo (Mot Caché, Écho, Course de frappe, Potager, Lyrics) enregistrent aussi leurs parties. Le client les garde toujours en local (`granGames:stats:<id>`, via `granStats` dans `javascript/jeux.js`) et, si un compte est connecté, émet `solo_result { game, score, won, rounds, meta }`. Le serveur (`registerSolo`, `backend/lib/results.js`) exige un compte, limite à 6 par minute et 150 par jour et par compte, plafonne le score à 1000 et marque `meta.unverified`. La liste des jeux vit dans `GRAN_JEUX` (client) et `GAMES` / `SOLO_GAMES` (serveur) ; la migration 0002 couvre les neuf jeux (toujours non appliquée).
+- Note : Gribouille et Petit Bac enregistrent leurs parties (une ligne par compte, au moins 2 comptes distincts ; Imposteur aussi depuis l'ADR 0004). La migration `docs/sql/0002-game-results-nouveaux-jeux.sql` élargit la contrainte `game_results_game_check` ; elle est appliquée depuis le 2026-11-26.
+- Note : les jeux solo (Mot Caché, Écho, Course de frappe, Potager, Lyrics) enregistrent aussi leurs parties. Le client les garde toujours en local (`granGames:stats:<id>`, via `granStats` dans `javascript/jeux.js`) et, si un compte est connecté, émet `solo_result { game, score, won, rounds, meta }`. Le serveur (`registerSolo`, `backend/lib/results.js`) exige un compte, limite à 6 par minute et 150 par jour et par compte, plafonne le score à 1000 et marque `meta.unverified`. La liste des jeux vit dans `GRAN_JEUX` (client) et `GAMES` / `SOLO_GAMES` (serveur) ; la migration 0002 couvre les neuf jeux (appliquée le 2026-11-26).
 
 ## Conventional Commits
 

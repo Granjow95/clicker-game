@@ -735,7 +735,7 @@
       if (!salle) return;
       salle.setBusy(false);
       if (ERREURS_CODE[code]) salle.showError('code', ERREURS_CODE[code]);
-      else salle.showError('general', message);
+      else salle.showError(code === 'username_taken' ? 'pseudo' : 'general', message);
     },
     'gri:replaced'() {
       if (!active) return;

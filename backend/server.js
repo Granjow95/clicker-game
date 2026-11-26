@@ -8,6 +8,7 @@ const { ytSearchHandler } = require("./lib/ytSearch");
 const { getSupabase } = require("./lib/supabase");
 const { authMiddleware, announceAuth, registerAccount } = require("./lib/auth");
 const { createResults } = require("./lib/results");
+const { forgetPseudos } = require("./lib/pseudos");
 const { createImposteur } = require("./games/imposteur");
 const { createKaraoke } = require("./games/karaoke");
 const { createGribouille } = require("./games/gribouille");
@@ -77,6 +78,7 @@ io.on("connection", (socket) => {
   registerAccount(socket, undefined, (uid) => {
     // Compte supprimé : plus aucun socket du compte ne garde l'identité (ni les joueurs en salle).
     for (const s of io.sockets.sockets.values()) if (s.data.userId === uid) s.data.userId = null;
+    forgetPseudos(); // son pseudo redevient libre
     imposteur.forgetUser(uid);
     karaoke.forgetUser(uid);
     gribouille.forgetUser(uid);

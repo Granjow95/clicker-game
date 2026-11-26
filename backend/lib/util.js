@@ -1,7 +1,8 @@
-// Nettoie une entrée texte venant d'un client : type, caractères de contrôle, longueur.
+// Nettoie une entrée texte venant d'un client : type, caractères de contrôle et invisibles
+// (largeur nulle, marques et contrôles de direction, BOM), longueur.
 function clean(value, max) {
   if (typeof value !== "string") return "";
-  return value.replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, max);
+  return value.replace(/[\u0000-\u001f\u007f<>\u00ad\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g, "").trim().slice(0, max);
 }
 
 // Entier borné ; renvoie `fallback` si la valeur n'est pas un nombre.

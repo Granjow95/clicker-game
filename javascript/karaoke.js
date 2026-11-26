@@ -1236,7 +1236,7 @@ const kkSurSocket = {
     if (!kk.roomId) {
       if (!kk.entree) return;
       kk.entree.setBusy(false);
-      kk.entree.showError(code === 'room_not_found' || code === 'bad_code' ? 'code' : 'general', msg);
+      kk.entree.showError(code === 'room_not_found' || code === 'bad_code' ? 'code' : code === 'username_taken' ? 'pseudo' : 'general', msg);
       kk.entree.refreshResume();
       return;
     }

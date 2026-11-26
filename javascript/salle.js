@@ -8,14 +8,18 @@ const granSalle = (() => {
   const MSG_CODE = 'Un code fait 4 lettres, sans voyelles.';
   const MSG_PSEUDO = 'Il te faut un pseudo pour entrer.';
 
+  // Pseudo du compte connecté, '' en invité. Le serveur impose de toute façon le pseudo du profil à un compte.
+  const pseudoCompte = () => {
+    try {
+      if (typeof granAuth === 'undefined' || !granAuth.user()) return '';
+      if (typeof granAccount !== 'undefined' && granAccount.username) return String(granAccount.username() || '').slice(0, 20);
+      const m = granAuth.user().user_metadata;
+      const nom = m && (m.username || m.name);
+      return typeof nom === 'string' ? nom.slice(0, 20) : '';
+    } catch { return ''; /* compte indisponible */ }
+  };
   const lirePseudo = () => {
     try { const v = localStorage.getItem(CLE_PSEUDO); if (v) return v; } catch { /* stockage indisponible */ }
-    try {
-      const u = typeof granAuth !== 'undefined' && granAuth.user ? granAuth.user() : null;
-      const m = u && u.user_metadata;
-      const nom = m && (m.username || m.name);
-      if (typeof nom === 'string') return nom.slice(0, 20);
-    } catch { /* compte indisponible */ }
     return '';
   };
   const memoriserPseudo = (v) => { try { localStorage.setItem(CLE_PSEUDO, v); } catch { /* stockage indisponible */ } };
@@ -34,7 +38,8 @@ const granSalle = (() => {
     const reprise = el('div', { class: 'entree-salle__reprise px', hidden: true }, repriseTexte,
       el('div', { class: 'entree-salle__reprise-actions' }, btnReprendre, btnOubli));
 
-    const inPseudo = el('input', { class: 'field__input', id: id('pseudo'), maxlength: 20, autocomplete: 'off', 'aria-describedby': id('pseudo-err') });
+    const inPseudo = el('input', { class: 'field__input', id: id('pseudo'), maxlength: 20, autocomplete: 'off', 'aria-describedby': `${id('pseudo-aide')} ${id('pseudo-err')}` });
+    const aidePseudo = el('p', { class: 'field__aide', id: id('pseudo-aide'), hidden: true }, 'Le pseudo de ton compte. Tu peux le changer dans ton profil.');
     const errPseudo = el('p', { class: 'field__erreur', id: id('pseudo-err'), role: 'alert', hidden: true });
     const btnCreer = el('button', { class: 'key key--principal key--bloc', type: 'button' }, 'Créer une salle');
 
@@ -51,12 +56,24 @@ const granSalle = (() => {
 
     const root = el('section', { class: 'entree-salle ecran', 'aria-labelledby': id('titre') },
       h1, pIntro, reprise,
-      el('div', { class: 'field' }, el('label', { class: 'field__label', for: id('pseudo') }, 'Ton pseudo'), inPseudo, errPseudo),
+      el('div', { class: 'field' }, el('label', { class: 'field__label', for: id('pseudo') }, 'Ton pseudo'), inPseudo, aidePseudo, errPseudo),
       btnCreer,
       el('p', { class: 'entree-salle__ou' }, 'ou'),
       form, errGeneral);
     container.replaceChildren(root);
+
+    // Connecté : pseudo du compte, en lecture seule. Invité : dernier pseudo saisi.
+    let compte = '';
+    function syncCompte() {
+      const nom = pseudoCompte();
+      if (nom === compte) return;
+      compte = nom;
+      inPseudo.readOnly = !!nom;
+      aidePseudo.hidden = !nom;
+      inPseudo.value = nom || lirePseudo();
+    }
     inPseudo.value = lirePseudo();
+    syncCompte();
 
     const champs = { pseudo: [inPseudo, errPseudo], code: [inCode, errCode], general: [null, errGeneral] };
     function showError(field, message) {
@@ -64,13 +81,15 @@ const granSalle = (() => {
       err.textContent = message || '';
       err.hidden = !message;
       if (input) { if (message) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid'); }
+      // Pseudo du compte refusé (profil illisible côté serveur) : on rend le champ modifiable pour ne pas bloquer.
+      if (field === 'pseudo' && message && inPseudo.readOnly) { inPseudo.readOnly = false; aidePseudo.hidden = true; }
     }
     const clearErrors = () => ['pseudo', 'code', 'general'].forEach((f) => showError(f, ''));
 
     function pseudoValide() {
       const v = inPseudo.value.trim().slice(0, 20);
       if (!v) { showError('pseudo', MSG_PSEUDO); inPseudo.focus(); granUI.shake(inPseudo); return null; }
-      memoriserPseudo(v);
+      if (!compte) memoriserPseudo(v); // le pseudo du compte ne remplace pas celui de l'invité
       return v;
     }
 
@@ -83,12 +102,14 @@ const granSalle = (() => {
 
     btnCreer.addEventListener('click', () => {
       clearErrors();
+      syncCompte();
       const pseudo = pseudoValide();
       if (pseudo) onCreate(pseudo);
     });
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       clearErrors();
+      syncCompte();
       const pseudo = pseudoValide();
       if (!pseudo) return;
       const code = normaliserCode(inCode.value);
@@ -129,6 +150,7 @@ const granSalle = (() => {
       },
       refreshResume,
       focus() {
+        syncCompte();
         if (!reprise.hidden) btnReprendre.focus();
         else if (!inPseudo.value) inPseudo.focus();
         else if (!inCode.value) btnCreer.focus();

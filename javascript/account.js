@@ -201,7 +201,8 @@ const granAccount = (() => {
     if (/^[^@\s]+@[^@\s.]+$/.test(s)) return "Il manque la fin de l'adresse, par exemple .fr ou .com.";
     return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s) ? '' : "Cette adresse email n'est pas valide.";
   };
-  const vPasswordNew = (v) => (v.length >= 6 ? '' : `6 caractères minimum. Il en manque ${6 - v.length}.`);
+  const MIN_PASSWORD = 8; // à aligner avec Supabase : Authentication > Providers > Email > Minimum password length
+  const vPasswordNew = (v) => (v.length >= MIN_PASSWORD ? '' : `${MIN_PASSWORD} caractères minimum. Il en manque ${MIN_PASSWORD - v.length}.`);
   const vPasswordOld = (v) => (v ? '' : 'Il manque ton mot de passe.');
 
   /* ---------- 1-3. Connexion / inscription / chargement ---------- */
@@ -704,5 +705,8 @@ const granAccount = (() => {
   refreshButton();
   refreshFiche();
 
-  return { open, refreshButton };
+  // Pseudo du compte connecté (profil, sinon métadonnées), '' en invité. Utilisé par l'écran d'entrée des salles.
+  const username = () => (granAuth.user() ? displayName() : '');
+
+  return { open, refreshButton, username };
 })();

@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { clean, createKeyedLimiter, clientIp, normalizeCode } = require("./util");
+const { resolveUsername: defaultResolveUsername } = require("./pseudos");
 const {
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
@@ -23,6 +24,7 @@ const ERRORS = {
   resume_failed: "Impossible de reprendre la partie.",
   rate_limited: "Trop de tentatives, patiente un instant.",
   invalid: "Requête invalide.",
+  username_taken: "Ce pseudo appartient à un compte. Connecte-toi ou choisis-en un autre.",
 };
 
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest();
@@ -59,6 +61,8 @@ function createRoomRegistry(io, opts = {}) {
     onRemove = () => {},
     onHostChange = () => {},
     onEmpty = () => {},
+    // (socket, pseudo nettoyé) -> Promise<{ username } | { error }> : pseudo du profil pour un compte, pseudos de compte interdits aux invités.
+    resolveUsername = defaultResolveUsername,
   } = opts;
   if (!prefix || typeof prefix !== "string") throw new Error("createRoomRegistry: prefix requis");
 
@@ -196,6 +200,39 @@ function createRoomRegistry(io, opts = {}) {
   }
 
   function register(socket) {
+    let resolving = false; // une seule création/jointure à la fois par socket (résolution du pseudo asynchrone)
+    // Pseudo effectif ou null (erreur déjà envoyée). Ne se fie jamais au pseudo envoyé pour un compte.
+    async function pseudoFor(raw) {
+      const username = clean(raw, 20);
+      if (!username) { sendError(socket, "invalid", "Pseudo requis."); return null; }
+      if (resolving) { sendError(socket, "rate_limited"); return null; }
+      resolving = true;
+      const userId = socket.data.userId || null;
+      let r;
+      try {
+        r = await resolveUsername(socket, username);
+      } catch {
+        r = { username };
+      } finally {
+        resolving = false;
+      }
+      if (!socket.connected) return null;
+      // Identité changée pendant l'attente (nouveau handshake) : le pseudo résolu ne correspond plus.
+      if ((socket.data.userId || null) !== userId) { sendError(socket, "invalid"); return null; }
+      if (!r || r.error) { sendError(socket, "username_taken", r && r.error); return null; }
+      return clean(r.username, 20) || username;
+    }
+
+    // Handler asynchrone : une exception ne doit jamais devenir une promesse rejetée non gérée (arrêt du processus).
+    const safe = (fn) => async (data) => {
+      try {
+        await fn(data);
+      } catch (err) {
+        console.error(`${prefix} :`, clean(String(err && err.message), 200));
+        sendError(socket, "invalid");
+      }
+    };
+
     const guard = (data) => {
       if (!allowAuth(socket.id) || !ipLimiter(clientIp(socket))) {
         sendError(socket, "rate_limited");
@@ -204,11 +241,11 @@ function createRoomRegistry(io, opts = {}) {
       return data && typeof data === "object" ? data : {};
     };
 
-    socket.on(`${prefix}:create`, (data) => {
+    socket.on(`${prefix}:create`, safe(async (data) => {
       const d = guard(data);
       if (!d) return;
-      const username = clean(d.username, 20);
-      if (!username) return sendError(socket, "invalid", "Pseudo requis.");
+      const username = await pseudoFor(d.username);
+      if (!username) return;
       if (rooms.size >= maxRooms) return sendError(socket, "server_full");
       const ip = clientIp(socket);
       let mine = 0;
@@ -227,15 +264,15 @@ function createRoomRegistry(io, opts = {}) {
       sendJoined(socket, room, player, token, false);
       emitRoom(room);
       onJoin(room, player);
-    });
+    }));
 
-    socket.on(`${prefix}:join`, (data) => {
+    socket.on(`${prefix}:join`, safe(async (data) => {
       const d = guard(data);
       if (!d) return;
       const code = normalizeCode(d.code);
       if (!code) return sendError(socket, "bad_code");
-      const username = clean(d.username, 20);
-      if (!username) return sendError(socket, "invalid", "Pseudo requis.");
+      const username = await pseudoFor(d.username);
+      if (!username) return;
       const room = rooms.get(code);
       if (!room) return sendError(socket, "room_not_found");
       const current = bySocket(socket);
@@ -263,7 +300,7 @@ function createRoomRegistry(io, opts = {}) {
       sendJoined(socket, room, player, token, false);
       emitRoom(room);
       onJoin(room, player);
-    });
+    }));
 
     socket.on(`${prefix}:resume`, (data) => {
       const d = guard(data);

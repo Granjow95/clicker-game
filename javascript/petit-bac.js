@@ -722,7 +722,7 @@
       if (!S.code) {
         if (!entree) return;
         entree.setBusy(false);
-        entree.showError(code === 'room_not_found' || code === 'bad_code' ? 'code' : 'general', msg);
+        entree.showError(code === 'room_not_found' || code === 'bad_code' ? 'code' : code === 'username_taken' ? 'pseudo' : 'general', msg);
         entree.refreshResume();
         return;
       }

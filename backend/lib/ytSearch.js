@@ -1,12 +1,19 @@
 const { createKeyedLimiter } = require("./util");
+const { isOriginAllowed } = require("../config");
 
 // Recherche audio YouTube (karaoké) : renvoie les IDs des premières vidéos trouvées.
 function ytSearchHandler() {
   const allow = createKeyedLimiter({ max: 30, windowMs: 60_000 }); // 30 recherches / minute / IP
   return async (req, res) => {
-    // Recherche publique sans authentification → CORS ouvert (aucun cookie/credential)
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET");
+    // Réservée au site (mêmes origines que Socket.io) : un autre site ne peut pas se servir du serveur comme relais.
+    // Sans en-tête Origin (curl), la requête passe mais reste limitée par IP.
+    const origin = req.headers.origin;
+    res.header("Vary", "Origin");
+    if (!isOriginAllowed(origin)) return res.status(403).json({ videoIds: [], videoId: null, error: "forbidden" });
+    if (origin) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Methods", "GET");
+    }
 
     if (!allow(req.ip)) return res.status(429).json({ videoIds: [], videoId: null, error: "rate_limited" });
 

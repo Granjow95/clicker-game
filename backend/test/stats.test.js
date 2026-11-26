@@ -76,14 +76,14 @@ test("results.record : plafond de score et limite par userId", () => {
   assert.equal(rows.length, 30);
 });
 
-test("imposteur : un compte avec 2 sockets ne compte qu'une fois, <3 identités = rien", async () => {
+test("imposteur : rien sous 2 comptes distincts, un compte avec 2 sockets ne compte qu'une fois", async () => {
   inserts = [];
-  const cs = await room("S1", ["t1", "t1", undefined]); // 2 identités distinctes
+  const cs = await room("S1", ["t1", "t1", undefined, undefined]); // un seul compte (doublé) + invités
   await playRound("S1", cs);
   assert.equal(inserts.length, 0);
-  const cs2 = await room("S2", ["t2", "t2", undefined, undefined]); // 3 identités, un compte doublé
+  const cs2 = await room("S2", ["t2", "t2", "t3", undefined]); // 2 comptes, t2 doublé
   await playRound("S2", cs2);
-  assert.equal(inserts.filter((r) => r.game === "imposteur").length, 1);
+  assert.deepEqual(inserts.filter((r) => r.game === "imposteur").map((r) => r.user_id).sort(), [U2, U3]);
 });
 
 test("lyrics_result : limite par compte sur plusieurs sockets, score <= 1000", async () => {
@@ -223,4 +223,15 @@ test("recordRanking : compte + invité = rien, tous à 0 = aucun gagnant", () =>
   recordRanking(results, { game: "x", players: [{ pid: "g", userId: "u1" }, { pid: "g2", userId: "u2" }], scoreOf: () => 0, rounds: 3 });
   assert.equal(got.length, 2);
   assert.ok(got.every((r) => r.won === false));
+});
+
+test("/yt-search : origine étrangère refusée, origine du site autorisée", async () => {
+  const url = `http://localhost:${port}/yt-search?q=`; // q vide : aucune requête vers YouTube
+  const evil = await fetch(url, { headers: { Origin: "https://evil.example" } });
+  assert.equal(evil.status, 403);
+  assert.equal(evil.headers.get("access-control-allow-origin"), null);
+  const ok = await fetch(url, { headers: { Origin: "https://granjow.netlify.app" } });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get("access-control-allow-origin"), "https://granjow.netlify.app");
+  assert.match(ok.headers.get("vary") || "", /Origin/);
 });

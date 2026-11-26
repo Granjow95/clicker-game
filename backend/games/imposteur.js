@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { clean, clampInt, normalizeWord } = require("../lib/util");
 const { createRoomRegistry } = require("../lib/rooms");
+const { hasDistinctAccounts } = require("../lib/results");
 const { MAX_IMPOSTEUR_PLAYERS } = require("../config");
 const { WORD_PAIRS } = require("./imposteur-mots");
 
@@ -323,12 +324,12 @@ function createImposteur(io, results = { record() {} }) {
     const gained = {};
     for (const p of room.players) gained[p.pid] = (s.scores[p.pid] || 0) - (before[p.pid] || 0);
 
-    // Historique : une ligne par joueur connecté, points de cette manche. Pas de stats sous 3 identités.
-    if (!aborted) {
-      const identities = new Set(room.players.map((p) => p.userId || p.pid));
+    // Historique : une ligne par compte, points de cette manche. Rien sous 2 comptes distincts
+    // (comme Gribouille, Petit Bac et Karaoké) : un compte seul avec des onglets invités ne gonfle pas ses stats.
+    if (!aborted && hasDistinctAccounts(room.players)) {
       const seen = new Set();
       for (const p of room.players) {
-        if (identities.size < 3 || !p.userId || seen.has(p.userId)) continue;
+        if (!p.userId || seen.has(p.userId)) continue;
         seen.add(p.userId);
         const isImp = p.pid === g.impostorId;
         const isWhite = p.pid === g.whiteId;

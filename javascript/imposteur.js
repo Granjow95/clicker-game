@@ -887,7 +887,7 @@ let currentRoomId = "";
         currentRoomId = "";
         if (!entree) return;
         entree.setBusy(false);
-        const champ = ["room_not_found", "bad_code", "game_in_progress", "room_full"].includes(code) ? "code" : code === "invalid" ? "pseudo" : "general";
+        const champ = ["room_not_found", "bad_code", "game_in_progress", "room_full"].includes(code) ? "code" : code === "invalid" || code === "username_taken" ? "pseudo" : "general";
         entree.showError(champ, msg);
         entree.refreshResume();
         return;

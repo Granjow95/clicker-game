@@ -1,5 +1,5 @@
 -- Migration 0002 : autoriser tous les jeux du registre (javascript/jeux.js) dans public.game_results.
--- NON APPLIQUÉE : à exécuter manuellement (éditeur SQL Supabase) par le propriétaire du projet.
+-- APPLIQUÉE le 2026-11-26 sur le projet Supabase (migration 0002_game_results_nouveaux_jeux).
 -- Tant qu'elle n'est pas appliquée, la contrainte game_results_game_check rejette gribouille, petit-bac,
 -- mot-cache, echo, potager et frappe : l'insertion échoue, backend/lib/results.js logue l'erreur
 -- (console.error "game_results : ...") et la partie n'est jamais bloquée (insertion sans attente, erreurs capturées).

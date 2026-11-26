@@ -105,3 +105,8 @@ test("limiteur par clé : bloque au-delà du quota puis repart avec la fenêtre"
   await new Promise((r) => setTimeout(r, 70));
   assert.equal(allow("ip"), true);
 });
+
+test("clean : retire les caractères invisibles et de direction", () => {
+  const { clean } = require("../lib/util");
+  assert.equal(clean("am​ir‮_t﻿", 20), "amir_t");
+});
