@@ -8,7 +8,7 @@
 /* Polices (à mettre dans <head> de index.html, une seule fois) :
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Pixelify+Sans:wght@400;600;700&family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Jersey+10&family=Special+Elite&family=Shrikhand&family=Bungee&family=Anton&family=VT323&display=swap">
 */
 
 /* ---------- 1. Jetons ---------- */
@@ -48,7 +48,7 @@
   --monde-focus: var(--bouton-dor); /* 8,45:1 sur mousse (faïence : 2,64:1, sous le seuil de 3:1) */
 
   /* Typographie */
-  --police-pixel: "Pixelify Sans", monospace;
+  --police-pixel: "Jersey 10", monospace; /* plus lisible que Pixelify Sans, même esprit pixel ; un seul poids (400) */
   --police-texte: "Bricolage Grotesque", sans-serif;
   --t-12: 12px; --t-14: 14px; --t-16: 16px; --t-20: 20px; --t-26: 26px;
   --t-34: 34px; --t-48: 48px; --t-72: 72px; --t-120: 120px;
@@ -88,6 +88,7 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: var(--police-texte);
+  font-synthesis-weight: none; /* polices d'affichage à poids unique (pixel, cartouches) : pas de faux gras baveux */
   font-size: var(--t-16);
   line-height: 1.5;
   color: var(--monde-texte);

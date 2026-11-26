@@ -5,7 +5,7 @@ const globals = require("globals");
 const SHARED_GLOBALS = {
   io: "readonly", YT: "readonly",
   GRAN_BACKEND: "readonly", GRAN_SUPABASE_URL: "readonly", GRAN_SUPABASE_KEY: "readonly",
-  socket: "readonly", granAuth: "readonly", granAccount: "readonly", granUI: "readonly", granRouter: "readonly", granReprise: "readonly", GRAN_JEUX: "readonly", granStats: "readonly", granSalle: "readonly", granMotCache: "readonly", MOT_CACHE_SOLUTIONS: "readonly", MOT_CACHE_ACCEPTES: "readonly", esc: "readonly", kk: "readonly", kkCleanup: "readonly",
+  socket: "readonly", granAuth: "readonly", granAccount: "readonly", granUI: "readonly", granRouter: "readonly", granReprise: "readonly", GRAN_JEUX: "readonly", granStats: "readonly", granSalle: "readonly", granMotCache: "readonly", granGribouille: "readonly", MOT_CACHE_SOLUTIONS: "readonly", MOT_CACHE_ACCEPTES: "readonly", esc: "readonly", kk: "readonly", kkCleanup: "readonly",
   showToast: "readonly",
   topSongsWithCache: "readonly", searchWithCache: "readonly", getLyricsWithCache: "readonly",
   getSyncedLyrics: "readonly", _tryLyricsOvh: "readonly", _tryLrclibDirect: "readonly",

@@ -4,7 +4,7 @@
    (✓ bien placée, ~ mal placée, × absente) et un motif de bord. Responsive dès 360 px, sans scroll horizontal.
    ========================================================================== */
 [data-monde="mot-cache"] {
-  --monde-fond: #22261C; --monde-surface: #333828; --monde-bord: #4A5139; --monde-texte: #EFE8CC; --monde-texte-doux: #C9CBB5; --monde-accent: #7FB342; --monde-police: "Pixelify Sans", monospace; --monde-focus: #F2B630;
+  --monde-fond: #22261C; --monde-surface: #333828; --monde-bord: #4A5139; --monde-texte: #EFE8CC; --monde-texte-doux: #C9CBB5; --monde-accent: #7FB342; --monde-police: var(--police-pixel); --monde-focus: #F2B630;
   background-image: radial-gradient(rgba(255, 255, 255, .04) 1px, transparent 1.4px);
   background-size: 9px 9px; /* craie sur ardoise */
   --mc-case: min(56px, calc((100vw - 2 * var(--e-4) - 4 * 6px) / 5));

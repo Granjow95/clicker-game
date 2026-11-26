@@ -103,13 +103,14 @@ test("seul le dessinateur dessine ; segments invalides ignorés", async () => {
   assert.equal(c.count("gri:clear"), 0);
 
   const bad = [
-    seg({ id: -1 }), seg({ id: 65536 }), seg({ id: 1.5 }), seg({ c: 12 }), seg({ w: 4 }),
+    seg({ id: -1 }), seg({ id: 65536 }), seg({ id: 1.5 }), seg({ c: 80 }), seg({ c: -1 }), seg({ w: 4 }),
+    seg({ f: 2 }), seg({ f: true }), seg({ f: 1, p: [1, 2, 3, 4] }), seg({ f: 1, p: [1001, 5] }),
     seg({ p: [1, 2, 3] }), seg({ p: [] }), seg({ p: [1] }), seg({ p: new Array(130).fill(5) }),
     seg({ p: [0, 0, 1001, 5] }), seg({ p: [0, 0, -1, 5] }), seg({ p: [0, 0, 1.5, 5] }),
     seg({ p: ["1", "2"] }), seg({ p: "abcd" }), null, "x", 42,
   ];
   for (const s of bad) a.emit("gri:draw", s);
-  await wait(100);
+  await wait(400); // le limiteur de débit (12/s) se recharge
   assert.equal(b.count("gri:draw"), 0);
 
   a.emit("gri:draw", seg({ p: new Array(128).fill(1000) }));
@@ -122,6 +123,39 @@ test("seul le dessinateur dessine ; segments invalides ignorés", async () => {
   a.emit("gri:undo", { id: 2 });
   await wait(80);
   assert.deepEqual(b.log.filter(([e]) => e === "gri:undo")[0][1], { id: 2 });
+});
+
+test("pot de peinture : relayé, présent dans l'instantané, plafonné par tour même après annulation", async () => {
+  const { MAX_FILLS } = require("../games/gribouille");
+  const cs = await setup(3);
+  const [a, b] = cs;
+  await startDrawing(cs);
+  a.emit("gri:draw", { id: 1, c: 79, f: 1, p: [500, 400], w: 3 });
+  await wait(80);
+  const recu = b.log.filter(([e]) => e === "gri:draw").map(([, d]) => d);
+  assert.deepEqual(recu, [{ id: 1, c: 79, w: 0, f: 1, p: [500, 400] }]); // w forcé à 0
+
+  // L'instantané (arrivée en cours de tour) garde f.
+  const d = await client();
+  const jd = once(d, "gri:joined");
+  d.emit("gri:join", { code: a.joined.code, username: "tard" });
+  const etat = (await jd).state;
+  assert.deepEqual(etat.segments, [{ id: 1, c: 79, w: 0, f: 1, p: [500, 400] }]);
+  assert.equal(etat.fills, 1);
+
+  for (let i = 2; i <= MAX_FILLS + 3; i++) {
+    a.emit("gri:draw", { id: i, c: 4, f: 1, p: [i, i] });
+    await wait(90); // sous le limiteur de débit
+  }
+  assert.equal(b.count("gri:draw"), MAX_FILLS);
+  a.emit("gri:undo", { id: 2 });
+  await wait(80);
+  a.emit("gri:draw", { id: 500, c: 4, f: 1, p: [1, 1] });
+  a.emit("gri:draw", seg({ id: 501 })); // les traits restent permis
+  await wait(100);
+  const ids = b.log.filter(([e]) => e === "gri:draw").map(([, x]) => x.id);
+  assert.equal(ids.includes(500), false);
+  assert.equal(ids.includes(501), true);
 });
 
 test("débit : au-delà du limiteur, les segments sont ignorés", async () => {

@@ -9,12 +9,9 @@
   const NB_SEGMENTS = 20;
   const BASE = 1000; // coordonnées normalisées 0-1000
   const MAX_MSG = 200;
-  // Constantes partagées avec le serveur : index c (0-11) et w (0-3).
-  const PALETTE = [
-    { v: '#1B1D16', n: 'Noir' }, { v: '#FFFFFF', n: 'Blanc (gomme)' }, { v: '#B83A24', n: 'Rouge' }, { v: '#F28AA6', n: 'Rose' },
-    { v: '#F2B630', n: 'Jaune' }, { v: '#7FB342', n: 'Vert' }, { v: '#2E63B8', n: 'Bleu' }, { v: '#6B3F1D', n: 'Marron' },
-    { v: '#7A7A72', n: 'Gris' }, { v: '#E8762B', n: 'Orange' }, { v: '#5BC0DE', n: 'Ciel' }, { v: '#8E44AD', n: 'Violet' },
-  ];
+  // Constantes partagées avec le serveur : index c (0-79, javascript/gribouille-outils.js) et w (0-3).
+  const { PALETTE, TEINTES, NUANCES, MAX_POTS, BLANC, indexDe, enRgb, remplir } = granGribouille;
+  const FOND = BLANC; // couleur de la toile vierge
   const EPAISSEURS = [4, 8, 16, 32];
   const NOMS_EPAISSEUR = ['Fin', 'Moyen', 'Épais', 'Très épais'];
   const RAISONS = { time: 'Temps écoulé.', all_found: 'Tout le monde a trouvé.', drawer_left: 'Le dessinateur est parti.' };
@@ -31,7 +28,7 @@
     joined: false, code: '', you: '', token: '', username: '', hostId: '', players: [],
     phase: 'lobby', options: { rounds: 3, drawTime: 80 }, round: 0, totalRounds: 0, scores: {},
     drawerId: '', durationMs: 0, deadline: 0, found: new Set(), youFound: false, mask: '', word: '',
-    choices: null, picked: false, segments: [], turnEnd: null, ranking: [],
+    choices: null, picked: false, segments: [], turnEnd: null, ranking: [], potsUtilises: 0,
   });
 
   let S = fresh();
@@ -50,7 +47,10 @@
   let annonce = -1;
   let ro = null;
   let rafRedim = 0;
-  const sel = { c: 0, w: 1 };
+  // Outil courant : teinte t, nuance n (c = t × 5 + n), épaisseur w, outil 'pinceau' | 'pot'.
+  const sel = { t: 0, n: 4, w: 1, outil: 'pinceau' };
+  const couleur = () => indexDe(sel.t, sel.n);
+  function outilsParDefaut() { sel.t = 0; sel.n = 4; sel.outil = 'pinceau'; } // noir et pinceau à chaque tour
   const D = { active: false, pid: -1, id: 0, c: 0, w: 1, buf: [], lastSent: null, prev: null, timer: 0, lastEmit: 0, nextId: 0 };
   const attentes = new Set();
   let enregistres = [];
@@ -62,6 +62,64 @@
   const estDessinateur = () => S.drawerId === S.you;
   const enPartie = () => S.joined && (S.phase === 'choosing' || S.phase === 'drawing' || S.phase === 'turn_end');
   const entier = (n) => Number.isInteger(n);
+
+  /* ---------- Sons (générés, aucun fichier) ---------- */
+  const Son = (() => {
+    const CLE = 'granGames:gribouille:muet';
+    let ac = null;
+    let muet = false;
+    try { muet = localStorage.getItem(CLE) === '1'; } catch { /* stockage indisponible */ }
+    // L'AudioContext n'est créé ou réveillé qu'après un geste (politique de lecture automatique des navigateurs).
+    function contexte() {
+      if (muet) return null;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      if (!ac) { try { ac = new AC(); } catch { return null; } }
+      if (ac.state === 'suspended') ac.resume().catch(() => {});
+      return ac.state === 'running' ? ac : null;
+    }
+    // Note : fréquence (Hz), départ (s après maintenant), durée (s), options : type d'onde, volume, glissé vers.
+    function note(f, debut, duree, { type = 'square', vol = 0.05, vers = 0 } = {}) {
+      const a = contexte();
+      if (!a) return;
+      const t0 = a.currentTime + debut;
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f, t0);
+      if (vers) o.frequency.exponentialRampToValueAtTime(vers, t0 + duree);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + duree);
+      o.connect(g).connect(a.destination);
+      o.start(t0);
+      o.stop(t0 + duree + 0.02);
+    }
+    const suite = (notes, pas, opts) => notes.forEach((f, i) => note(f, i * pas, pas * 1.6, opts));
+    return {
+      debloquer() { contexte(); },
+      estMuet: () => muet,
+      basculer() {
+        muet = !muet;
+        try { localStorage.setItem(CLE, muet ? '1' : '0'); } catch { /* stockage indisponible */ }
+        if (!muet) this.clic();
+      },
+      clic() { note(660, 0, 0.06, { vol: 0.03 }); },
+      aToi() { suite([523, 659, 784, 1047], 0.09, { type: 'triangle', vol: 0.08 }); }, // c'est ton tour de dessiner
+      tourSuivant() { suite([392, 523], 0.1, { type: 'triangle', vol: 0.05 }); },
+      depart() { note(880, 0, 0.12, { type: 'triangle', vol: 0.06 }); },
+      trouve() { suite([523, 659, 784, 1047, 1319], 0.07, { vol: 0.06 }); }, // tu as trouvé
+      autreTrouve() { suite([784, 1047], 0.07, { type: 'triangle', vol: 0.05 }); },
+      presque() { note(330, 0, 0.18, { type: 'sawtooth', vol: 0.035, vers: 440 }); },
+      message() { note(1200, 0, 0.04, { type: 'sine', vol: 0.025 }); },
+      indice() { note(988, 0, 0.1, { type: 'sine', vol: 0.05 }); },
+      tic() { note(1500, 0, 0.03, { type: 'square', vol: 0.03 }); },
+      finTour() { suite([523, 392, 330], 0.12, { type: 'triangle', vol: 0.06 }); },
+      finPartie() { suite([392, 523, 659, 784, 659, 784, 1047], 0.11, { vol: 0.06 }); },
+      pot() { note(220, 0, 0.16, { type: 'sine', vol: 0.09, vers: 520 }); },
+    };
+  })();
+  const pointeurFin = () => window.matchMedia && window.matchMedia('(pointer: fine)').matches;
 
   /* ---------- Écrans ---------- */
   function afficher(nomEcran, node) {
@@ -177,9 +235,11 @@
     const chrono = el('div', { class: 'gri-chrono', 'aria-hidden': 'true' }, el('span', { class: 'gri-chrono__segments' }, segs), temps);
     const masque = el('div', { class: 'gri-masque', 'aria-hidden': 'true' });
     const masqueSr = el('p', { class: 'sr-only' });
+    const son = el('button', { class: 'key key--fantome key--compact gri-son', type: 'button', 'aria-pressed': String(!Son.estMuet()),
+      onclick: () => { Son.basculer(); majSon(); } });
     const haut = el('header', { class: 'gri-haut px' },
       el('h1', { class: 'sr-only' }, 'Gribouille'),
-      el('div', { class: 'gri-haut__infos' }, infoManche, infoDessin,
+      el('div', { class: 'gri-haut__infos' }, infoManche, infoDessin, son,
         el('button', { class: 'key key--fantome key--compact gri-quitter', type: 'button', onclick: () => granRouter.navigate('/') }, 'Quitter')),
       chrono, live, masque, masqueSr);
 
@@ -189,15 +249,24 @@
     const pinceau = el('span', { class: 'gri-pinceau', 'aria-hidden': 'true', hidden: true });
     const toile = el('div', { class: 'gri-toile' }, canvas, pinceau, voile, tampon);
 
-    const palette = el('div', { class: 'gri-palette', role: 'group', 'aria-label': 'Couleurs' }, PALETTE.map((p, i) =>
-      el('button', { class: 'gri-pastille', type: 'button', style: `--p:${p.v}`, 'aria-label': p.n, 'aria-pressed': String(i === sel.c), 'data-c': i,
-        onclick: () => { sel.c = i; majOutils(); } })));
+    // Teintes (couleur de base de chacune) puis les 5 nuances de la teinte choisie.
+    const palette = el('div', { class: 'gri-palette', role: 'group', 'aria-label': 'Couleurs' }, TEINTES.map((t, i) =>
+      el('button', { class: 'gri-pastille', type: 'button', style: `--p:${PALETTE[indexDe(i, 2)].v}`, 'aria-label': t.n, 'aria-pressed': 'false', 'data-t': i,
+        onclick: () => { sel.t = i; sel.n = 2; majOutils(); } }))); // une teinte = sa nuance de base ; les nuances se choisissent dessous
+    const nuances = el('div', { class: 'gri-nuances', role: 'group', 'aria-label': 'Nuances' }, Array.from({ length: NUANCES }, (_, n) =>
+      el('button', { class: 'gri-pastille gri-pastille--nuance', type: 'button', 'aria-pressed': 'false', 'data-n': n,
+        onclick: () => { sel.n = n; majOutils(); } })));
+    const outilPinceau = el('button', { class: 'gri-outil', type: 'button', 'aria-pressed': 'true', 'data-outil': 'pinceau', onclick: () => { sel.outil = 'pinceau'; majOutils(); } },
+      el('span', { class: 'gri-outil__icone', 'aria-hidden': 'true' }, '✎'), 'Pinceau');
+    const outilPot = el('button', { class: 'gri-outil', type: 'button', 'aria-pressed': 'false', 'data-outil': 'pot', onclick: () => { sel.outil = 'pot'; majOutils(); } },
+      el('span', { class: 'gri-outil__icone', 'aria-hidden': 'true' }, '◆'), 'Pot de peinture');
+    const choixOutil = el('div', { class: 'gri-choix-outil', role: 'group', 'aria-label': 'Outil' }, outilPinceau, outilPot);
     const epaisseurs = el('div', { class: 'gri-epaisseurs', role: 'group', 'aria-label': 'Épaisseur' }, EPAISSEURS.map((e, i) =>
       el('button', { class: 'gri-epaisseur', type: 'button', 'aria-label': NOMS_EPAISSEUR[i], 'aria-pressed': String(i === sel.w), 'data-w': i,
         onclick: () => { sel.w = i; majOutils(); } }, el('span', { style: `--d:${4 + i * 4}px` }))));
     const annuler = el('button', { class: 'key key--secondaire key--compact', type: 'button', onclick: annulerTrait }, 'Annuler');
     const effacer = el('button', { class: 'key key--secondaire key--compact', type: 'button', onclick: toutEffacer }, 'Tout effacer');
-    const outils = el('div', { class: 'gri-outils px', hidden: true }, palette, el('div', { class: 'gri-outils__bas' }, epaisseurs, annuler, effacer));
+    const outils = el('div', { class: 'gri-outils px', hidden: true }, palette, nuances, el('div', { class: 'gri-outils__bas' }, choixOutil, epaisseurs, annuler, effacer));
 
     const scores = el('ol', { class: 'gri-scores' });
     const messages = el('ul', { class: 'gri-messages', role: 'log', 'aria-label': 'Devinettes' });
@@ -215,9 +284,13 @@
       el('div', { class: 'gri-panneau gri-panneau--chat px' }, el('h2', { class: 'gri-h2' }, 'Devinettes'), messages, form));
 
     const racine = el('section', { class: 'gri-jeu' }, haut, el('div', { class: 'gri-scene' }, toile, outils), cote);
-    G = { racine, pinceau, infoManche, infoDessin, segs, temps, live, chrono, masque, masqueSr, canvas, ctx: canvas.getContext('2d'), toile, voile, tampon,
-      outils, palette, epaisseurs, annuler, scores, messages, champ, envoi, shown: null, prevMask: '', overlayKey: '' };
+    G = { racine, pinceau, infoManche, infoDessin, segs, temps, live, chrono, masque, masqueSr, canvas, ctx: canvas.getContext('2d', { willReadFrequently: true }), toile, voile, tampon,
+      outils, palette, nuances, choixOutil, epaisseurs, annuler, scores, messages, champ, envoi, son, shown: null, prevMask: '', overlayKey: '', sauvegarde: null, secTic: -1 };
     afficher('game', racine);
+    majSon();
+    // Premier geste dans le jeu : autorise le son (politique de lecture automatique).
+    racine.addEventListener('pointerdown', () => Son.debloquer(), { passive: true });
+    racine.addEventListener('keydown', () => Son.debloquer());
 
     canvas.addEventListener('pointerdown', onDown);
     canvas.addEventListener('pointermove', onMove);
@@ -229,10 +302,29 @@
     redimensionner();
   }
 
+  function majSon() {
+    if (!G) return;
+    const on = !Son.estMuet();
+    G.son.setAttribute('aria-pressed', String(on));
+    G.son.textContent = on ? 'Son : oui' : 'Son : non';
+  }
+
   function majOutils() {
     if (!G) return;
-    G.palette.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.c) === sel.c)));
-    G.epaisseurs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.w) === sel.w)));
+    G.palette.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.t) === sel.t)));
+    G.nuances.querySelectorAll('button').forEach((b) => {
+      const c = PALETTE[indexDe(sel.t, Number(b.dataset.n))];
+      b.style.setProperty('--p', c.v);
+      b.setAttribute('aria-label', c.n);
+      b.setAttribute('aria-pressed', String(Number(b.dataset.n) === sel.n));
+    });
+    G.choixOutil.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.outil === sel.outil)));
+    const potPlein = S.potsUtilises >= MAX_POTS;
+    G.choixOutil.querySelector('[data-outil="pot"]').disabled = potPlein;
+    if (potPlein && sel.outil === 'pot') { sel.outil = 'pinceau'; G.choixOutil.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.outil === 'pinceau'))); }
+    G.epaisseurs.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', String(Number(b.dataset.w) === sel.w)); b.disabled = sel.outil === 'pot'; });
+    G.toile.classList.toggle('gri-toile--pot', sel.outil === 'pot');
+    G.toile.style.setProperty('--gri-couleur', PALETTE[couleur()].v);
   }
 
   function majJeu() {
@@ -344,7 +436,7 @@
 
   function confetti() {
     if (granUI.reducedMotion() || !G) return;
-    const couleurs = PALETTE.filter((_, i) => i !== 1).map((p) => p.v);
+    const couleurs = TEINTES.slice(1).map((_, i) => PALETTE[indexDe(i + 1, 2)].v);
     const nodes = Array.from({ length: 16 }, (_, i) => el('span', { class: 'gri-confetti',
       style: `--dx:${Math.round((Math.random() - .5) * 260)}px;--dy:${Math.round(-60 - Math.random() * 120)}px;--r:${Math.round(Math.random() * 540)}deg;--cc:${couleurs[i % couleurs.length]};--dl:${i * 12}ms` }));
     G.toile.append(...nodes);
@@ -367,6 +459,7 @@
     G.temps.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
     G.chrono.classList.toggle('gri-chrono--urgent', S.phase === 'drawing' && sec > 0 && sec <= 10);
     if (S.phase === 'drawing' && (sec === 30 || sec === 10) && annonce !== sec) { annonce = sec; G.live.textContent = `${sec} secondes`; }
+    if (S.phase === 'drawing' && sec > 0 && sec <= 5 && G.secTic !== sec) { G.secTic = sec; Son.tic(); }
   }
   function startTimer() {
     stopTimer();
@@ -400,8 +493,21 @@
     toutRedessiner();
   }
 
+  // Pot de peinture : remplissage à la résolution de cette toile (le résultat peut varier de quelques pixels
+  // d'un écran à l'autre, la zone remplie reste la même).
+  function remplirToile(seg) {
+    const ctx = G.ctx;
+    const w = G.canvas.width;
+    const h = G.canvas.height;
+    const x = Math.min(w - 1, Math.floor((seg.p[0] / BASE) * w));
+    const y = Math.min(h - 1, Math.floor((seg.p[1] / BASE) * h));
+    const img = ctx.getImageData(0, 0, w, h);
+    if (remplir(img.data, w, h, x, y, enRgb(PALETTE[seg.c].v))) ctx.putImageData(img, 0, 0);
+  }
+
   function dessinerSegment(seg) {
     if (!G) return;
+    if (seg.f) { remplirToile(seg); return; }
     const ctx = G.ctx;
     // Coordonnées normalisées 0-1000 sur CHAQUE axe : x suit la largeur, y la hauteur (toile 4:3).
     const kx = G.canvas.width / BASE;
@@ -428,15 +534,47 @@
     ctx.stroke();
   }
 
+  // Point de sauvegarde : image de la toile après les n premiers segments. Pris au début de chaque nouvelle action
+  // quand le dessin contient un remplissage (coûteux à rejouer) ; l'annulation de la dernière action repart de là.
+  // Au plus une capture toutes les 250 ms : une sauvegarde un peu plus ancienne reste valable, l'annulation rejoue
+  // juste quelques segments de plus.
+  function sauvegarder() {
+    if (!G || !S.segments.some((x) => x.f)) { if (G) G.sauvegarde = null; return; }
+    const n = S.segments.length;
+    const sv = G.sauvegarde;
+    if (sv && sv.n === n && sv.dernier === S.segments[n - 1]) return;
+    if (sv && Date.now() - sv.at < 250 && sv.w === G.canvas.width && sv.h === G.canvas.height && n >= sv.n && (sv.n === 0 || S.segments[sv.n - 1] === sv.dernier)) return;
+    G.sauvegarde = { n, dernier: S.segments[n - 1], at: Date.now(), w: G.canvas.width, h: G.canvas.height, img: G.ctx.getImageData(0, 0, G.canvas.width, G.canvas.height) };
+  }
+
+  // Rejeu demandé par le réseau (annuler, tout effacer) : un seul par image, même si les demandes s'enchaînent.
+  let rafRejeu = 0;
+  function planifierRejeu() {
+    if (rafRejeu) return;
+    rafRejeu = requestAnimationFrame(() => { rafRejeu = 0; toutRedessiner(); });
+  }
+
   function toutRedessiner() {
     if (!G) return;
-    G.ctx.fillStyle = PALETTE[1].v;
+    const sv = G.sauvegarde;
+    // La sauvegarde vaut si la toile a la même taille et si ses n premiers segments sont toujours là, inchangés.
+    if (sv && sv.w === G.canvas.width && sv.h === G.canvas.height && S.segments.length >= sv.n && (sv.n === 0 || S.segments[sv.n - 1] === sv.dernier)) {
+      G.ctx.putImageData(sv.img, 0, 0);
+      S.segments.slice(sv.n).forEach(dessinerSegment);
+      return;
+    }
+    G.sauvegarde = null;
+    G.ctx.fillStyle = PALETTE[FOND].v;
     G.ctx.fillRect(0, 0, G.canvas.width, G.canvas.height);
     S.segments.forEach(dessinerSegment);
   }
 
-  const segmentValide = (m) => m && entier(m.id) && m.id >= 0 && m.id <= 65535 && entier(m.c) && m.c >= 0 && m.c < PALETTE.length
-    && entier(m.w) && m.w >= 0 && m.w < EPAISSEURS.length && Array.isArray(m.p) && m.p.length >= 2 && m.p.length % 2 === 0 && m.p.length <= 128 && m.p.every(entier);
+  const coordonnees = (p) => Array.isArray(p) && p.every((v) => entier(v) && v >= 0 && v <= BASE);
+  const segmentValide = (m) => m && entier(m.id) && m.id >= 0 && m.id <= 65535 && entier(m.c) && m.c >= 0 && m.c < PALETTE.length && (m.f === 1
+    ? coordonnees(m.p) && m.p.length === 2
+    : m.f === undefined && entier(m.w) && m.w >= 0 && m.w < EPAISSEURS.length && coordonnees(m.p) && m.p.length >= 2 && m.p.length % 2 === 0 && m.p.length <= 128);
+  // Copie propre d'un segment reçu (seuls les champs connus).
+  const copieSegment = (m) => (m.f === 1 ? { id: m.id, c: m.c, w: 0, f: 1, p: m.p.slice(0, 2) } : { id: m.id, c: m.c, w: m.w, p: m.p });
 
   /* Saisie (dessinateur) */
   const peutDessiner = () => S.joined && S.phase === 'drawing' && estDessinateur() && screen === 'game';
@@ -454,23 +592,40 @@
   function onDown(e) {
     if (!peutDessiner() || D.active || (e.pointerType === 'mouse' && e.button !== 0)) return;
     e.preventDefault();
-    try { G.canvas.setPointerCapture(e.pointerId); } catch { /* capture indisponible */ }
     const p = point(e);
-    Object.assign(D, { active: true, pid: e.pointerId, id: idLibre(), c: sel.c, w: sel.w, buf: [p], lastSent: null, prev: p });
+    if (sel.outil === 'pot') { versePot(p); return; }
+    if (D.timer) { clearTimeout(D.timer); envoyerTrait(); } // la fin du trait précédent part avant le nouveau
+    try { G.canvas.setPointerCapture(e.pointerId); } catch { /* capture indisponible */ }
+    sauvegarder();
+    Object.assign(D, { active: true, pid: e.pointerId, id: idLibre(), c: couleur(), w: sel.w, buf: [p], lastSent: null, prev: p });
     dessinerSegment({ c: D.c, w: D.w, p });
     planifier();
   }
+  // Pot de peinture : le trait précédent part d'abord (même ordre ici et sur le serveur), puis le remplissage.
+  function versePot(p) {
+    if (S.potsUtilises >= MAX_POTS) { granUI.toast(`Pas plus de ${MAX_POTS} pots de peinture par dessin.`, { type: 'info' }); return; }
+    if (D.timer) { clearTimeout(D.timer); envoyerTrait(); }
+    sauvegarder();
+    const seg = { id: idLibre(), c: couleur(), w: 0, f: 1, p };
+    S.segments.push(seg);
+    S.potsUtilises++;
+    dessinerSegment(seg);
+    socket.emit('gri:draw', seg);
+    Son.pot();
+    majOutils();
+  }
+
   // Curseur-pinceau : un rond de la taille et de la couleur du trait, exactement sous le pointeur (souris/stylet).
   function majPinceau(e) {
     if (!G || !G.pinceau) return;
-    if (!peutDessiner() || e.pointerType === 'touch') { cacherPinceau(); return; }
+    if (!peutDessiner() || e.pointerType === 'touch' || sel.outil === 'pot') { cacherPinceau(); return; }
     const r = G.canvas.getBoundingClientRect();
     const d = Math.max(6, EPAISSEURS[sel.w] * (r.width / BASE));
     const st = G.pinceau.style;
     st.width = `${d}px`;
     st.height = `${d}px`;
     st.transform = `translate(${e.clientX - r.left - d / 2}px, ${e.clientY - r.top - d / 2}px)`;
-    st.setProperty('--c', PALETTE[sel.c].v);
+    st.setProperty('--c', PALETTE[couleur()].v);
     G.pinceau.hidden = false;
   }
   function cacherPinceau() { if (G && G.pinceau) G.pinceau.hidden = true; }
@@ -566,6 +721,7 @@
       stopTimer(); abortStroke();
       if (ro) { ro.disconnect(); ro = null; }
       if (rafRedim) { cancelAnimationFrame(rafRedim); rafRedim = 0; }
+      if (rafRejeu) { cancelAnimationFrame(rafRejeu); rafRejeu = 0; }
       G = null; L = null;
       if (voulu === 'lobby') construireSalon();
       else if (voulu === 'over') construireFin();
@@ -604,7 +760,9 @@
     S.picked = false;
     S.mask = typeof st.mask === 'string' ? st.mask : '';
     S.word = typeof st.word === 'string' ? st.word : '';
-    S.segments = Array.isArray(st.segments) ? st.segments.filter(segmentValide) : [];
+    S.segments = Array.isArray(st.segments) ? st.segments.filter(segmentValide).map(copieSegment) : [];
+    S.potsUtilises = entier(st.fills) ? st.fills : S.segments.filter((x) => x.f).length; // compte du serveur (cumulatif)
+    if (G) G.sauvegarde = null;
     D.nextId = S.segments.reduce((m, s) => Math.max(m, s.id + 1), 0);
     S.turnEnd = st.turnEnd || null;
     S.ranking = Array.isArray(st.ranking) ? st.ranking : [];
@@ -639,7 +797,7 @@
       if (p.resumed) granUI.toast(`Tu es de retour dans la salle ${S.code}`);
       if (premiereFois && salle) salle.setBusy(false);
       synchroniser();
-      if (screen === 'game') majJeu();
+      if (screen === 'game') { majJeu(); focusReponse(); }
     },
     'gri:room'(p) {
       if (!S.joined || !p) return;
@@ -655,8 +813,11 @@
       if (!S.joined || !p) return;
       S.phase = 'choosing'; S.drawerId = p.drawerId; S.round = p.round; S.totalRounds = p.totalRounds;
       resetTour(); armer(p.durationMs);
+      outilsParDefaut();
       synchroniser();
-      if (G) G.messages.replaceChildren();
+      // Le chat reste d'un tour à l'autre (il repart à zéro avec la partie suivante) : un repère sépare les tours.
+      if (G) ajouterMessage('gri-msg--tour', `Manche ${S.round}/${S.totalRounds} : ${estDessinateur() ? 'à toi de dessiner' : `${nom(S.drawerId)} dessine`}`);
+      if (estDessinateur()) Son.aToi(); else Son.tourSuivant();
       majJeu();
     },
     'gri:choices'(p) {
@@ -668,42 +829,49 @@
       if (!S.joined || !p) return;
       S.phase = 'drawing'; S.drawerId = p.drawerId; S.mask = String(p.mask || '');
       S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.choices = null; S.turnEnd = null; S.picked = false;
+      S.potsUtilises = 0;
+      outilsParDefaut();
       armer(p.durationMs);
-      if (G) G.prevMask = S.mask;
+      if (G) { G.prevMask = S.mask; G.sauvegarde = null; G.secTic = -1; }
       synchroniser();
       majJeu();
+      Son.depart();
+      focusReponse();
     },
     'gri:word'(p) { if (S.joined && p) { S.word = String(p.word || ''); if (screen === 'game') majJeu(); } },
-    'gri:hint'(p) { if (S.joined && p && typeof p.mask === 'string') { S.mask = p.mask; if (screen === 'game') majMasque(); } },
+    'gri:hint'(p) { if (S.joined && p && typeof p.mask === 'string') { S.mask = p.mask; if (screen === 'game') majMasque(); Son.indice(); } },
     'gri:draw'(m) {
       if (!S.joined || estDessinateur() || !segmentValide(m)) return;
-      const seg = { id: m.id, c: m.c, w: m.w, p: m.p };
+      const seg = copieSegment(m);
+      const dernier = S.segments[S.segments.length - 1];
+      if (!dernier || dernier.id !== seg.id) sauvegarder(); // nouvelle action : point de sauvegarde
       S.segments.push(seg);
       dessinerSegment(seg);
     },
     'gri:undo'(m) {
       if (!S.joined || estDessinateur() || !m || !entier(m.id)) return;
       S.segments = S.segments.filter((s) => s.id !== m.id);
-      toutRedessiner();
+      planifierRejeu();
     },
     'gri:clear'() {
       if (!S.joined || estDessinateur()) return;
       S.segments = [];
-      toutRedessiner();
+      planifierRejeu();
     },
     'gri:chat'(p) {
       if (!S.joined || !G || !p || typeof p.text !== 'string') return;
       ajouterMessage(p.found ? 'gri-msg--trouveurs' : '', el('b', { class: 'gri-msg__nom' }, `${nom(p.playerId)} : `), p.text);
+      if (!estMoi(p.playerId)) Son.message();
     },
     'gri:correct'(p) {
       if (!S.joined || !G || !p) return;
       S.found.add(p.playerId);
       S.scores[p.playerId] = (S.scores[p.playerId] || 0) + (Number(p.points) || 0);
       ajouterMessage('gri-msg--correct', `${estMoi(p.playerId) ? 'Tu as trouvé' : `${nom(p.playerId)} a trouvé`} ! (+${Number(p.points) || 0})`);
-      if (estMoi(p.playerId)) { S.youFound = true; tamponTrouve(); confetti(); }
+      if (estMoi(p.playerId)) { S.youFound = true; tamponTrouve(); confetti(); Son.trouve(); } else Son.autreTrouve();
       majScores(); majChamp();
     },
-    'gri:close'() { if (S.joined && G) ajouterMessage('gri-msg--proche', 'Tu y es presque !'); },
+    'gri:close'() { if (S.joined && G) { ajouterMessage('gri-msg--proche', 'Tu y es presque !'); Son.presque(); } },
     'gri:turn_end'(p) {
       if (!S.joined || !p) return;
       S.phase = 'turn_end'; S.turnEnd = { word: p.word == null ? null : String(p.word), reason: p.reason, gained: p.gained || {} };
@@ -711,12 +879,14 @@
       S.deadline = 0; S.choices = null;
       abortStroke(); stopTimer();
       if (screen === 'game') majJeu();
+      Son.finTour();
     },
     'gri:game_over'(p) {
       if (!S.joined || !p) return;
       S.phase = 'over'; S.ranking = Array.isArray(p.ranking) ? p.ranking : [];
       S.deadline = 0;
       synchroniser();
+      Son.finPartie();
     },
     'gri:error'(p) {
       const code = p && p.code;
@@ -753,7 +923,17 @@
 
   function resetTour() {
     S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.mask = ''; S.choices = null; S.turnEnd = null; S.picked = false;
-    if (G) { G.prevMask = ''; G.shown = null; }
+    S.potsUtilises = 0;
+    if (G) { G.prevMask = ''; G.shown = null; G.sauvegarde = null; }
+  }
+
+  // Devineur : le champ de réponse prend le focus au début du dessin (souris ou stylet seulement : sur téléphone,
+  // le clavier qui s'ouvrirait cacherait le dessin). On ne vole pas le focus d'un autre champ.
+  function focusReponse() {
+    if (!G || S.phase !== 'drawing' || estDessinateur() || G.champ.disabled || !pointeurFin()) return;
+    const actif = document.activeElement;
+    if (actif && actif !== document.body && actif !== G.champ && /^(INPUT|TEXTAREA|SELECT)$/.test(actif.tagName)) return;
+    G.champ.focus({ preventScroll: true });
   }
 
   const surPageHide = () => { if (S.joined && S.phase !== 'over') granReprise.touch(PFX, GRACE_MS); };
@@ -792,6 +972,7 @@
       window.removeEventListener('pagehide', surPageHide);
       if (ro) { ro.disconnect(); ro = null; }
       if (rafRedim) { cancelAnimationFrame(rafRedim); rafRedim = 0; }
+      if (rafRejeu) { cancelAnimationFrame(rafRejeu); rafRejeu = 0; }
       if (G && G.canvas) {
         G.canvas.removeEventListener('pointerdown', onDown);
         G.canvas.removeEventListener('pointermove', onMove);

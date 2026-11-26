@@ -11,20 +11,32 @@ const MAX_SEGMENTS = 1500;
 const MAX_VALUES = 40000;
 const GLOBAL_VALUES = 8000000; // budget de valeurs de traits pour tout le processus
 const SNAPSHOT_GAP_MS = 2000; // un snapshot lourd (traits) par socket toutes les 2 s
+const NB_COULEURS = 80; // 16 teintes × 5 nuances (javascript/gribouille-outils.js)
+const MAX_FILLS = 30; // pots de peinture par tour : coûteux à rejouer chez chaque client
 let globalValues = 0;
 const LETTER = /[\p{L}\p{N}]/u;
 
 const isInt = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 
-// Segment valide : { id 0-65535, c 0-11, w 0-3, p plat d'entiers 0-1000, longueur paire 2-128 }.
+// Segment valide :
+// - trait : { id 0-65535, c 0-79, w 0-3, p plat d'entiers 0-1000, longueur paire 2-128 } ;
+// - pot de peinture : { id, c, f: 1, p: [x, y] } (w forcé à 0).
 function parseSegment(d) {
   if (!d || typeof d !== "object") return null;
-  const { id, c, w, p } = d;
-  if (!isInt(id, 0, 65535) || !isInt(c, 0, 11) || !isInt(w, 0, 3)) return null;
-  if (!Array.isArray(p) || p.length < 2 || p.length > 128 || p.length % 2 !== 0) return null;
+  const { id, c, w, p, f } = d;
+  if (!isInt(id, 0, 65535) || !isInt(c, 0, NB_COULEURS - 1)) return null;
+  if (f !== undefined && f !== 1) return null;
+  if (!Array.isArray(p)) return null;
+  if (f === 1) {
+    if (p.length !== 2 || !p.every((v) => isInt(v, 0, 1000))) return null;
+    return { id, c, w: 0, f: 1, p: p.slice() };
+  }
+  if (!isInt(w, 0, 3)) return null;
+  if (p.length < 2 || p.length > 128 || p.length % 2 !== 0) return null;
   for (const v of p) if (!isInt(v, 0, 1000)) return null;
   return { id, c, w, p: p.slice() };
 }
+const copieSegment = (s) => (s.f ? { id: s.id, c: s.c, w: 0, f: 1, p: s.p.slice() } : { id: s.id, c: s.c, w: s.w, p: s.p.slice() });
 
 // Distance de Levenshtein exactement 1 (une substitution, insertion ou suppression).
 function withinOne(a, b) {
@@ -83,10 +95,12 @@ function createGribouille(io, results, opts = {}) {
     st.wordNorm = "";
     st.revealed = new Set();
     st.segments = [];
+    st.fills = 0; // cumulatif sur le tour : ni l'annulation ni l'effacement ne le font baisser
     setValues(st, 0);
     st.found = Object.create(null);
     st.gained = Object.create(null);
     st.drawLimiter = null;
+    st.undoLimiter = null;
     st.durationMs = 0;
     st.startedAt = 0;
     st.endsAt = 0;
@@ -189,6 +203,8 @@ function createGribouille(io, results, opts = {}) {
     st.startedAt = Date.now();
     st.endsAt = st.startedAt + chooseMs;
     st.drawLimiter = createRateLimiter({ capacity: 20, perSecond: 12 });
+    // Annuler / tout effacer font rejouer tout le dessin chez chaque devineur (remplissages compris) : débit à part, plus bas.
+    st.undoLimiter = createRateLimiter({ capacity: 4, perSecond: 2 });
     reg.toRoom(room, "choosing", { drawerId: drawer.pid, round: st.round, totalRounds: st.options.rounds, durationMs: chooseMs });
     reg.toPlayer(drawer, "choices", { words: st.choices });
     later(st, chooseMs, () => chooseWord(room, st, Math.floor(Math.random() * st.choices.length)));
@@ -281,7 +297,8 @@ function createGribouille(io, results, opts = {}) {
       return snap;
     }
     snap.mask = maskOf(st);
-    snap.segments = st.segments.map((s) => ({ id: s.id, c: s.c, w: s.w, p: s.p.slice() }));
+    snap.segments = st.segments.map(copieSegment);
+    snap.fills = st.fills; // pots déjà versés ce tour (cumulatif, l'annulation ne le fait pas baisser)
     if (st.phase === "drawing" && player.pid === st.drawerPid) snap.word = st.word;
     if (st.phase === "turn_end") snap.turnEnd = { word: st.lastTurn.word, reason: st.lastTurn.reason, gained: { ...st.gained } };
     return snap;
@@ -409,6 +426,10 @@ function createGribouille(io, results, opts = {}) {
       if (!seg) return;
       if (st.segments.length >= MAX_SEGMENTS || st.values + seg.p.length > MAX_VALUES) return;
       if (globalValues + seg.p.length > valueBudget) return;
+      if (seg.f) {
+        if (st.fills >= MAX_FILLS) return;
+        st.fills++;
+      }
       st.segments.push(seg);
       setValues(st, st.values + seg.p.length);
       socket.to(channel(room)).emit("gri:draw", seg);
@@ -416,7 +437,7 @@ function createGribouille(io, results, opts = {}) {
 
     socket.on("gri:undo", (data) => {
       const ctx = drawerCtx("drawing");
-      if (!ctx || !ctx.st.drawLimiter()) return;
+      if (!ctx || !ctx.st.undoLimiter()) return;
       if (!data || typeof data !== "object" || !isInt(data.id, 0, 65535)) return;
       const { st, room } = ctx;
       const kept = st.segments.filter((s) => s.id !== data.id);
@@ -428,7 +449,7 @@ function createGribouille(io, results, opts = {}) {
 
     socket.on("gri:clear", () => {
       const ctx = drawerCtx("drawing");
-      if (!ctx || !ctx.st.drawLimiter()) return;
+      if (!ctx || !ctx.st.undoLimiter()) return;
       ctx.st.segments = [];
       setValues(ctx.st, 0);
       socket.to(channel(ctx.room)).emit("gri:clear", {});
@@ -487,4 +508,4 @@ function createGribouille(io, results, opts = {}) {
   };
 }
 
-module.exports = { createGribouille, _globalValues: () => globalValues };
+module.exports = { createGribouille, parseSegment, MAX_FILLS, NB_COULEURS, _globalValues: () => globalValues };
