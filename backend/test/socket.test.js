@@ -143,8 +143,8 @@ test("salles isolées par jeu : un salon imposteur ne reçoit pas le karaoké", 
   const kk = await t.client();
   kk.emit("kk:create", { username: "k" });
   await next(kk, "kk:joined");
-  kk.emit("kk:select_song", { song: { title: "t", artist: "a" } });
-  await next(kk, "kk:song_selected");
+  kk.emit("kk:select_song", { song: { title: "t", artist: "a" } }); // sans LRC : refus, pas de recherche YouTube réelle
+  await next(kk, "kk:error");
   await wait(150);
   assert.ok(!imp.c.q.some((e) => e[0].startsWith("kk:")));
 });

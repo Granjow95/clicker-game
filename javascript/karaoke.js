@@ -34,6 +34,24 @@ const kk = {
   audioWatchdog: null,
   audioDeadline: null, // délai max avant bascule sans musique
   ytReady: false,
+  endTimer: null,     // écran de fin différé (solo, dernière ligne atteinte à la main)
+  pickSeq: 0,         // jeton du dernier choix de chanson (réponses tardives ignorées)
+  picking: false,     // salle : choix envoyé, en attente de kk:song_selected
+  pickTimer: null,
+  // ── Salle : horloge de lecture partagée (ADR 0005) ──
+  room: null,         // { mode, lines: [{ t, text }], videoIds, endMs, clock, ended }
+  lastSeq: -1,        // dernier numéro d'horloge appliqué
+  offset: 0,          // heure serveur - heure locale (ms)
+  offsetRtt: Infinity,
+  offsetAt: 0,
+  roomTimer: null,    // boucle de synchro (paroles + lecteur)
+  timeTimer: null,    // nouvelle mesure du décalage toutes les 30 s
+  playerGen: 0,       // jeton du lecteur courant
+  drift: 0,           // mesures consécutives au-delà du seuil de dérive
+  lastSeekAt: 0,
+  playAskedAt: 0,     // lecture demandée au lecteur (détection de l'autoplay bloqué)
+  preloadAt: 0,       // préchargement muet tenté pendant l'attente (une fois par horloge)
+  preloading: false,  // son coupé le temps du préchargement
 };
 
 // Adresse du backend : voir javascript/config.js
@@ -111,7 +129,7 @@ const KK_P = 'kk';            // préfixe de reprise (granReprise)
 const KK_GRACE_MS = 120000;   // retour possible 2 min après une sortie en chanson
 const kkEl = (...a) => granUI.el(...a);
 
-const kkInGame = () => kk.mode === 'multi' && !!kk.roomId && kk.started && !kk.replaced;
+const kkInGame = () => kk.mode === 'multi' && !!kk.roomId && kk.started && !kk.replaced && !(kk.room && kk.room.ended);
 const kkDisplayed = (id) => { const e = document.getElementById(id); return !!e && e.style.display !== 'none'; };
 
 function kkClearBusy() { clearTimeout(kk.busyTimer); kk.busyTimer = null; }
@@ -138,6 +156,8 @@ function kkResetRoom() {
   kk.roomId = null; kk.you = null; kk.hostId = null; kk.isHost = false; kk.started = false;
   kk.players = []; kk.song = null; kk.lines = []; kk.lrcLines = null; kk.currentLine = 0;
   kk.audioMode = 'none';
+  kk.room = null; kk.lastSeq = -1;
+  kk.picking = false; clearTimeout(kk.pickTimer);
 }
 
 // Informe le serveur de notre départ et met à jour l'entrée de reprise.
@@ -150,7 +170,7 @@ function kkSendLeave(forfeit) {
     granReprise.clear(KK_P);
   } else {
     socket.emit('kk:leave', {});
-    if (kk.started) granReprise.touch(KK_P, KK_GRACE_MS); else granReprise.clear(KK_P);
+    if (kkInGame()) granReprise.touch(KK_P, KK_GRACE_MS); else granReprise.clear(KK_P); // chanson terminée : plus de reprise
   }
 }
 
@@ -174,7 +194,7 @@ function kkShowEntree(code, { message = '', focus = false } = {}) {
   if (holder) holder.style.display = 'block';
   kk.entree = granSalle.mount(holder, {
     prefix: KK_P, titre: 'Karaoké', jeuLabel: 'Karaoké',
-    intro: "Un code, des amis, un seul micro. L'hôte choisit la chanson et fait défiler.",
+    intro: "Un code, des amis, la même chanson sur tous les écrans. L'hôte choisit la musique et mène la danse.",
     onCreate: (u) => { kk.username = u; kkOccuper(); socket.emit('kk:create', { username: u }); },
     onJoin: (c, u) => { kk.username = u; kkOccuper(); socket.emit('kk:join', { code: c, username: u }); },
     onResume: (e) => { kk.username = e.username || kk.username; kkOccuper(); socket.emit('kk:resume', { code: e.code, token: e.token }); },
@@ -228,6 +248,10 @@ function kkBadge(text, cls) {
   return b;
 }
 
+function kkModeLabel() {
+  return kk.room && kk.room.mode === 'instrumental' ? 'Instrumentale' : 'Musique complète';
+}
+
 function kkHostName() {
   const h = (kk.players || []).find(p => p.id === kk.hostId);
   return h ? h.username : "l'hôte";
@@ -268,7 +292,7 @@ function kkRenderLobby() {
   const startBtn = document.getElementById('kk-start-btn');
   const guestDisp = document.getElementById('kk-guest-song-display');
   if (song) {
-    const songLabel = kkSongLabel(song);
+    const songLabel = `${kkSongLabel(song)} · ${kkModeLabel()}`;
     if (hostDisp) { hostDisp.textContent = songLabel; hostDisp.style.display = 'block'; }
     if (startBtn && kk.isHost) startBtn.style.display = 'inline-flex';
     if (guestDisp) guestDisp.textContent = songLabel + '. En attente du démarrage…';
@@ -299,6 +323,7 @@ function kkMajGarde() { granRouter.setLeaveGuard(kkInGame() ? kkGarde : null); }
 function kkBackToLobby() {
   kk.started = false;
   kk.currentLine = 0;
+  if (kk.room) { kk.room.clock = null; kk.room.ended = false; }
   clearTimeout(kk.autoTimer);
   clearTimeout(kk.endTimer);
   kk.autoPlay = false;
@@ -386,6 +411,8 @@ async function kkSearch(q) {
 }
 
 async function kkLoadWithLyrics(songs, gen) {
+  // En salle, la musique et les paroles sont calées sur les horaires LRC : les chansons sans horaires sont masquées.
+  if (kk.mode === 'multi') songs = songs.filter(s => s._syncedLyrics);
   _kkSongs = [];
   const total = songs.length;
   kkSetBanner(`Vérification des paroles… 0 / ${total}`);
@@ -420,7 +447,7 @@ async function kkLoadWithLyrics(songs, gen) {
   if (gen !== _kkGen) return;
   _kkLoading = false;
   kkSetBanner(null);
-  if (_kkSongs.length === 0) kkSetBanner('Aucune chanson disponible. Essaie un autre terme.');
+  if (_kkSongs.length === 0) kkSetBanner(kk.mode === 'multi' ? 'Aucune chanson aux paroles synchronisées. Essaie un autre terme.' : 'Aucune chanson disponible. Essaie un autre terme.');
   kkRenderGrid();
 }
 
@@ -483,12 +510,45 @@ function kkRenderGrid() {
     info.appendChild(s);
     card.appendChild(info);
 
+    card.disabled = kk.picking;
     card.onclick = () => kkPickSong(song);
     grid.appendChild(card);
   });
 }
 
 async function kkPickSong(song) {
+  if (kk.picking) return;
+  const seq = ++kk.pickSeq;
+  const encore = () => seq === kk.pickSeq && kkDisplayed('karaoke-select');
+
+  if (kk.mode === 'multi') {
+    // En salle : rien n'est affiché avant la confirmation du serveur (qui peut refuser ou passer l'hôte à un autre).
+    if (!kk.isHost || !kk.roomId || !song._syncedLyrics) return;
+    const choice = await kkAskAudioChoice(song, { salle: true });
+    if (!choice || !encore() || !kk.roomId || !kk.isHost) return;
+    kk.picking = true;
+    kkSetBanner(`Préparation de « ${song.title} »…`);
+    kkRenderGrid();
+    clearTimeout(kk.pickTimer);
+    kk.pickTimer = setTimeout(() => {
+      if (!kk.picking) return;
+      kkPickDone();
+      granUI.toast('Le serveur ne répond pas. Réessaie dans un instant.', { type: 'erreur' });
+    }, 12000);
+    socket.emit('kk:select_song', {
+      mode: choice,
+      song: {
+        title: song.title,
+        artist: song.artist,
+        cover: song.cover || '',
+        syncedLyrics: song._syncedLyrics,
+        duration: Number.isFinite(song.duration) ? song.duration : undefined,
+        year: Number.isFinite(song.year) ? song.year : undefined,
+      },
+    });
+    return;
+  }
+
   // _syncedLyrics est déjà inclus dans la réponse de recherche lrclib → disponible immédiatement.
   // Sinon (résultats Deezer / lyrics.ovh : paroles brutes uniquement), on tente de récupérer
   // le vrai timing LRC propre à la musique pour que la lecture auto soit bien synchronisée.
@@ -496,8 +556,9 @@ async function kkPickSong(song) {
   if (!synced && typeof getSyncedLyrics === 'function') {
     kkSetBanner(`Synchronisation de « ${song.title} »…`);
     try { synced = await getSyncedLyrics(song.artist, song.title); } catch {}
-    kkSetBanner(null);
+    if (seq === kk.pickSeq) kkSetBanner(null);
   }
+  if (!encore()) return; // autre chanson choisie entre-temps, ou écran quitté
 
   const selected = {
     title:         song.title,
@@ -508,29 +569,32 @@ async function kkPickSong(song) {
     duration:      song.duration || null,
   };
 
-  if (kk.mode === 'solo') {
-    kk.song = selected;
-    // Choix audio : musique complète / instrumentale / sans musique
-    const choice = await kkAskAudioChoice(selected);
-    if (!choice) return; // tiroir fermé : on reste sur le choix de la chanson
-    kk.audioMode = choice;
-    kkLaunchGame(selected);
-  } else {
-    // En multijoueur, la lecture reste contrôlée manuellement par l'hôte (pas d'audio synchronisé inter-appareils)
-    kk.audioMode = 'none';
-    kk.song = selected;
-    socket.emit('kk:select_song', { song: selected });
-    kkShowLobby();
-  }
+  kk.song = selected;
+  // Choix audio : musique complète / instrumentale / sans musique
+  const choice = await kkAskAudioChoice(selected);
+  if (!choice || !encore()) return; // tiroir fermé : on reste sur le choix de la chanson
+  kk.audioMode = choice;
+  kkLaunchGame(selected);
+}
+
+// Fin d'un choix de chanson en salle (confirmé, refusé ou sans réponse).
+function kkPickDone() {
+  kk.picking = false;
+  clearTimeout(kk.pickTimer);
+  kkSetBanner(null);
+  if (kkDisplayed('karaoke-select')) kkRenderGrid();
 }
 
 /* ───────────────────────────────────────────────
    CHOIX AUDIO — modale affichée à la sélection (solo)
 ─────────────────────────────────────────────── */
-function kkAskAudioChoice(song) {
+function kkAskAudioChoice(song, { salle = false } = {}) {
   return new Promise(resolve => {
     const dlg = document.getElementById('kk-audio-modal');
-    if (!dlg) { resolve('none'); return; }
+    if (!dlg) { resolve(salle ? 'full' : 'none'); return; }
+    if (dlg.open) { resolve(null); return; }
+    const sans = dlg.querySelector('input[name="kk-audio"][value="none"]');
+    if (sans && sans.closest('label')) sans.closest('label').hidden = salle; // en salle : classique ou instrumental
     document.getElementById('kk-audio-song').textContent = song.title;
     document.getElementById('kk-audio-artist').textContent = song.artist;
     dlg.querySelector('input[name="kk-audio"][value="full"]').checked = true;
@@ -585,16 +649,27 @@ function parseLRC(lrc) {
 
 // Affiche les contrôles (hôte/solo) ou le message spectateur.
 function kkApplyHostControls() {
-  const isSoloOrHost = kk.mode === 'solo' || kk.isHost;
+  const multi = kk.mode === 'multi';
+  const isSoloOrHost = !multi || kk.isHost;
   const ctrlEl = document.getElementById('kk-controls');
   const specMsg = document.getElementById('kk-spectator-msg');
   if (ctrlEl) ctrlEl.style.display = isSoloOrHost ? 'flex' : 'none';
   if (specMsg) {
-    specMsg.textContent = `${kkHostName()} contrôle les paroles`;
+    specMsg.textContent = `${kkHostName()} contrôle la lecture`;
     specMsg.style.display = isSoloOrHost ? 'none' : 'block';
   }
   const endActions = document.getElementById('kk-end-actions');
   if (endActions) endActions.style.display = isSoloOrHost ? '' : 'none'; // en salle, seul l'hôte relance ou change de chanson
+  if (multi) {
+    // Bouton central de l'hôte : pause / lecture de l'horloge partagée
+    const playBtn = document.getElementById('kk-play-btn');
+    if (playBtn) {
+      const enCours = !!(kk.room && kk.room.clock && kk.room.clock.playing);
+      playBtn.style.display = kk.isHost ? 'inline-flex' : 'none';
+      playBtn.disabled = !!(kk.room && kk.room.ended);
+      kkSetPlayLabel(playBtn, enCours ? 'Pause' : 'Lecture', enCours);
+    }
+  }
 }
 
 function kkLaunchGame(song, startLine) {
@@ -627,6 +702,7 @@ function kkLaunchGame(song, startLine) {
   const playBtn = document.getElementById('kk-play-btn');
   if (playBtn) {
     playBtn.style.display = kk.mode === 'solo' ? 'inline-flex' : 'none';
+    playBtn.disabled = false;
     kkSetPlayLabel(playBtn, 'Auto', false);
   }
 
@@ -640,9 +716,10 @@ function kkLaunchGame(song, startLine) {
   kkRenderLyrics();
 
   // Démarrer l'audio si demandé (la synchro sera pilotée par la position de lecture)
-  if (kk.mode === 'solo' && (kk.audioMode === 'full' || kk.audioMode === 'instrumental')) {
-    kkStartAudio(song, kk.audioMode);
-  }
+  const avecSon = kk.mode === 'solo' && (kk.audioMode === 'full' || kk.audioMode === 'instrumental');
+  kkShowSound(avecSon);
+  kkSetNoAudio(false);
+  if (avecSon) kkStartAudio(song, kk.audioMode);
 }
 
 function kkRenderLyrics() {
@@ -669,15 +746,21 @@ function kkRenderLyrics() {
 
   const prevBtn = document.getElementById('kk-prev-btn');
   const nextBtn = document.getElementById('kk-next-btn');
+  if (kk.mode === 'multi') {
+    // En salle, la ligne affichée vient de l'horloge : -1 pendant l'intro (« précédente » ramène au début).
+    kkRenderLyricsButtons();
+    if (counter && kk.room && kk.room.clock && !kk.room.clock.playing && !kk.room.ended) counter.textContent = `En pause · ${counter.textContent}`;
+    return; // l'écran de fin n'apparaît que sur kk:ended
+  }
   if (prevBtn) prevBtn.disabled = (currentLine === 0);
   if (nextBtn) nextBtn.disabled = (currentLine >= total - 1);
 
   // Vérifier fin de chanson (en mode audio, c'est l'événement « fin de vidéo » qui décide)
+  clearTimeout(kk.endTimer);
   if (currentLine >= total - 1 && total > 0) {
-    clearTimeout(kk.endTimer);
     kk.endTimer = setTimeout(() => {
       const overlay = document.getElementById('kk-end-overlay');
-      if (overlay && !kk.autoPlay && !kk.audioActive) overlay.style.display = 'flex';
+      if (overlay && !kk.autoPlay && !kk.audioActive && kk.currentLine >= kk.lines.length - 1) overlay.style.display = 'flex';
     }, 800);
   }
 }
@@ -718,10 +801,17 @@ function kkUpdatePlayersBar() {
    CONTRÔLES DE JEU
 ─────────────────────────────────────────────── */
 window.karaokeAdvance = function (direction) {
+  if (kk.mode === 'multi') {
+    // L'hôte demande au serveur de déplacer l'horloge (donc la musique) ; bornes vérifiées ici et côté serveur.
+    if (!kk.isHost || !kk.room || !kk.room.clock || kk.room.ended) return;
+    const idx = kkRoomLine();
+    if (direction === 'next' && idx >= kk.room.lines.length - 1) return;
+    if (direction === 'prev' && idx < 0) return;
+    socket.emit('kk:advance', { direction: direction === 'prev' ? 'prev' : 'next', from: idx }); // ligne vue par l'hôte
+    return;
+  }
   clearTimeout(kk.autoTimer);
-  if (kk.mode === 'multi' && kk.isHost) {
-    socket.emit('kk:advance', { direction });
-  } else if (kk.mode === 'solo') {
+  if (kk.mode === 'solo') {
     const next = direction === 'next' ? kk.currentLine + 1 : kk.currentLine - 1;
     // En mode audio : on déplace la lecture audio sur la ligne visée → tout reste synchronisé
     if (kk.audioActive && kk.ytPlayer && kk.lrcLines) {
@@ -737,6 +827,11 @@ window.karaokeAdvance = function (direction) {
 };
 
 window.karaokeToggleAutoPlay = function () {
+  if (kk.mode === 'multi') { // hôte : pause / reprise pour toute la salle
+    if (!kk.isHost || !kk.room || !kk.room.clock || kk.room.ended) return;
+    socket.emit(kk.room.clock.playing ? 'kk:pause' : 'kk:play', {});
+    return;
+  }
   const overlay = document.getElementById('kk-end-overlay');
 
   // Mode audio : le bouton met en lecture / pause le son
@@ -987,7 +1082,7 @@ async function kkStartAudio(song, mode) {
       rel: 0, fs: 0, modestbranding: 1, iv_load_policy: 3,
     },
     events: {
-      onReady: e => { kk.ytReady = true; clearTimeout(kk.audioDeadline); try { e.target.playVideo(); } catch {} kkArmAudioWatchdog(); },
+      onReady: e => { kk.ytReady = true; clearTimeout(kk.audioDeadline); kkApplyVolume(); try { e.target.playVideo(); } catch {} kkArmAudioWatchdog(); },
       onStateChange: kkOnYTState,
       onError: kkOnYTError,
     },
@@ -1029,7 +1124,7 @@ function kkShowAudioStart() {
     b.type = 'button';
     b.className = 'key key--principal kk-audio-start';
     b.textContent = 'Lancer la musique';
-    b.onclick = () => { try { kk.ytPlayer && kk.ytPlayer.playVideo(); } catch {} };
+    b.onclick = kkAudioStartClick;
     stage.appendChild(b);
   }
   b.style.display = 'inline-flex';
@@ -1102,12 +1197,15 @@ function kkAudioSyncStep() {
   if (idx !== kk.currentLine) kkSetLine(idx);
 }
 
-function kkDestroyAudio() {
-  kkStopSyncLoop();
+// Détruit le lecteur YouTube seulement (la boucle de salle continue : paroles sur l'horloge).
+function kkDestroyPlayer() {
   clearTimeout(kk.audioWatchdog);
-  kkHideAudioStart();
-  kk.audioActive = false;
   clearTimeout(kk.audioDeadline);
+  kkHideAudioStart();
+  kk.ytReady = false;
+  kk.playAskedAt = 0;
+  kk.preloadAt = 0;
+  kk.preloading = false;
   if (kk.ytPlayer) {
     try { kk.ytPlayer.destroy(); } catch {}
     kk.ytPlayer = null;
@@ -1116,11 +1214,21 @@ function kkDestroyAudio() {
   if (host) { host.style.display = 'none'; host.innerHTML = ''; }
 }
 
+// Arrête tout l'audio : synchro solo, boucle de salle, lecteur.
+function kkDestroyAudio() {
+  kkStopSyncLoop();
+  kkStopRoomLoop();
+  kk.playerGen++;
+  kk.audioActive = false;
+  kkDestroyPlayer();
+}
+
 function kkAudioFallback(msg) {
   kkDestroyAudio();
   kk.audioMode = 'none';
   kkHideGap();
   if (msg && typeof granUI !== 'undefined') granUI.toast(msg, { type: 'erreur' });
+  kkShowSound(false);
   const btn = document.getElementById('kk-play-btn');
   if (btn) {
     btn.style.display = kk.mode === 'solo' ? 'inline-flex' : 'none';
@@ -1132,7 +1240,7 @@ function kkAudioFallback(msg) {
 
 window.karaokeRestartSong = function () {
   if (kk.mode === 'multi') { // l'hôte relance : tout le monde repart de la première ligne (kk:started)
-    if (kk.isHost) socket.emit('kk:start', {});
+    if (kk.isHost) socket.emit('kk:restart', {});
     return;
   }
   const overlay = document.getElementById('kk-end-overlay');
@@ -1154,7 +1262,7 @@ window.karaokeRestartSong = function () {
 
 window.karaokeExitGame = async function () {
   if (kk.mode === 'multi') {
-    if (kk.roomId && kk.started) { // bouton « Quitter » : même choix que la garde de navigation
+    if (kkInGame()) { // bouton « Quitter » : même choix que la garde de navigation
       const ok = await kkGarde();
       if (!ok) return;
     }
@@ -1177,6 +1285,331 @@ window.karaokeChangeSong = function () {
   window.karaokeExitGame();
 };
 
+/* ═══════════════════════════════════════════════════
+   SON LOCAL — volume et muet propres à cet appareil (solo et salle)
+═══════════════════════════════════════════════════ */
+const KK_SON_CLE = 'granKaraokeAudio';
+function kkSonPrefs() {
+  try {
+    const v = JSON.parse(localStorage.getItem(KK_SON_CLE) || 'null');
+    if (v && typeof v === 'object') {
+      const n = Number(v.volume);
+      return { volume: Number.isFinite(n) ? Math.max(0, Math.min(100, Math.round(n))) : 80, muted: v.muted === true };
+    }
+  } catch { /* stockage indisponible */ }
+  return { volume: 80, muted: false };
+}
+function kkSaveSon(p) { try { localStorage.setItem(KK_SON_CLE, JSON.stringify(p)); } catch { /* stockage indisponible */ } }
+
+function kkApplyVolume() {
+  const p = kkSonPrefs();
+  const coupe = p.muted || p.volume === 0;
+  if (kk.ytPlayer && kk.ytReady) {
+    try { kk.ytPlayer.setVolume(p.volume); if (coupe) kk.ytPlayer.mute(); else kk.ytPlayer.unMute(); } catch { /* lecteur pas prêt */ }
+  }
+  const btn = document.getElementById('kk-mute-btn');
+  if (btn) {
+    btn.setAttribute('aria-pressed', coupe ? 'true' : 'false');
+    btn.textContent = coupe ? 'Remettre le son' : 'Couper le son';
+  }
+  const vol = document.getElementById('kk-volume');
+  if (vol && Number(vol.value) !== p.volume) vol.value = String(p.volume);
+}
+
+window.karaokeToggleMute = function () {
+  const p = kkSonPrefs();
+  if (p.muted || p.volume === 0) { p.muted = false; if (p.volume === 0) p.volume = 50; } else p.muted = true;
+  kkSaveSon(p);
+  kkApplyVolume();
+};
+
+function kkShowSound(on) {
+  const el = document.getElementById('kk-son');
+  if (el) el.hidden = !on;
+  if (on) kkApplyVolume();
+}
+function kkSetNoAudio(on) {
+  const el = document.getElementById('kk-no-audio');
+  if (el) el.hidden = !on;
+  if (on) kkShowSound(false);
+}
+
+// Bouton « Lancer la musique » (autoplay refusé) : le geste de l'utilisateur relance le lecteur, calé sur l'horloge en salle.
+function kkAudioStartClick() {
+  const p = kk.ytPlayer;
+  if (!p) return;
+  try {
+    if (kk.mode === 'multi' && kk.room && kk.room.clock) {
+      const pos = kkClockPos(kk.room.clock, kkServerNow());
+      p.seekTo(Math.max(0, pos + KK_AVANCE_SEEK) / 1000, true);
+    }
+    kkApplyVolume();
+    p.playVideo();
+  } catch { /* lecteur indisponible */ }
+  kk.playAskedAt = Date.now();
+}
+
+/* ═══════════════════════════════════════════════════
+   SALLE — horloge de lecture partagée (ADR 0005)
+   Le serveur détient { playing, baseMs, baseAt, seq }. Les paroles se calculent sur cette horloge
+   (identiques chez tous, même sans vidéo) et le lecteur YouTube de chaque appareil la suit.
+═══════════════════════════════════════════════════ */
+const KK_SEUIL_DERIVE = 250;   // écart lecteur / horloge toléré (ms)
+const KK_PAUSE_RECALAGE = 2000; // pas deux recalages en moins de 2 s
+const KK_AVANCE_SEEK = 150;    // compense le temps que met un seekTo à repartir
+const KK_SYNC_MS = 125;
+
+const kkServerNow = () => Date.now() + kk.offset;
+function kkClockPos(clock, now) {
+  if (!clock) return 0;
+  return clock.playing && now >= clock.baseAt ? clock.baseMs + (now - clock.baseAt) : clock.baseMs;
+}
+// Même règle que le serveur (lineAt) : dernière ligne dont l'horaire est passé, -1 pendant l'intro.
+function kkLineAt(lines, pos) {
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) { if (lines[i].t <= pos + 50) idx = i; else break; }
+  return idx;
+}
+function kkRoomLine() {
+  if (!kk.room || !kk.room.clock) return -1;
+  return kkLineAt(kk.room.lines, kkClockPos(kk.room.clock, kkServerNow()));
+}
+
+// Chanson reçue du serveur (kk:song_selected ou snapshot) : seule source des lignes et des vidéos en salle.
+function kkRoomApply(d) {
+  kk.song = d.song || null;
+  kk.room = {
+    mode: d.mode === 'instrumental' ? 'instrumental' : 'full',
+    lines: (Array.isArray(d.lines) ? d.lines : [])
+      .filter(l => l && Number.isFinite(l.t) && typeof l.text === 'string')
+      .map(l => ({ t: l.t, text: l.text })),
+    videoIds: (Array.isArray(d.videoIds) ? d.videoIds : []).filter(v => typeof v === 'string' && /^[\w-]{11}$/.test(v)),
+    endMs: Number(d.endMs) || 0,
+    clock: null,
+    ended: false,
+  };
+}
+
+// Applique une horloge reçue ; ignore une horloge plus ancienne que la dernière (sauf snapshot forcé).
+function kkRoomClock(clock, serverNow, force = false) {
+  if (!kk.room || !clock || typeof clock !== 'object') return false;
+  const seq = Number(clock.seq) || 0;
+  if (!force && seq <= kk.lastSeq) return false;
+  kk.lastSeq = Math.max(kk.lastSeq, seq);
+  if (kk.offsetRtt === Infinity && Number.isFinite(serverNow)) kk.offset = serverNow - Date.now(); // estimation avant mesure
+  kk.room.clock = { playing: !!clock.playing, baseMs: Number(clock.baseMs) || 0, baseAt: Number(clock.baseAt) || 0 };
+  kk.drift = 0;
+  kk.lastSeekAt = 0;
+  kk.playAskedAt = 0;
+  kk.preloadAt = 0;
+  return true;
+}
+
+// Décalage d'horloge : on garde la mesure au plus petit aller-retour (remplacée si elle a plus de 2 min).
+function kkTimeSample() {
+  return new Promise((resolve) => {
+    if (typeof socket === 'undefined' || !socket.connected) { resolve(); return; }
+    const c = Date.now();
+    socket.timeout(2000).emit('kk:time', { c }, (err, r) => {
+      if (!err && r && r.c === c && Number.isFinite(r.s)) {
+        const now = Date.now();
+        const rtt = now - c;
+        if (rtt < kk.offsetRtt || now - kk.offsetAt > 120000) {
+          kk.offset = r.s - (c + rtt / 2);
+          kk.offsetRtt = rtt;
+          kk.offsetAt = now;
+        }
+      }
+      resolve();
+    });
+  });
+}
+async function kkTimeSync() {
+  kk.offsetRtt = Infinity; // nouvelle série (entrée en scène, reprise après coupure)
+  for (let i = 0; i < 5 && kk.roomTimer; i++) {
+    await kkTimeSample();
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
+
+function kkStopRoomLoop() {
+  clearInterval(kk.roomTimer); kk.roomTimer = null;
+  clearInterval(kk.timeTimer); kk.timeTimer = null;
+}
+
+// Écran de chanson en salle : paroles du serveur, boucle de synchro, lecteur local.
+function kkLaunchRoomGame() {
+  const r = kk.room;
+  kk.lines = r.lines.map(l => l.text);
+  kk.lrcLines = r.lines.map(l => ({ time: l.t / 1000, text: l.text }));
+  kk.currentLine = 0;
+  kk.autoPlay = false;
+  clearTimeout(kk.autoTimer);
+  clearTimeout(kk.endTimer);
+  kkHideGap();
+  kkDestroyAudio();
+
+  kkShow('karaoke-game');
+  const titleBar = document.getElementById('kk-song-title-bar');
+  if (titleBar) titleBar.textContent = kkSongLabel(kk.song) + (r.mode === 'instrumental' ? ' (instrumentale)' : '');
+  kkApplyHostControls();
+  kkUpdatePlayersBar();
+  const overlay = document.getElementById('kk-end-overlay');
+  if (overlay) overlay.style.display = r.ended ? 'flex' : 'none';
+  kkRenderLyrics();
+  kkSetNoAudio(false);
+  kkShowSound(true);
+
+  kk.roomTimer = setInterval(kkRoomTick, KK_SYNC_MS);
+  kk.timeTimer = setInterval(kkTimeSample, 30000);
+  if (kk.offsetRtt === Infinity || Date.now() - kk.offsetAt > 60000) kkTimeSync(); // pas de nouvelle série à chaque relance
+  kkRoomTick();
+  kkRoomPlayer();
+}
+
+function kkGapText(label, sec) {
+  const g = kkEnsureGapEl();
+  if (!g) return;
+  g.querySelector('.kk-gap-label').textContent = label;
+  g.querySelector('.kk-gap-count').textContent = sec > 0 ? Math.ceil(sec) : '';
+  g.style.display = 'flex';
+}
+
+// Un pas de synchro : ligne affichée, indicateur (intro, pause, instrumental), recalage du lecteur.
+function kkRoomTick() {
+  const r = kk.room;
+  if (!r || !r.clock || !kkDisplayed('karaoke-game')) return;
+  const now = kkServerNow();
+  const c = r.clock;
+  const pos = kkClockPos(c, now);
+  const idx = kkLineAt(r.lines, pos);
+  if (Math.max(0, idx) !== kk.currentLine) kkSetLine(Math.max(0, idx));
+  else kkRenderLyricsButtons();
+  const counter = document.getElementById('kk-line-counter');
+  if (counter && r.lines.length) {
+    const txt = `${!c.playing && !r.ended ? 'En pause · ' : ''}Ligne ${kk.currentLine + 1}/${r.lines.length}`;
+    if (counter.textContent !== txt) counter.textContent = txt;
+  }
+
+  if (r.ended || !c.playing) kkHideGap(); // en pause, les paroles restent visibles (« En pause » dans le compteur)
+  else if (idx < 0 && r.lines.length) kkGapText('La chanson démarre…', (Math.max(0, c.baseAt - now) + r.lines[0].t - pos) / 1000);
+  else {
+    const next = r.lines[idx + 1];
+    if (next && next.t - pos > 5000) kkGapText('Pause instrumentale…', (next.t - pos) / 1000);
+    else kkHideGap();
+  }
+  kkRoomSyncPlayer(now, c, pos);
+}
+
+// Boutons précédente / suivante en salle (l'intro se termine sans changer de ligne affichée).
+function kkRenderLyricsButtons() {
+  if (kk.mode !== 'multi') return;
+  const idx = kkRoomLine();
+  const total = kk.lines.length;
+  const fini = !!(kk.room && kk.room.ended);
+  const prevBtn = document.getElementById('kk-prev-btn');
+  const nextBtn = document.getElementById('kk-next-btn');
+  if (prevBtn) prevBtn.disabled = idx < 0 || fini;
+  if (nextBtn) nextBtn.disabled = idx >= total - 1 || fini;
+}
+
+// Lecteur YouTube de cet appareil : mêmes candidats, dans le même ordre, que les autres joueurs.
+async function kkRoomPlayer() {
+  const r = kk.room;
+  const gen = ++kk.playerGen;
+  if (!r.videoIds.length) { kkSetNoAudio(true); return; }
+  await Promise.race([kkLoadYTApi(), new Promise(res => setTimeout(res, KK_AUDIO_TIMEOUT))]);
+  if (gen !== kk.playerGen || kk.room !== r) return;
+  if (!(window.YT && window.YT.Player)) { kkSetNoAudio(true); return; }
+  kkEnsureYTHost();
+  kk.audioCandidates = r.videoIds;
+  kk.audioIdx = 0;
+  kk.ytReady = false;
+  clearTimeout(kk.audioDeadline);
+  kk.audioDeadline = setTimeout(() => { if (gen === kk.playerGen && !kk.ytReady) kkRoomNoAudio(); }, 10000);
+  kk.ytPlayer = new YT.Player('kk-yt-player', {
+    videoId: r.videoIds[0],
+    playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1, rel: 0, fs: 0, modestbranding: 1, iv_load_policy: 3 },
+    events: {
+      onReady: () => {
+        if (gen !== kk.playerGen) return;
+        kk.ytReady = true;
+        clearTimeout(kk.audioDeadline);
+        kkApplyVolume();
+        kkRoomTick();
+      },
+      onStateChange: (e) => { if (gen === kk.playerGen && e.data === 1) kkHideAudioStart(); },
+      onError: (e) => {
+        if (gen !== kk.playerGen) return;
+        console.warn('[karaoke] erreur YouTube', e.data, '— candidat', kk.audioIdx + 1, '/', kk.audioCandidates.length);
+        kk.audioIdx++;
+        if (kk.ytPlayer && kk.audioIdx < kk.audioCandidates.length) {
+          kk.playAskedAt = 0;
+          try { kk.ytPlayer.cueVideoById(kk.audioCandidates[kk.audioIdx]); } catch { kkRoomNoAudio(); }
+        } else {
+          kkRoomNoAudio();
+        }
+      },
+    },
+  });
+}
+
+// Aucune vidéo lisible sur cet appareil : les paroles continuent sur l'horloge.
+function kkRoomNoAudio() {
+  kk.playerGen++;
+  kkDestroyPlayer();
+  kkSetNoAudio(true);
+}
+
+function kkRoomSyncPlayer(now, c, pos) {
+  const p = kk.ytPlayer;
+  if (!p || !kk.ytReady) return;
+  let st, cur;
+  try { st = p.getPlayerState(); cur = (p.getCurrentTime() || 0) * 1000; } catch { return; }
+  const t = Date.now();
+  const enLecture = c.playing && now >= c.baseAt && !kk.room.ended;
+
+  if (!enLecture) {
+    // 1 = lecture, 3 = chargement → on met en pause, puis on cale la position d'attente
+    if (st === 1 || st === 3) {
+      try { p.pauseVideo(); } catch { /* lecteur indisponible */ }
+    } else if (st === 2 && !kk.room.ended && Math.abs(cur - c.baseMs) > KK_SEUIL_DERIVE) {
+      try { p.seekTo(c.baseMs / 1000, true); } catch { /* lecteur indisponible */ }
+    } else if ((st === -1 || st === 5) && !kk.room.ended && !kk.preloadAt) {
+      // Pas encore chargée : un seekTo (son coupé) lance le chargement, le pas suivant met en pause → départ à l'heure
+      kk.preloadAt = t;
+      kk.preloading = true;
+      try { p.mute(); p.seekTo(c.baseMs / 1000, true); } catch { /* lecteur indisponible */ }
+    }
+    if (st === 2 && kk.preloading) { kk.preloading = false; kkApplyVolume(); }
+    kk.playAskedAt = 0;
+    return;
+  }
+  if (st === 0) { // vidéo terminée : on la laisse finie si elle est plus courte que la chanson, sinon (« Recommencer ») on relance
+    let duree = 0;
+    try { duree = (p.getDuration() || 0) * 1000; } catch { /* lecteur indisponible */ }
+    if (!duree || pos >= duree - 500) return;
+  }
+  if (st !== 1 && st !== 3) {
+    if (!kk.playAskedAt) {
+      kk.playAskedAt = t;
+      try { p.seekTo((pos + KK_AVANCE_SEEK) / 1000, true); p.playVideo(); } catch { /* lecteur indisponible */ }
+    } else if (t - kk.playAskedAt > 1500) {
+      kkShowAudioStart(); // autoplay refusé par le navigateur : un geste est nécessaire
+    }
+    return;
+  }
+  if (st === 3) return; // en chargement : la demande de lecture reste en cours (détection de l'autoplay bloqué)
+  kk.playAskedAt = 0;
+  if (kk.preloading) { kk.preloading = false; kkApplyVolume(); }
+  if (Math.abs(cur - pos) > KK_SEUIL_DERIVE) kk.drift++; else kk.drift = 0;
+  if (kk.drift >= 2 && t - kk.lastSeekAt > KK_PAUSE_RECALAGE) {
+    kk.drift = 0;
+    kk.lastSeekAt = t;
+    try { p.seekTo((pos + KK_AVANCE_SEEK) / 1000, true); } catch { /* lecteur indisponible */ }
+  }
+}
+
 /* ───────────────────────────────────────────────
    SOCKET.IO — ÉVÉNEMENTS KARAOKÉ
 ─────────────────────────────────────────────── */
@@ -1193,9 +1626,16 @@ const kkSurSocket = {
     if (d.resumed && kk.auto) granUI.toast(`Tu es de retour dans la salle ${d.code}`, { type: 'succes' });
     kk.auto = false;
     const st = d.state || {};
-    kk.song = st.song || null;
-    kk.started = !!(st.started && st.song);
-    if (kk.started) { kkLaunchGame(kk.song, st.currentLine); kkMajGarde(); } else { kkBackToLobby(); }
+    if (st.song) kkRoomApply(st); else { kk.song = null; kk.room = null; }
+    kk.started = !!(st.started && kk.room && kk.room.lines.length && st.clock);
+    if (kk.started) {
+      kkRoomClock(st.clock, st.serverNow, true);
+      kk.room.ended = !!st.ended;
+      kkLaunchRoomGame();
+      kkMajGarde();
+    } else {
+      kkBackToLobby();
+    }
   },
   'kk:room': (d) => {
     if (!kk.roomId) return;
@@ -1203,24 +1643,48 @@ const kkSurSocket = {
     kk.isHost = d.hostId === kk.you;
     kk.players = Array.isArray(d.players) ? d.players : [];
     if (kkDisplayed('kk-lobby') && kkDisplayed('karaoke-room')) kkRenderLobby();
-    if (kkDisplayed('karaoke-game')) { kkUpdatePlayersBar(); kkApplyHostControls(); }
+    if (kkDisplayed('karaoke-game')) { kkUpdatePlayersBar(); kkApplyHostControls(); kkRenderLyrics(); }
+    if (!kk.isHost && kk.picking) kkPickDone(); // le serveur abandonne la sélection d'un ancien hôte sans répondre
+    if (!kk.isHost && kkDisplayed('karaoke-select')) kkShowLobby(); // plus hôte : le choix de chanson ne nous revient plus
   },
   'kk:song_selected': (d) => {
     if (!kk.roomId || !d || !d.song) return;
-    kk.song = d.song;
+    kkRoomApply(d);
+    kkPickDone();
     if (kk.started) { kkBackToLobby(); return; }
-    if (kkDisplayed('karaoke-room')) kkRenderLobby();
+    if (kkDisplayed('karaoke-select') && kk.isHost) kkShowLobby();
+    else if (kkDisplayed('karaoke-room')) kkRenderLobby();
   },
   'kk:started': (d) => {
-    if (!kk.roomId || !kk.song) return;
+    if (!kk.roomId || !kk.room || !kk.room.lines.length || !d) return;
+    const dejaEnScene = kk.started && kkDisplayed('karaoke-game') && !!kk.roomTimer;
     kk.started = true;
-    kkLaunchGame(kk.song, d && d.currentLine);
+    kk.room.ended = false;
+    kkRoomClock(d.clock, d.serverNow);
+    if (dejaEnScene) { // « Recommencer » : on garde le lecteur, l'horloge le ramène au début
+      const overlay = document.getElementById('kk-end-overlay');
+      if (overlay) overlay.style.display = 'none';
+      kkApplyHostControls();
+      kkRoomTick();
+    } else {
+      kkLaunchRoomGame();
+    }
     kkMajGarde();
   },
-  'kk:line_changed': (d) => {
+  'kk:clock': (d) => {
     if (!kk.roomId || !kk.started || !d) return;
-    kk.currentLine = d.currentLine;
+    if (kkRoomClock(d.clock, d.serverNow)) { kkApplyHostControls(); kkRoomTick(); }
+  },
+  'kk:ended': (d) => {
+    if (!kk.roomId || !kk.started || !kk.room) return;
+    if (d) kkRoomClock(d.clock, d.serverNow);
+    kk.room.ended = true;
+    kkRoomTick();
+    const overlay = document.getElementById('kk-end-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    kkApplyHostControls();
     kkRenderLyrics();
+    kkMajGarde();
   },
   'kk:stopped': () => { if (kk.roomId) kkBackToLobby(); },
   'kk:replaced': () => { if (kk.roomId) kkShowReplaced(); },
@@ -1228,6 +1692,7 @@ const kkSurSocket = {
     const code = e && e.code;
     const msg = (e && e.message) || 'Une erreur est survenue.';
     kkClearBusy();
+    if (kk.picking) kkPickDone();
     if (code === 'resume_failed') {
       granReprise.clear(KK_P);
       kkShowEntree(null, { message: msg, focus: true });
@@ -1310,19 +1775,34 @@ function kkCleanup() {
 (function init() {
   // Raccourcis clavier pour le jeu
   document.addEventListener('keydown', e => {
-    const gameEl = document.getElementById('karaoke-game');
-    if (!gameEl || gameEl.style.display === 'none') return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (!kkDisplayed('karaoke-game')) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // Ctrl+A, Cmd+←… restent aux raccourcis du navigateur
+    if (document.querySelector('dialog[open]')) return;
+    const cible = e.target && e.target.closest ? e.target : null;
+    if (cible && cible.closest('input, textarea, select, [contenteditable]')) return;
 
-    if (e.code === 'ArrowRight' || e.code === 'Space') {
+    if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+      if (kk.mode === 'multi' && e.repeat) return; // touche maintenue : un saut par appui en salle
       e.preventDefault();
-      karaokeAdvance('next');
-    } else if (e.code === 'ArrowLeft') {
+      karaokeAdvance(e.code === 'ArrowRight' ? 'next' : 'prev');
+    } else if (e.code === 'Space') {
+      if ((kk.mode === 'multi' && e.repeat) || (cible && cible.closest('button, a, [role="button"]'))) return; // Espace active le bouton focalisé
       e.preventDefault();
-      karaokeAdvance('prev');
-    } else if (e.code === 'KeyA') {
+      if (kk.mode === 'multi') karaokeToggleAutoPlay(); else karaokeAdvance('next');
+    } else if (e.code === 'KeyA' && kk.mode === 'solo' && !e.repeat) {
       e.preventDefault();
       karaokeToggleAutoPlay();
     }
   });
+
+  // Volume local (non partagé avec la salle)
+  const vol = document.getElementById('kk-volume');
+  if (vol) vol.addEventListener('input', () => {
+    const p = kkSonPrefs();
+    p.volume = Math.max(0, Math.min(100, Number(vol.value) || 0));
+    if (p.volume > 0) p.muted = false;
+    kkSaveSon(p);
+    kkApplyVolume();
+  });
+  kkApplyVolume();
 })();

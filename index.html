@@ -575,7 +575,7 @@
         </div>
         <div id="kk-songs-grid" class="kar-grille"></div>
 
-        <!-- Tiroir solo : « Tu chantes avec quoi ? » (kkAskAudioChoice) -->
+        <!-- Tiroir « Tu chantes avec quoi ? » (kkAskAudioChoice) : 3 choix en solo, 2 en salle (« Sans musique » masqué) -->
         <dialog id="kk-audio-modal" class="fenetre kar-tiroir" aria-labelledby="kk-audio-song">
           <div class="fenetre__corps">
             <div class="kar-tiroir__chanson">
@@ -644,6 +644,14 @@
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 7 7" shape-rendering="crispEdges"><path d="M1 0h1v1h1v1h1v1h1v1H4v1H3v1H2v1H1z" fill="currentColor"></path></svg>
             </button>
           </div>
+          <div id="kk-son" class="kar-son" hidden>
+            <button type="button" id="kk-mute-btn" class="key key--compact kar-son__muet" aria-pressed="false" onclick="karaokeToggleMute()">Couper le son</button>
+            <label class="kar-son__volume">
+              <span class="kar-son__libelle">Volume</span>
+              <input id="kk-volume" type="range" min="0" max="100" step="5" value="80" />
+            </label>
+          </div>
+          <p id="kk-no-audio" class="kar-sans-musique" role="status" hidden>Pas de musique sur cet appareil : les paroles défilent quand même.</p>
           <p id="kk-spectator-msg" class="scene__aide"></p>
           <ul id="kk-players-bar" class="public" aria-label="Dans la salle" hidden></ul>
         </footer>

@@ -156,6 +156,13 @@ input:checked + .kar-option__pastille { background: #6E1A1F; }
 /* Bouton de secours quand l'autoplay avec son est bloqué */
 .kk-audio-start { display: none; position: absolute; bottom: 18px; left: 0; right: 0; margin-inline: auto; width: max-content; z-index: 8; }
 
+/* Son local (volume, muet) et absence de musique sur cet appareil */
+.kar-son { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 16px; }
+.kar-son[hidden], .kar-sans-musique[hidden] { display: none; }
+.kar-son__volume { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #E9D9C6; }
+.kar-son__volume input { width: min(180px, 40vw); min-height: 44px; accent-color: var(--bouton-dor); cursor: pointer; }
+.kar-sans-musique { margin: 0; padding: 6px 12px; font-size: 14px; font-weight: 600; color: #E9D9C6; background: var(--kar-voile); border: 2px solid rgba(233,217,198,.35); }
+
 /* ---------- 5. Fin de la chanson ---------- */
 .kar-fin { display: none; position: absolute; inset: 0; z-index: 10; flex-direction: column; align-items: center; padding: 24px 20px 24px; overflow: hidden;
   background-color: #6E1A1F; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 10px, rgba(255,255,255,.04) 18px, rgba(0,0,0,.22) 28px); }
