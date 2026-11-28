@@ -1,4 +1,5 @@
-// Mots de Gribouille : noms français faciles à dessiner (uniques après normalizeWord, 4 à 30 caractères).
+// Mots de Gribouille (uniques après normalizeWord dans les deux listes, 4 à 30 caractères).
+// Faciles : noms courants, faciles à dessiner.
 const WORDS = `
 chat,chien,cheval,vache,cochon,mouton,poule,canard,lapin,souris,éléphant,girafe,lion,tigre,singe,zèbre,
 crocodile,serpent,grenouille,tortue,escargot,papillon,abeille,araignée,fourmi,coccinelle,poisson,requin,
@@ -28,6 +29,38 @@ panneau stop,feu rouge,barrière,tente de cirque,montagne russe,grande roue,iglo
 cheminée,boîte aux lettres,lit superposé,hamac,piscine,douche,brosse à dents,savon,poubelle,aspirateur
 `;
 
-const GRIBOUILLE_WORDS = [...new Set(WORDS.split(",").map((w) => w.replace(/\s+/g, " ").trim()).filter(Boolean))];
+// Difficiles : animaux rares, objets précis, lieux célèbres, métiers, phénomènes, créatures, situations et notions.
+const HARD_WORDS = `
+ornithorynque,mille-pattes,caméléon,paresseux,raton laveur,hippopotame,rhinocéros,chameau,dromadaire,lama,
+koala,castor,taupe,limace,méduse,homard,scorpion,moustique,libellule,chenille,cocon,colibri,toucan,autruche,
+paon,vautour,pélican,morse,narval,orque,poisson-lune,
+épouvantail,marionnette,boomerang,sablier,kaléidoscope,tire-bouchon,taille-crayon,attrape-rêves,mappemonde,
+scaphandre,paratonnerre,lampadaire,girouette,cadran solaire,boule à neige,boule disco,ventilateur,radiateur,
+grille-pain,micro-ondes,machine à laver,lave-vaisselle,réfrigérateur,cafetière,mixeur,fer à repasser,
+sèche-cheveux,rasoir,pince à linge,trousseau de clés,tirelire,porte-monnaie,distributeur de billets,
+caisse enregistreuse,photocopieuse,imprimante,clavier,manette,casque de réalité virtuelle,clé usb,
+cornemuse,accordéon,harpe,xylophone,contrebasse,saxophone,harmonica,triangle,partition,métronome,
+éolienne,barrage,aqueduc,colisée,statue de la liberté,tour de pise,muraille de chine,sphinx,stonehenge,
+totem,temple grec,arc de triomphe,gratte-ciel,usine,centrale nucléaire,station-service,péage,
+radeau,catamaran,paquebot,dirigeable,parachute,deltaplane,planche à voile,téléphérique,télésiège,
+patinoire,bowling,fléchettes,baby-foot,flipper,machine à sous,manège,auto-tamponneuse,
+satellite,station spatiale,trou noir,éclipse,aurore boréale,tornade,tsunami,avalanche,sables mouvants,
+oasis,mirage,geyser,stalactite,fossile,météorite,constellation,marée basse,coucher de soleil,
+jardinier,boulanger,pompier,facteur,plombier,dentiste,chirurgien,détective,espion,magicien,acrobate,
+dompteur,mime,jongleur,funambule,ventriloque,plongeur,apiculteur,bûcheron,arbitre,chef d'orchestre,
+momie,zombie,loup-garou,cyclope,minotaure,centaure,phénix,yéti,extraterrestre,soucoupe volante,
+cauchemar,fou rire,coup de foudre,insomnie,vertige,éternuement,hoquet,chair de poule,mal de mer,
+embouteillage,file d'attente,pique-nique,anniversaire,mariage,déménagement,cambriolage,naufrage,
+marée noire,recyclage,photosynthèse,gravité,électricité,évolution,digestion,
+feu d'artifice,course de relais,bataille de polochons,bonhomme de pain d'épices,chasse au trésor,
+tour de magie,partie d'échecs,selfie,panne de courant,coup de soleil,
+bulle de savon,château de sable,boule de neige,toile d'araignée,nid d'oiseau,ruche,fourmilière,
+terrier,épi de blé,botte de foin,citrouille,pomme de pin,noix de coco,artichaut,asperge,aubergine,
+raclette,fondue,sushi,kebab,spaghettis,croque-monsieur,barbe à papa,pomme d'amour,
+`;
 
-module.exports = { GRIBOUILLE_WORDS };
+const toList = (text) => [...new Set(text.split(",").map((w) => w.replace(/\s+/g, " ").trim()).filter(Boolean))];
+const GRIBOUILLE_WORDS = toList(WORDS);
+const GRIBOUILLE_HARD_WORDS = toList(HARD_WORDS);
+
+module.exports = { GRIBOUILLE_WORDS, GRIBOUILLE_HARD_WORDS };

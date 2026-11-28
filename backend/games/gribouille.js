@@ -2,9 +2,16 @@ const { createRoomRegistry } = require("../lib/rooms");
 const { clean, clampInt, createRateLimiter, normalizeWord } = require("../lib/util");
 const { recordRanking } = require("../lib/results");
 const { MAX_GRIBOUILLE_PLAYERS } = require("../config");
-const { GRIBOUILLE_WORDS } = require("./gribouille-mots");
+const { GRIBOUILLE_WORDS, GRIBOUILLE_HARD_WORDS } = require("./gribouille-mots");
 
-const DEFAULT_OPTIONS = { rounds: 3, drawTime: 80 };
+const DIFFICULTIES = ["facile", "mixte", "difficile"];
+const DEFAULT_OPTIONS = { rounds: 3, drawTime: 80, difficulty: "mixte", customOnly: false };
+// Réserve d'où vient chaque mot proposé, selon la difficulté (un emplacement facile laisse sa place à un mot perso).
+const SLOTS = { facile: ["facile", "facile", "facile"], mixte: ["facile", "facile", "difficile"], difficile: ["difficile", "difficile", "difficile"] };
+const MAX_CUSTOM = 100;
+const MAX_CUSTOM_LEN = 30;
+// Mot perso : lettres, espaces, tirets et apostrophes (la ponctuation s'afficherait en clair dans le masque).
+const CUSTOM_WORD = /^\p{L}[\p{L} '’-]*$/u;
 const CHOOSE_MS = 15000;
 const TURN_END_MS = 5000;
 const MAX_SEGMENTS = 1500;
@@ -48,6 +55,26 @@ function withinOne(a, b) {
   return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
 }
 
+// Liste de mots perso envoyée par l'hôte : bornée, nettoyée, dédoublonnée par normalizeWord. null si ce n'est pas un tableau.
+function parseCustomWords(list) {
+  if (!Array.isArray(list)) return null;
+  const words = [];
+  const seen = new Set();
+  let rejected = 0;
+  for (const v of list.slice(0, MAX_CUSTOM * 2)) {
+    if (typeof v !== "string") { rejected++; continue; }
+    const w = clean(v.normalize("NFC"), 200).replace(/\s+/g, " ").trim();
+    if (!w) continue;
+    const norm = normalizeWord(w);
+    if (w.length > MAX_CUSTOM_LEN || norm.length < 2 || !CUSTOM_WORD.test(w)) { rejected++; continue; }
+    if (seen.has(norm)) continue;
+    if (words.length >= MAX_CUSTOM) { rejected++; continue; }
+    seen.add(norm);
+    words.push(w);
+  }
+  return { words, rejected };
+}
+
 const roundTo10 = (n) => Math.round(n / 10) * 10;
 const shuffle = (arr) => {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -57,11 +84,12 @@ const shuffle = (arr) => {
   return arr;
 };
 
-// opts (tests) : { graceMs, timings: { choosingMs, turnEndMs }, words }
+// opts (tests) : { graceMs, timings: { choosingMs, turnEndMs }, words, hardWords }
 function createGribouille(io, results, opts = {}) {
   const chooseMs = (opts.timings && opts.timings.choosingMs) || CHOOSE_MS;
   const turnEndMs = (opts.timings && opts.timings.turnEndMs) || TURN_END_MS;
   const words = Array.isArray(opts.words) && opts.words.length >= 3 ? opts.words : GRIBOUILLE_WORDS;
+  const hardWords = Array.isArray(opts.hardWords) && opts.hardWords.length >= 3 ? opts.hardWords : GRIBOUILLE_HARD_WORDS;
   const valueBudget = Number.isInteger(opts.valueBudget) ? opts.valueBudget : GLOBAL_VALUES;
   let reg;
 
@@ -81,16 +109,26 @@ function createGribouille(io, results, opts = {}) {
       st.round = 0;
       st.order = [];
       st.orderIdx = 0;
-      st.used = new Set();
+      st.custom = []; // mots perso : jamais envoyés à un autre joueur que leur auteur
+      st.customOwner = null; // pid de l'hôte qui les a saisis
+      st.persoPlayed = 0; // mots perso joués dans la partie (leur auteur connaît la réponse)
+      st.played = new Set(); // mots joués dans la partie (normalisés), toutes réserves confondues
+      st.wordLimiters = Object.create(null);
+      st.used = newUsed();
       st.guessLimiters = Object.create(null);
       resetTurn(st);
     }
     return st;
   };
 
+  // Mots déjà joués, une réserve par liste (réinitialisée quand elle est épuisée).
+  const newUsed = () => ({ facile: new Set(), difficile: new Set(), perso: new Set() });
+  const optionsOf = (st) => ({ ...st.options, customCount: st.custom.length });
+
   function resetTurn(st) {
     st.drawerPid = null;
     st.choices = [];
+    st.choiceTags = [];
     st.word = null;
     st.wordNorm = "";
     st.revealed = new Set();
@@ -148,7 +186,9 @@ function createGribouille(io, results, opts = {}) {
     clearTimers(st);
     st.scores = Object.create(null);
     for (const p of room.players) st.scores[p.pid] = 0;
-    st.used = new Set();
+    st.used = newUsed();
+    st.played = new Set();
+    st.persoPlayed = 0;
     st.round = 1;
     st.order = reg.connected(room).map((p) => p.pid);
     st.orderIdx = 0;
@@ -185,20 +225,55 @@ function createGribouille(io, results, opts = {}) {
     beginChoosing(room, st, drawer);
   }
 
-  function pickChoices(st) {
-    let pool = words.filter((w) => !st.used.has(w));
-    if (pool.length < 3) {
-      st.used.clear();
-      pool = words.slice();
+  // Un mot de la réserve `tag`, ni équivalent (normalizeWord) à un mot déjà proposé dans ce choix, ni déjà joué
+  // dans la partie, toutes réserves confondues (un mot perso « chat » ne ressort pas en facile).
+  function draw(st, tag, list, norms) {
+    const libre = (w) => !norms.has(normalizeWord(w));
+    const neuf = (w) => !st.played.has(normalizeWord(w));
+    let pool = list.filter((w) => !st.used[tag].has(w) && libre(w) && neuf(w));
+    if (!pool.length) {
+      st.used[tag].clear(); // réserve épuisée : on recommence
+      pool = list.filter((w) => libre(w) && neuf(w));
+      if (!pool.length) pool = list.filter(libre);
     }
-    return shuffle(pool).slice(0, 3);
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+
+  // Trois mots proposés au dessinateur et leur réserve d'origine (facile / difficile / perso).
+  function pickChoices(st) {
+    const lists = { facile: words, difficile: hardWords, perso: st.custom };
+    let slots;
+    if (st.options.customOnly && st.custom.length >= 3) slots = ["perso", "perso", "perso"];
+    else {
+      slots = SLOTS[st.options.difficulty] ? SLOTS[st.options.difficulty].slice() : SLOTS.mixte.slice();
+      // Tant qu'il reste des mots perso jamais joués, l'un d'eux est proposé à chaque tour.
+      if (st.custom.some((w) => !st.used.perso.has(w))) {
+        const i = slots.indexOf("facile");
+        slots[i === -1 ? 0 : i] = "perso";
+      }
+    }
+    const picks = [];
+    const norms = new Set();
+    const take = (tag) => {
+      const w = draw(st, tag, lists[tag], norms);
+      if (!w) return false;
+      picks.push({ word: w, tag });
+      norms.add(normalizeWord(w));
+      return true;
+    };
+    for (const tag of slots) take(tag);
+    while (picks.length < 3 && take("facile")); // réserve trop petite : on complète avec des mots faciles
+    shuffle(picks);
+    return { words: picks.map((p) => p.word), tags: picks.map((p) => p.tag) };
   }
 
   function beginChoosing(room, st, drawer) {
     resetTurn(st);
     st.phase = "choosing";
     st.drawerPid = drawer.pid;
-    st.choices = pickChoices(st);
+    const picked = pickChoices(st);
+    st.choices = picked.words;
+    st.choiceTags = picked.tags;
     st.durationMs = chooseMs;
     st.startedAt = Date.now();
     st.endsAt = st.startedAt + chooseMs;
@@ -206,7 +281,7 @@ function createGribouille(io, results, opts = {}) {
     // Annuler / tout effacer font rejouer tout le dessin chez chaque devineur (remplissages compris) : débit à part, plus bas.
     st.undoLimiter = createRateLimiter({ capacity: 4, perSecond: 2 });
     reg.toRoom(room, "choosing", { drawerId: drawer.pid, round: st.round, totalRounds: st.options.rounds, durationMs: chooseMs });
-    reg.toPlayer(drawer, "choices", { words: st.choices });
+    reg.toPlayer(drawer, "choices", { words: st.choices, tags: st.choiceTags });
     later(st, chooseMs, () => chooseWord(room, st, Math.floor(Math.random() * st.choices.length)));
   }
 
@@ -215,8 +290,12 @@ function createGribouille(io, results, opts = {}) {
     clearTimers(st);
     st.word = st.choices[index];
     st.wordNorm = normalizeWord(st.word);
-    st.used.add(st.word);
+    const tag = st.choiceTags[index];
+    if (st.used[tag]) st.used[tag].add(st.word);
+    st.played.add(st.wordNorm);
+    if (tag === "perso") st.persoPlayed++;
     st.choices = [];
+    st.choiceTags = [];
     st.phase = "drawing";
     const total = st.options.drawTime * 1000;
     st.durationMs = total;
@@ -261,7 +340,8 @@ function createGribouille(io, results, opts = {}) {
     const already = st.phase === "over";
     st.phase = "over";
     resetTurn(st);
-    if (!already) recordRanking(results, { game: "gribouille", players: room.players, scoreOf: (pid) => st.scores[pid], rounds: st.round });
+    // Mots perso joués : leur auteur connaissait la réponse, le classement n'est pas enregistré dans l'historique.
+    if (!already && st.persoPlayed === 0) recordRanking(results, { game: "gribouille", players: room.players, scoreOf: (pid) => st.scores[pid], rounds: st.round });
     reg.toRoom(room, "game_over", { ranking: ranking(room, st) });
   }
 
@@ -277,11 +357,12 @@ function createGribouille(io, results, opts = {}) {
     const st = getSt(room);
     const snap = {
       phase: st.phase,
-      options: { ...st.options },
+      options: optionsOf(st),
       round: st.round,
       totalRounds: st.options.rounds,
       scores: scoresOf(room, st),
     };
+    if (player.pid === room.hostPid && player.pid === st.customOwner) snap.customWords = st.custom.slice(); // leur auteur seul
     if (st.phase === "lobby") return snap;
     if (st.phase === "over") {
       snap.ranking = ranking(room, st);
@@ -293,7 +374,10 @@ function createGribouille(io, results, opts = {}) {
     snap.youFound = !!st.found[player.pid];
     snap.found = Object.keys(st.found);
     if (st.phase === "choosing") {
-      if (player.pid === st.drawerPid) snap.choices = st.choices.slice();
+      if (player.pid === st.drawerPid) {
+        snap.choices = st.choices.slice();
+        snap.choiceTags = st.choiceTags.slice();
+      }
       return snap;
     }
     snap.mask = maskOf(st);
@@ -342,6 +426,7 @@ function createGribouille(io, results, opts = {}) {
   function onRemove(room, player) {
     const st = getSt(room);
     delete st.guessLimiters[player.pid];
+    delete st.wordLimiters[player.pid];
     const oi = st.order.indexOf(player.pid);
     if (oi !== -1) {
       st.order.splice(oi, 1);
@@ -352,6 +437,19 @@ function createGribouille(io, results, opts = {}) {
     if (st.phase !== "choosing" && st.phase !== "drawing") return;
     if (player.pid === st.drawerPid) endTurn(room, "drawer_left");
     else checkAllFound(room, st);
+  }
+
+  // Nouvel hôte : il ne reçoit JAMAIS les mots perso d'un autre (il pourrait deviner). En partie, ils restent dans la
+  // pioche sans être montrés ; hors partie, ils sont retirés (le nouvel hôte saisira les siens).
+  function onHostChange(room, next) {
+    const st = getSt(room);
+    if (inGame(room) || !st.custom.length || next.pid === st.customOwner) return;
+    st.custom = [];
+    st.customOwner = null;
+    st.used.perso.clear();
+    st.options = { ...st.options, customOnly: false };
+    reg.toRoom(room, "options", optionsOf(st));
+    reg.toPlayer(next, "words_saved", { words: [], rejected: 0 });
   }
 
   function onEmpty(room) {
@@ -370,6 +468,7 @@ function createGribouille(io, results, opts = {}) {
     onDisconnect,
     onResume,
     onRemove,
+    onHostChange,
     onEmpty,
   });
 
@@ -396,8 +495,30 @@ function createGribouille(io, results, opts = {}) {
       st.options = {
         rounds: clampInt(data.rounds, 1, 5, st.options.rounds),
         drawTime: clampInt(data.drawTime, 30, 120, st.options.drawTime),
+        difficulty: DIFFICULTIES.includes(data.difficulty) ? data.difficulty : st.options.difficulty,
+        customOnly: typeof data.customOnly === "boolean" ? data.customOnly : st.options.customOnly,
       };
-      reg.toRoom(cur.room, "options", { ...st.options });
+      reg.toRoom(cur.room, "options", optionsOf(st));
+    });
+
+    // Mots perso (hôte, salon) : la liste revient à l'hôte seul, la salle ne reçoit que leur nombre.
+    // Limiteur par joueur de la salle (survit à une reconnexion).
+    socket.on("gri:words", (data) => {
+      const cur = reg.bySocket(socket);
+      if (!cur || !data || typeof data !== "object") return;
+      const st = getSt(cur.room);
+      if (cur.room.hostPid !== cur.player.pid) return fail(cur.player, "Réservé à l'hôte.");
+      if (st.phase !== "lobby") return;
+      const pid = cur.player.pid;
+      const allowWords = st.wordLimiters[pid] || (st.wordLimiters[pid] = createRateLimiter({ capacity: 3, perSecond: 0.5 }));
+      if (!allowWords()) return fail(cur.player, "Doucement : réessaie dans un instant.");
+      const parsed = parseCustomWords(data.words);
+      if (!parsed) return fail(cur.player, "Liste de mots invalide.");
+      st.custom = parsed.words;
+      st.customOwner = pid;
+      st.used.perso.clear();
+      reg.toPlayer(cur.player, "words_saved", { words: st.custom.slice(), rejected: parsed.rejected });
+      reg.toRoom(cur.room, "options", optionsOf(st));
     });
 
     socket.on("gri:start", () => {
@@ -407,6 +528,7 @@ function createGribouille(io, results, opts = {}) {
       if (cur.room.hostPid !== cur.player.pid) return fail(cur.player, "Réservé à l'hôte.");
       if (st.phase !== "lobby" && st.phase !== "over") return;
       if (reg.connected(cur.room).length < 2) return fail(cur.player, "Il faut au moins 2 joueurs connectés.");
+      if (st.options.customOnly && st.custom.length < 3) return fail(cur.player, "Ajoute au moins 3 mots personnalisés, ou décoche « Seulement mes mots ».");
       startGame(cur.room);
     });
 
@@ -508,4 +630,4 @@ function createGribouille(io, results, opts = {}) {
   };
 }
 
-module.exports = { createGribouille, parseSegment, MAX_FILLS, NB_COULEURS, _globalValues: () => globalValues };
+module.exports = { createGribouille, parseSegment, parseCustomWords, MAX_FILLS, NB_COULEURS, MAX_CUSTOM, _globalValues: () => globalValues };

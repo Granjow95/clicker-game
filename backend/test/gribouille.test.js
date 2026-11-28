@@ -4,7 +4,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { io: connect } = require("socket.io-client");
 const { createGribouille, _globalValues } = require("../games/gribouille");
-const { GRIBOUILLE_WORDS } = require("../games/gribouille-mots");
+const { GRIBOUILLE_WORDS, GRIBOUILLE_HARD_WORDS } = require("../games/gribouille-mots");
 const { normalizeWord } = require("../lib/util");
 
 let server, io, game, port;
@@ -71,6 +71,13 @@ async function startDrawing(cs) {
 
 const seg = (over = {}) => ({ id: 1, c: 2, w: 1, p: [10, 10, 20, 20], ...over });
 
+test("mots difficiles : au moins 200, uniques entre les deux listes, 4 à 30 caractères", () => {
+  assert.ok(GRIBOUILLE_HARD_WORDS.length >= 200);
+  const all = [...GRIBOUILLE_WORDS, ...GRIBOUILLE_HARD_WORDS];
+  assert.equal(new Set(all.map(normalizeWord)).size, all.length);
+  for (const w of GRIBOUILLE_HARD_WORDS) assert.ok(w.length <= 30 && normalizeWord(w).length >= 4, w);
+});
+
 test("mots : au moins 200, uniques, 4 à 30 caractères", () => {
   assert.ok(GRIBOUILLE_WORDS.length >= 200);
   assert.equal(new Set(GRIBOUILLE_WORDS.map(normalizeWord)).size, GRIBOUILLE_WORDS.length);
@@ -79,13 +86,13 @@ test("mots : au moins 200, uniques, 4 à 30 caractères", () => {
 
 test("options : hôte seul, valeurs bornées ; start réservé à l'hôte", async () => {
   const [a, b] = await setup(2);
-  assert.deepEqual(a.joined.state.options, { rounds: 3, drawTime: 80 });
+  assert.deepEqual(a.joined.state.options, { rounds: 3, drawTime: 80, difficulty: "mixte", customOnly: false, customCount: 0 });
   b.emit("gri:options", { rounds: 5, drawTime: 30 });
   await wait(80);
   assert.equal(a.count("gri:options"), 0);
   const p = once(b, "gri:options");
   a.emit("gri:options", { rounds: 99, drawTime: 1 });
-  assert.deepEqual(await p, { rounds: 5, drawTime: 30 });
+  assert.deepEqual(await p, { rounds: 5, drawTime: 30, difficulty: "mixte", customOnly: false, customCount: 0 });
   b.emit("gri:start", {});
   await wait(80);
   assert.equal(a.count("gri:choosing"), 0);
