@@ -62,16 +62,20 @@ async function endReview(host, watcher = host) {
 }
 
 const ALL = [0, 1, 2, 3, 4, 5];
+const { CATEGORIES } = require("../games/petit-bac");
 const words = (L, suffix) => ALL.map((i) => `${L}${suffix}${i}`);
 
 test("options hôte : bornes et catégories distinctes", async () => {
   const { cs } = await room();
   const bad = once(cs[0], "pb:error");
   cs[0].emit("pb:options", { rounds: 3, duration: 90, categories: [0, 0, 1, 2, 3, 4] });
-  assert.equal((await bad).code, "invalid");
+  assert.equal((await bad).code, "bad_categories");
   const ok = once(cs[0], "pb:options");
-  cs[0].emit("pb:options", { rounds: 99, duration: 5, categories: [6, 7, 8, 9, 10, 11] });
-  assert.deepEqual(await ok, { rounds: 10, duration: 60, categories: [6, 7, 8, 9, 10, 11] });
+  cs[0].emit("pb:options", { rounds: 99, duration: 5, categories: [6, 7, 8, 9, 10, 11] }); // ancien format : index
+  assert.deepEqual(await ok, {
+    rounds: 10, duration: 60, custom: [],
+    categories: ["Marque", "Sport", "Personnage célèbre", "Film ou série", "Plat", "Couleur"],
+  });
   const notHost = once(cs[1], "pb:error");
   cs[1].emit("pb:options", { rounds: 1, duration: 60, categories: ALL });
   assert.equal((await notHost).code, "not_host");
@@ -363,4 +367,62 @@ test("revue : le depart d'un joueur avant la fiche courante garde la meme fiche"
   assert.equal(st.index, 1);
   assert.equal(st.total, 2);
   assert.ok(!st.decided.includes(infos[1].you));
+});
+
+test("catégories : autant qu'on veut (1 à 20) et perso (10 au plus), bornes", async () => {
+  const { cs } = await room();
+  const err = async (opts) => {
+    const e = once(cs[0], "pb:error");
+    cs[0].emit("pb:options", { rounds: 1, duration: 60, ...opts });
+    return (await e).code;
+  };
+  assert.equal(await err({ categories: [] }), "bad_categories");
+  const perso = Array.from({ length: 10 }, (_, i) => `Perso ${"abcdefghij"[i]}`);
+  const tout = [...CATEGORIES, ...perso];
+  assert.equal(await err({ custom: perso, categories: tout.slice(0, 21) }), "bad_categories"); // 21
+  assert.equal(await err({ custom: [...perso, "Onzième"], categories: ["Animal"] }), "bad_categories");
+  assert.equal(await err({ custom: ["x"], categories: ["Animal"] }), "bad_categories"); // trop courte
+  assert.equal(await err({ custom: ["y".repeat(31)], categories: ["Animal"] }), "bad_categories");
+  assert.equal(await err({ custom: ["animal"], categories: ["Animal"] }), "bad_categories"); // doublon d'une intégrée
+  assert.equal(await err({ custom: ["Chose", "chose"], categories: ["Animal"] }), "bad_categories");
+  assert.equal(await err({ custom: [], categories: ["Inventée"] }), "bad_categories"); // ni intégrée ni perso
+  assert.equal(await err({ custom: "Chose", categories: ["Animal"] }), "bad_categories");
+  const ok = once(cs[1], "pb:options");
+  cs[0].emit("pb:options", { rounds: 1, duration: 300, custom: ["  Chose  qui pique "], categories: ["Chose qui pique", "Animal"] });
+  assert.deepEqual(await ok, { rounds: 1, duration: 300, custom: ["Chose qui pique"], categories: ["Chose qui pique", "Animal"] });
+  const one = once(cs[1], "pb:options");
+  cs[0].emit("pb:options", { rounds: 1, duration: 60, categories: ["Animal"] }); // custom omis : conservé
+  assert.deepEqual((await one).custom, ["Chose qui pique"]);
+  const vingt = once(cs[1], "pb:options");
+  cs[0].emit("pb:options", { rounds: 1, duration: 60, custom: perso, categories: tout.slice(0, 20) });
+  assert.equal((await vingt).categories.length, 20);
+});
+
+test("manche à 20 catégories (dont perso) jouée jusqu'au bout ; réponses de longueur exacte", async () => {
+  const { cs, infos, code } = await room();
+  const perso = Array.from({ length: 8 }, (_, i) => `Perso ${"abcdefgh"[i]}`);
+  const cats = [...CATEGORIES, ...perso];
+  const o = once(cs[1], "pb:options");
+  cs[0].emit("pb:options", { rounds: 1, duration: 60, custom: perso, categories: cats });
+  await o;
+  cs[0].emit("pb:start", {});
+  const rs = await once(cs[1], "pb:round_start");
+  assert.deepEqual(rs.categories, cats);
+  const L = rs.letter;
+  const e = once(cs[1], "pb:error");
+  cs[1].emit("pb:answers", { answers: [`${L}aa`] }); // 1 réponse pour 20 catégories
+  assert.equal((await e).code, "invalid");
+  // Reprise : les catégories perso sont dans le snapshot
+  cs[1].close();
+  await wait(100);
+  const r = await client();
+  const j = once(r, "pb:joined");
+  r.emit("pb:resume", { code, token: infos[1].token });
+  const snap = (await j).state;
+  assert.deepEqual(snap.categories, cats);
+  assert.deepEqual(snap.options.custom, perso);
+  const rev = once(cs[0], "pb:review", 5000);
+  cs[0].emit("pb:stop", { answers: cats.map((_, i) => `${L}z${i}`) });
+  const review = await rev;
+  assert.equal(review.sheet.length, 20);
 });

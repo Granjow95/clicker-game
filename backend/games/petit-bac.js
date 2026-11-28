@@ -4,7 +4,8 @@ const { recordRanking } = require("../lib/results");
 const { clean, clampInt, createRateLimiter, normalizeWord } = require("../lib/util");
 const { MAX_PETITBAC_PLAYERS } = require("../config");
 
-// Liste serveur : le client n'envoie que des index (ADR 0003 §8).
+// Catégories intégrées. L'hôte en choisit autant qu'il veut (1 à 20, dans l'ordre voulu) parmi celles-ci et ses
+// catégories perso ; le client envoie des noms (ou, ancien format, des index de cette liste).
 const CATEGORIES = [
   "Prénom",
   "Pays ou ville",
@@ -19,9 +20,14 @@ const CATEGORIES = [
   "Plat",
   "Couleur",
 ];
-const CATEGORY_COUNT = 6;
+const MAX_SELECTED = 20;
+const MAX_CUSTOM = 10;
+const CUSTOM_MIN = 2;
+const CUSTOM_MAX = 30;
 const LETTERS = "ABCDEFGHIJLMNOPRSTUV".split(""); // A-Z privé de K Q W X Y Z
-const DEFAULT_OPTIONS = { rounds: 5, duration: 90, categories: [0, 1, 2, 3, 4, 5] };
+const DEFAULT_OPTIONS = { rounds: 5, duration: 90, categories: CATEGORIES.slice(0, 6), custom: [] };
+// Nettoyage large (100) puis contrôle de longueur exact (CUSTOM_MIN à CUSTOM_MAX) par l'appelant : pas de troncature muette.
+const cleanName = (v) => (typeof v === "string" ? clean(v, 100).replace(/\s+/g, " ").trim() : "");
 const COLLECT_MS = 3000;
 const ANSWER_MAX = 30;
 const MIN_LEN = 2;
@@ -31,7 +37,31 @@ const ERRORS = {
   not_host: "Seul l'hôte peut faire cela.",
   bad_phase: "Action impossible à cette étape de la partie.",
   not_enough_players: "Il faut au moins 2 joueurs connectés.",
+  rate_limited: "Doucement : réessaie dans un instant.",
+  bad_categories: "Catégories invalides : 1 à 20 choisies, 10 perso au plus, 2 à 30 caractères, sans doublon.",
 };
+
+// Catégories perso et sélection envoyées par l'hôte : { custom, categories } validés, ou null.
+// Tableaux bornés avant toute boucle ; perso dédoublonnées par normalizeWord, y compris contre les intégrées.
+function parseCategories(d, prev) {
+  const custom = d.custom === undefined ? prev.custom : d.custom;
+  const cats = d.categories;
+  if (!Array.isArray(custom) || custom.length > MAX_CUSTOM) return null;
+  if (!Array.isArray(cats) || cats.length < 1 || cats.length > MAX_SELECTED) return null;
+  const seen = new Set(CATEGORIES.map(normalizeWord));
+  const cleaned = [];
+  for (const c of custom) {
+    const name = cleanName(c);
+    const norm = normalizeWord(name);
+    if (name.length < CUSTOM_MIN || name.length > CUSTOM_MAX || !norm || seen.has(norm)) return null;
+    seen.add(norm);
+    cleaned.push(name);
+  }
+  const allowed = new Set([...CATEGORIES, ...cleaned]);
+  const names = cats.map((c) => (Number.isInteger(c) ? CATEGORIES[c] : cleanName(c)));
+  if (!names.every((n) => n && allowed.has(n)) || new Set(names).size !== names.length) return null;
+  return { custom: cleaned, categories: names };
+}
 
 function createPetitBac(io, results, opts = {}) {
   const collectMs = opts.collectMs || COLLECT_MS;
@@ -42,9 +72,9 @@ function createPetitBac(io, results, opts = {}) {
     const st = room.state;
     if (!st.phase) {
       st.phase = "lobby";
-      st.options = { ...DEFAULT_OPTIONS, categories: DEFAULT_OPTIONS.categories.slice() };
+      st.options = { ...DEFAULT_OPTIONS, categories: DEFAULT_OPTIONS.categories.slice(), custom: [] };
       st.scores = Object.create(null);
-      st.answers = Object.create(null); // pid -> 6 chaînes (dernière version)
+      st.answers = Object.create(null); // pid -> une chaîne par catégorie (dernière version)
       st.usedLetters = [];
       st.round = 0;
       st.letter = null;
@@ -152,7 +182,7 @@ function createPetitBac(io, results, opts = {}) {
     const st = room.state;
     st.round += 1;
     st.letter = pickLetter(st);
-    st.categories = st.options.categories.map((i) => CATEGORIES[i]);
+    st.categories = st.options.categories.slice();
     st.answers = Object.create(null);
     st.stoppedBy = null;
     st.results = null;
@@ -313,15 +343,16 @@ function createPetitBac(io, results, opts = {}) {
     reg.toRoom(room, "game_over", { ranking: ranking(room) });
   }
 
-  // Tableau de 6 chaînes nettoyées, ou null.
-  function parseAnswers(raw) {
-    if (!Array.isArray(raw) || raw.length !== CATEGORY_COUNT) return null;
+  // Une chaîne nettoyée par catégorie de la manche (longueur exacte), ou null.
+  function parseAnswers(raw, n) {
+    if (!Array.isArray(raw) || raw.length !== n) return null;
     return raw.map((a) => clean(a, ANSWER_MAX));
   }
 
   function register(socket) {
     reg.register(socket);
     const allowAnswers = createRateLimiter({ capacity: 3, perSecond: 2 });
+    const allowOptions = createRateLimiter({ capacity: 20, perSecond: 5 }); // rediffusées à toute la salle
     const fail = (code) => socket.emit("pb:error", { code, message: ERRORS[code] });
 
     // Contexte commun : salle du socket, état initialisé, hôte éventuellement exigé.
@@ -340,21 +371,16 @@ function createPetitBac(io, results, opts = {}) {
       const c = ctx(true);
       if (!c) return;
       if (c.st.phase !== "lobby" && c.st.phase !== "over") return fail("bad_phase");
+      if (!allowOptions()) return fail("rate_limited");
       const d = data && typeof data === "object" ? data : null;
       if (!d) return fail("invalid");
-      const cats = d.categories;
-      if (
-        !Array.isArray(cats) ||
-        cats.length !== CATEGORY_COUNT ||
-        !cats.every((i) => Number.isInteger(i) && i >= 0 && i < CATEGORIES.length) ||
-        new Set(cats).size !== CATEGORY_COUNT
-      ) {
-        return fail("invalid");
-      }
+      const parsed = parseCategories(d, c.st.options);
+      if (!parsed) return fail("bad_categories");
       c.st.options = {
         rounds: clampInt(d.rounds, 1, 10, c.st.options.rounds),
-        duration: clampInt(d.duration, 60, 180, c.st.options.duration),
-        categories: cats.slice(),
+        duration: clampInt(d.duration, 60, 300, c.st.options.duration),
+        categories: parsed.categories,
+        custom: parsed.custom,
       };
       reg.toRoom(c.room, "options", c.st.options);
     });
@@ -418,7 +444,7 @@ function createPetitBac(io, results, opts = {}) {
       if (!c || !isPlaying(c.st)) return;
       // Limiteur seulement en writing : le dernier envoi (collecting) est toujours accepté.
       if (c.st.phase === "writing" && !allowAnswers()) return;
-      const answers = parseAnswers(data && data.answers);
+      const answers = parseAnswers(data && data.answers, c.st.categories.length);
       if (!answers) return fail("invalid");
       c.st.answers[c.player.pid] = answers;
     });
@@ -427,7 +453,7 @@ function createPetitBac(io, results, opts = {}) {
       const c = ctx(false);
       if (!c) return;
       if (c.st.phase !== "writing") return fail("bad_phase");
-      const answers = parseAnswers(data && data.answers);
+      const answers = parseAnswers(data && data.answers, c.st.categories.length);
       if (!answers || !answers.every((a) => startsWithLetter(a, c.st.letter))) return fail("invalid");
       c.st.answers[c.player.pid] = answers;
       beginCollect(c.room, c.player.pid);
@@ -446,4 +472,4 @@ function createPetitBac(io, results, opts = {}) {
   };
 }
 
-module.exports = { createPetitBac, CATEGORIES };
+module.exports = { createPetitBac, CATEGORIES, MAX_SELECTED, MAX_CUSTOM };

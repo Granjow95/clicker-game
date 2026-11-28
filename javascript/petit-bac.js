@@ -5,7 +5,17 @@
   const el = granUI.el;
   const GRACE_MS = 120000;
   const THROTTLE_MS = 2000;
-  const NB_CAT = 6;
+  const MAX_CHOISIES = 20; // catégories par manche (serveur : MAX_SELECTED)
+  const MAX_PERSO = 10;     // catégories perso (serveur : MAX_CUSTOM)
+  const PERSO_MIN = 2;
+  const PERSO_MAX = 30;
+  // Même comparaison que normalizeWord (backend/lib/util.js) : accents, casse, tirets, apostrophes, article initial.
+  function cle(t) {
+    const s = String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/[\u2019\u2018`\u00b4]/g, "'").replace(/[-\u2010-\u2015_]/g, ' ').replace(/\s*'\s*/g, "'").replace(/\s+/g, ' ').trim();
+    const sans = s.replace(/^(?:l'|(?:le|la|les|un|une|des) )/, '').trim();
+    return sans || s;
+  }
   const NB_SEG = 20;
   const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const EN_PARTIE = ['writing', 'collecting', 'review', 'results'];
@@ -28,7 +38,7 @@
 
   const nouvelEtat = () => ({
     code: null, you: null, hostId: null, players: [], names: {}, username: '',
-    phase: null, options: { rounds: 5, duration: 90, categories: [0, 1, 2, 3, 4, 5] }, allCategories: [],
+    phase: null, options: { rounds: 5, duration: 90, categories: [], custom: [] }, allCategories: [],
     scores: {}, round: 0, totalRounds: 0, letter: '', categories: [], answers: null,
     review: null, fin: 0, dur: 0, stoppedBy: undefined, results: null, ranking: null,
     dirty: false, dernierEnvoi: 0, envoiTimer: 0, chrono: 0, anims: [], busyTimer: 0,
@@ -107,7 +117,7 @@
     vue.replaceChildren(holder);
     entree = granSalle.mount(holder, {
       prefix: P, titre: 'Petit Bac', jeuLabel: 'Petit Bac',
-      intro: 'Une lettre, six catégories, un chrono. Le chrono, lui, ne discute pas.',
+      intro: 'Une lettre, tes catégories, un chrono. Le chrono, lui, ne discute pas.',
       onCreate: (u) => { S.username = u; occuper(); socket.emit('pb:create', { username: u }); },
       onJoin: (c, u) => { S.username = u; occuper(); socket.emit('pb:join', { code: c, username: u }); },
       onResume: (e) => { S.username = e.username || S.username; occuper(); socket.emit('pb:resume', { code: e.code, token: e.token }); },
@@ -140,9 +150,11 @@
     u.liste.replaceChildren(...S.players.map(ligneJoueur));
     u.compte.textContent = `${S.players.length} joueur${S.players.length > 1 ? 's' : ''}`;
     if (u.start) {
-      const ok = connectes() >= 2;
-      u.start.disabled = !ok;
-      u.aide.textContent = ok ? 'Tout le monde est là ? Lance la partie.' : 'Il faut au moins 2 joueurs connectés pour commencer.';
+      const assez = connectes() >= 2;
+      const cats = S.options.categories.length >= 1;
+      u.start.disabled = !assez || !cats;
+      u.aide.textContent = !assez ? 'Il faut au moins 2 joueurs connectés pour commencer.'
+        : !cats ? 'Coche au moins une catégorie.' : 'Tout le monde est là ? Lance la partie.';
     }
   }
 
@@ -158,19 +170,109 @@
     granUI.toast(url, { type: 'info', titre: 'Copie impossible :' });
   }
 
-  function envoyerOptions() {
-    const u = S.ui;
-    const cats = u.cases.filter((c) => c.checked).map((c) => Number(c.value));
-    if (cats.length !== NB_CAT) return;
-    S.options = { rounds: S.options.rounds, duration: S.options.duration, categories: cats };
+  // Options reçues du serveur : noms de catégories (choisies, dans l'ordre) et catégories perso.
+  function lireOptions(o) {
+    const noms = (a) => (Array.isArray(a) ? a.filter((x) => typeof x === 'string') : []);
+    return {
+      rounds: Number.isInteger(o && o.rounds) ? o.rounds : 5,
+      duration: Number.isInteger(o && o.duration) ? o.duration : 90,
+      categories: noms(o && o.categories).slice(0, MAX_CHOISIES),
+      custom: noms(o && o.custom).slice(0, MAX_PERSO),
+    };
+  }
+  const toutesCategories = () => [...S.allCategories, ...S.options.custom];
+
+  // Envois regroupés (cocher plusieurs cases d'affilée = un seul message rediffusé à la salle).
+  let optionsTimer = 0;
+  function emettreOptions() {
+    clearTimeout(optionsTimer);
+    optionsTimer = 0;
+    if (!S || !S.code || !S.options.categories.length) return;
+    S.optionsAttente = (S.optionsAttente || 0) + 1; // réponses (écho ou refus) attendues
     socket.emit('pb:options', { ...S.options });
+  }
+  function envoyerOptions() {
+    if (!S.options.categories.length) { clearTimeout(optionsTimer); optionsTimer = 0; majCases(); return; } // au moins une catégorie
+    clearTimeout(optionsTimer);
+    optionsTimer = setTimeout(emettreOptions, 200);
+  }
+  // Lancer : un réglage encore en attente part d'abord (le serveur traite dans l'ordre).
+  function lancerPartie() {
+    if (optionsTimer) emettreOptions();
+    socket.emit('pb:start', {});
+  }
+  // Écho du serveur : chez l'hôte, ignoré tant qu'un réglage plus récent est en attente ou en route (sinon il
+  // effacerait une case cochée entre-temps) ; la dernière réponse fait foi.
+  function recevoirOptions(o) {
+    S.optionsServeur = lireOptions(o);
+    if (estHote()) {
+      if (S.optionsAttente > 0) S.optionsAttente--;
+      if (optionsTimer || S.optionsAttente > 0) return;
+    }
+    S.options = lireOptions(o);
+    if (S.ui.grille || S.ui.resume) syncOptions();
+  }
+  // Coche / décoche : l'ordre de la sélection suit l'ordre des coches.
+  function basculer(nomCat, coche) {
+    const o = S.options;
+    const choisies = new Set(o.categories);
+    if (coche && choisies.size < MAX_CHOISIES) choisies.add(nomCat); else choisies.delete(nomCat);
+    o.categories = toutesCategories().filter((c) => choisies.has(c)); // ordre de la manche = ordre affiché
+    majCases();
+    envoyerOptions();
+  }
+  function ajouterPerso() {
+    const u = S.ui;
+    const nomCat = u.persoSaisie.value.replace(/\s+/g, ' ').trim();
+    const o = S.options;
+    let erreur = '';
+    if (nomCat.length < PERSO_MIN || nomCat.length > PERSO_MAX) erreur = `De ${PERSO_MIN} à ${PERSO_MAX} caractères.`;
+    else if (o.custom.length >= MAX_PERSO) erreur = `${MAX_PERSO} catégories perso au plus.`;
+    else if (toutesCategories().some((c) => cle(c) === cle(nomCat))) erreur = 'Cette catégorie existe déjà.';
+    u.persoErreur.textContent = erreur;
+    u.persoSaisie.setAttribute('aria-invalid', erreur ? 'true' : 'false');
+    if (erreur) { u.persoSaisie.focus(); return; }
+    o.custom = [...o.custom, nomCat];
+    if (o.categories.length < MAX_CHOISIES) o.categories = [...o.categories, nomCat]; // cochée d'office
+    u.persoSaisie.value = '';
+    construireCases();
+    envoyerOptions();
+    u.persoSaisie.focus();
+  }
+  function retirerPerso(nomCat) {
+    const o = S.options;
+    o.custom = o.custom.filter((c) => c !== nomCat);
+    o.categories = o.categories.filter((c) => c !== nomCat); // sort aussi de la sélection
+    construireCases();
+    if (!o.categories.length) { majCases(); return; }
+    envoyerOptions();
+    if (S.ui.persoSaisie) S.ui.persoSaisie.focus();
+  }
+  // Grille des cases : intégrées puis perso (avec bouton « retirer »). Reconstruite seulement si la liste change.
+  function construireCases() {
+    const u = S.ui;
+    if (!u.grille) return;
+    const toutes = toutesCategories();
+    u.listeCases = toutes.join('\u0000');
+    const perso = new Set(S.options.custom);
+    u.cases = [];
+    u.grille.replaceChildren(...toutes.map((nomCat) => {
+      const c = el('input', { type: 'checkbox', value: nomCat, onchange: () => basculer(nomCat, c.checked) });
+      u.cases.push(c);
+      const label = el('label', { class: `pb-case${perso.has(nomCat) ? ' pb-case--perso' : ''}` }, c, el('span', {}, nomCat));
+      if (!perso.has(nomCat)) return label;
+      return el('div', { class: 'pb-case-perso' }, label,
+        el('button', { type: 'button', class: 'pb-retirer', 'aria-label': `Retirer la catégorie ${nomCat}`, onclick: () => retirerPerso(nomCat) }, '×'));
+    }));
+    majCases();
+    if (u.persoAjout) u.persoAjout.disabled = S.options.custom.length >= MAX_PERSO;
   }
   function syncOptions() {
     const u = S.ui;
     const o = S.options;
-    if (u.cases) {
-      u.cases.forEach((c) => { c.checked = o.categories.includes(Number(c.value)); });
-      majCases();
+    if (u.grille) {
+      if (u.listeCases !== toutesCategories().join('\u0000')) construireCases();
+      else majCases();
     }
     if (u.manches) u.manches.textContent = String(o.rounds);
     if (u.duree) u.duree.textContent = `${o.duration} s`;
@@ -178,15 +280,18 @@
   }
   function resumeOptions() {
     const o = S.options;
-    const cats = o.categories.map((i) => S.allCategories[i]).filter(Boolean).join(', ');
-    return `${o.rounds} manche${o.rounds > 1 ? 's' : ''} de ${o.duration} s. Catégories : ${cats}.`;
+    const n = o.categories.length;
+    return `${o.rounds} manche${o.rounds > 1 ? 's' : ''} de ${o.duration} s. ${n} catégorie${n > 1 ? 's' : ''} : ${o.categories.join(', ')}.`;
   }
   function majCases() {
     const u = S.ui;
-    const n = u.cases.filter((c) => c.checked).length;
-    u.cases.forEach((c) => { c.disabled = !c.checked && n >= NB_CAT; });
-    u.nbCat.textContent = `${n}/${NB_CAT} choisies`;
-    u.nbCat.classList.toggle('pb-ko', n !== NB_CAT);
+    if (!u.cases) return;
+    const choisies = new Set(S.options.categories);
+    const n = choisies.size;
+    u.cases.forEach((c) => { c.checked = choisies.has(c.value); c.disabled = !c.checked && n >= MAX_CHOISIES; });
+    u.nbCat.textContent = n ? `${n} choisie${n > 1 ? 's' : ''} (${MAX_CHOISIES} au plus)` : 'Coche au moins une catégorie';
+    u.nbCat.classList.toggle('pb-ko', n < 1);
+    if (u.start && u.liste) rafraichirSalon(); // « Lancer » dépend aussi du nombre de catégories
   }
   function stepper(label, idOut, moins, plus) {
     const out = el('output', { id: idOut, 'aria-live': 'polite' });
@@ -205,11 +310,18 @@
       () => { S.options.rounds = Math.min(10, S.options.rounds + 1); syncOptions(); envoyerOptions(); });
     const sd = stepper('Durée', 'pb-o-duree',
       () => { S.options.duration = Math.max(60, S.options.duration - 15); syncOptions(); envoyerOptions(); },
-      () => { S.options.duration = Math.min(180, S.options.duration + 15); syncOptions(); envoyerOptions(); });
+      () => { S.options.duration = Math.min(300, S.options.duration + 15); syncOptions(); envoyerOptions(); });
     u.manches = sm.out; u.duree = sd.out;
     u.nbCat = el('span', { class: 'pb-compteur', role: 'status' });
-    u.cases = S.allCategories.map((c, i) => el('input', { type: 'checkbox', value: i, checked: o.categories.includes(i), onchange: () => { majCases(); envoyerOptions(); } }));
-    const grille = el('div', { class: 'pb-cases' }, u.cases.map((c, i) => el('label', { class: 'pb-case' }, c, el('span', {}, S.allCategories[i]))));
+    u.grille = el('div', { class: 'pb-cases' });
+    u.persoSaisie = el('input', { class: 'field__input pb-perso__saisie', id: 'pb-perso', maxlength: PERSO_MAX, autocomplete: 'off', 'aria-describedby': 'pb-perso-erreur', placeholder: 'Chose qui pique, Super-héros…' });
+    u.persoSaisie.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); ajouterPerso(); } });
+    u.persoAjout = bouton('key--secondaire key--compact', 'Ajouter', ajouterPerso);
+    u.persoErreur = el('p', { class: 'pb-perso__erreur', id: 'pb-perso-erreur', role: 'status' });
+    const perso = el('div', { class: 'pb-perso' },
+      el('label', { class: 'field__label', for: 'pb-perso' }, `Ajouter une catégorie perso (${MAX_PERSO} au plus)`),
+      el('div', { class: 'pb-perso__ligne' }, u.persoSaisie, u.persoAjout), u.persoErreur);
+    const grille = el('div', {}, u.grille, perso);
     const bloc = el('div', { class: 'pb-options panneau sur-papier' },
       el('h2', { class: 'pb-sous-titre' }, 'Les règles de la partie'),
       el('div', { class: 'pb-reglages' },
@@ -239,7 +351,7 @@
     ];
     if (hote) {
       noeuds.push(blocOptionsHote());
-      u.start = bouton('key--principal key--bloc', 'Lancer la partie', () => socket.emit('pb:start', {}), { 'aria-describedby': 'pb-start-aide' });
+      u.start = bouton('key--principal key--bloc', 'Lancer la partie', lancerPartie, { 'aria-describedby': 'pb-start-aide' });
       noeuds.push(u.start, u.aide);
     } else {
       u.resume = el('p', { class: 'pb-resume' });
@@ -276,7 +388,10 @@
       u.etats[i].replaceChildren(el('span', { 'aria-hidden': 'true' }, `${r.icone} `), r.txt);
     });
     u.stop.disabled = !tous || S.phase !== 'writing';
-    u.stopAide.textContent = tous ? 'Les 6 réponses commencent par la lettre : tu peux stopper. L\'hôte vérifiera le fond.' : 'Remplis les 6 catégories avec la bonne lettre pour pouvoir stopper.';
+    const n = u.inputs.length;
+    u.stopAide.textContent = tous
+      ? `${n > 1 ? `Les ${n} réponses commencent` : 'Ta réponse commence'} par la lettre : tu peux stopper. L'hôte vérifiera le fond.`
+      : `Remplis ${n > 1 ? `les ${n} catégories` : 'la catégorie'} avec la bonne lettre pour pouvoir stopper.`;
   }
 
   function peindreChrono(left) {
@@ -592,7 +707,7 @@
       ? el('ol', { class: 'classement pb-classement', start: 4 }, reste.map((r, i) => el('li', {},
         el('span', { class: 'classement__rang' }, String(i + 4)), el('span', {}, r.username), el('span', { class: 'classement__points' }, String(r.score)))))
       : null;
-    S.ui.start = estHote() ? bouton('key--principal key--bloc', 'Rejouer', () => socket.emit('pb:start', {}), { 'aria-describedby': 'pb-start-aide' }) : null;
+    S.ui.start = estHote() ? bouton('key--principal key--bloc', 'Rejouer', lancerPartie, { 'aria-describedby': 'pb-start-aide' }) : null;
     S.ui.aide = el('p', { class: 'pb-aide', id: 'pb-start-aide' });
     S.ui.liste = null;
     monter(el('div', { class: 'pb-ecran' },
@@ -626,7 +741,7 @@
   /* ---------- État complet (jointure, reprise) ---------- */
   function appliquerEtat(st) {
     S.phase = st.phase;
-    if (st.options) S.options = st.options;
+    if (st.options) { S.options = lireOptions(st.options); S.optionsServeur = lireOptions(st.options); }
     if (st.allCategories) S.allCategories = st.allCategories;
     S.scores = st.scores || {};
     S.round = st.round || 0; S.totalRounds = st.totalRounds || 0;
@@ -681,7 +796,7 @@
         else majRejouer();
       }
     },
-    'pb:options': (o) => { if (!S.code || !o) return; S.options = o; if (S.ui.cases || S.ui.resume) syncOptions(); },
+    'pb:options': (o) => { if (!S.code || !o) return; recevoirOptions(o); },
     'pb:round_start': (d) => {
       if (!S.code) return;
       S.phase = 'writing'; S.round = d.round; S.totalRounds = d.totalRounds; S.letter = d.letter; S.categories = d.categories;
@@ -714,6 +829,12 @@
       const msg = (e && e.message) || MSG_ERR[code] || 'Une erreur est survenue.';
       if (code === 'bad_phase' && (S.phase !== 'review' || S.reviewEnvoye)) return;
       clearBusy();
+      if ((code === 'bad_categories' || code === 'rate_limited') && S.optionsServeur) {
+        // Réglage refusé : on revient au dernier état connu du serveur (sinon tous les envois suivants seraient refusés).
+        if (S.optionsAttente > 0) S.optionsAttente--;
+        S.options = lireOptions(S.optionsServeur);
+        if (S.ui.grille || S.ui.resume) syncOptions();
+      }
       if (code === 'resume_failed') {
         granReprise.clear(P);
         allerEntree(null, { message: msg, focus: true });

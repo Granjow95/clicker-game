@@ -41,6 +41,18 @@
 .pb-case:has(input:disabled) { opacity: .6; cursor: not-allowed; }
 .pb-case input { width: 22px; height: 22px; flex: 0 0 auto; accent-color: var(--brique); }
 .pb-case:has(input:focus-visible), .pb-saisie:focus-visible { outline: 3px solid var(--monde-focus); outline-offset: 2px; }
+/* Catégories perso : case + bouton retirer, champ d'ajout */
+.pb-case-perso { display: flex; align-items: stretch; gap: 6px; min-width: 0; }
+.pb-case-perso .pb-case { flex: 1; min-width: 0; }
+.pb-case--perso { border-style: dashed; }
+.pb-case span { min-width: 0; overflow-wrap: anywhere; }
+.pb-retirer { flex: 0 0 44px; min-height: 44px; border: 2px solid var(--monde-barre); border-radius: var(--rayon-champ); background: transparent; color: inherit; font-family: inherit; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; }
+.pb-retirer:hover { background: rgba(0, 0, 0, .06); }
+.pb-retirer:focus-visible { outline: 3px solid var(--monde-focus); outline-offset: 2px; }
+.pb-perso { display: grid; gap: var(--e-2); margin-top: var(--e-3); }
+.pb-perso__ligne { display: flex; gap: var(--e-2); flex-wrap: wrap; }
+.pb-perso__saisie { flex: 1 1 200px; min-width: 0; }
+.pb-perso__erreur { margin: 0; min-height: 1.3em; font-size: 14px; font-weight: 600; color: var(--erreur-sur-clair); }
 
 /* ---------- Manche : lettre, chrono, champs ---------- */
 .pb-haut { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--e-4); }
