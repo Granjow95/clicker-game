@@ -32,6 +32,20 @@
 .gri-reglage { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; }
 .gri-reglage__nom { font-weight: 600; }
 .gri-salon .key--fantome { justify-self: start; }
+/* Difficulté (3 boutons) et mots personnalisés de l'hôte */
+.gri-niveaux { display: inline-flex; border: var(--trait); border-radius: var(--rayon-touche); overflow: hidden; }
+.gri-niveau { min-height: 44px; padding: 0 var(--e-3); border: 0; background: var(--papier-ombre); color: var(--encre); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.gri-niveau + .gri-niveau { border-left: var(--trait); }
+.gri-niveau[aria-pressed="true"] { background: var(--bouton-dor); font-weight: 700; }
+.gri-niveau:focus-visible { outline: 4px solid var(--monde-focus); outline-offset: -4px; }
+.gri-mots { display: grid; gap: var(--e-2); margin-bottom: var(--e-4); }
+.gri-mots[hidden] { display: none; }
+.gri-mots__aide { margin: 0; font-size: 14px; color: var(--monde-texte-doux); }
+.gri-mots__saisie { width: 100%; min-height: 96px; resize: vertical; font-family: inherit; font-size: 16px; line-height: 1.4; }
+.gri-mots__bas { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); flex-wrap: wrap; }
+.gri-mots__compte { margin: 0; font-size: 14px; color: var(--monde-texte-doux); flex: 1; min-width: 12em; }
+.gri-coche { display: inline-flex; align-items: center; gap: var(--e-2); min-height: 44px; font-weight: 600; cursor: pointer; }
+.gri-coche__case { width: 22px; height: 22px; accent-color: var(--bouton-dor); }
 
 /* ---------- Jeu : mise en page ---------- */
 .gri-jeu { display: grid; gap: var(--e-4); grid-template-columns: minmax(0, 1fr); }
@@ -89,9 +103,12 @@
 .gri-voile__boite { width: min(100%, 440px); display: grid; gap: var(--e-3); text-align: center; }
 .gri-attente { font: 700 22px var(--police-pixel); margin: 0; }
 .gri-cartes { display: grid; gap: var(--e-2); grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.gri-carte { min-height: 64px; padding: var(--e-2); border: var(--trait); border-radius: var(--rayon-touche); background: var(--bouton-dor); color: var(--encre); font: 700 20px var(--police-pixel); box-shadow: var(--epaisseur-petite); cursor: pointer; text-transform: capitalize; overflow-wrap: anywhere; animation: arrive 200ms var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); }
+.gri-carte { display: grid; place-items: center; align-content: center; gap: 6px; min-height: 64px; padding: var(--e-2); border: var(--trait); border-radius: var(--rayon-touche); background: var(--bouton-dor); color: var(--encre); font: 700 20px var(--police-pixel); box-shadow: var(--epaisseur-petite); cursor: pointer; text-transform: capitalize; overflow-wrap: anywhere; animation: arrive 200ms var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); }
 .gri-carte:active { transform: translateY(3px); box-shadow: none; }
 .gri-carte:disabled { opacity: .6; cursor: default; }
+.gri-carte__tag { padding: 2px 8px; border: 2px solid var(--encre); background: var(--parchemin); font: 600 12px/1.3 system-ui, sans-serif; text-transform: none; letter-spacing: .02em; }
+.gri-carte__tag--difficile { background: var(--encre); color: var(--parchemin); }
+.gri-carte__tag--perso { background: var(--bouton-dor); border-style: dashed; }
 .gri-mot-final { text-transform: uppercase; }
 .gri-raison { margin: 0; color: var(--monde-texte-doux); }
 .gri-gains { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }

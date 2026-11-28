@@ -23,10 +23,25 @@
   };
   const el = granUI.el;
   const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+  const DIFFICULTES = [['facile', 'Facile'], ['mixte', 'Mélangé'], ['difficile', 'Difficile']];
+  const NOMS_DIFFICULTE = { facile: 'faciles', mixte: 'mélangés', difficile: 'difficiles' };
+  const ETIQUETTES = { facile: 'Facile', difficile: 'Difficile', perso: 'Perso' };
+  const MAX_MOTS_PERSO = 100;
+  // Options reçues du serveur, bornées (jamais la liste des mots perso, seulement leur nombre).
+  const connu = (table, cle) => typeof cle === 'string' && Object.hasOwn(table, cle); // pas de « toString » venu du serveur
+  const lireOptions = (o) => ({
+    rounds: Number.isInteger(o && o.rounds) ? o.rounds : 3,
+    drawTime: Number.isInteger(o && o.drawTime) ? o.drawTime : 80,
+    difficulty: o && connu(NOMS_DIFFICULTE, o.difficulty) ? o.difficulty : 'mixte',
+    customOnly: !!(o && o.customOnly === true),
+    customCount: Number.isInteger(o && o.customCount) ? o.customCount : 0,
+  });
+  // Saisie libre -> liste de mots (le serveur revalide et dédoublonne).
+  const decouperMots = (texte) => String(texte || '').split(/[\n,;]+/).map((w) => w.replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, MAX_MOTS_PERSO * 2);
 
   const fresh = () => ({
     joined: false, code: '', you: '', token: '', username: '', hostId: '', players: [],
-    phase: 'lobby', options: { rounds: 3, drawTime: 80 }, round: 0, totalRounds: 0, scores: {},
+    phase: 'lobby', options: { rounds: 3, drawTime: 80, difficulty: 'mixte', customOnly: false, customCount: 0 }, customWords: [], choiceTags: null, round: 0, totalRounds: 0, scores: {},
     drawerId: '', durationMs: 0, deadline: 0, found: new Set(), youFound: false, mask: '', word: '',
     choices: null, picked: false, segments: [], turnEnd: null, ranking: [], potsUtilises: 0,
   });
@@ -171,8 +186,31 @@
     } }, 'Copier le lien');
     const liste = el('ul', { class: 'gri-joueurs' });
     const opts = el('div', { class: 'gri-options' });
-    const lancer = el('button', { class: 'key key--principal key--bloc', type: 'button', onclick: () => { if (estHote()) socket.emit('gri:start', {}); } }, 'Lancer');
+    const lancer = el('button', { class: 'key key--principal key--bloc', type: 'button', onclick: () => {
+      if (!estHote()) return;
+      if (L.motsModifies) envoyerMots(); // saisie non enregistrée : on l'enregistre avant de lancer (traité dans l'ordre)
+      socket.emit('gri:start', {});
+    } }, 'Lancer');
     const aide = el('p', { class: 'gri-aide', role: 'status' });
+    const saisie = el('textarea', { class: 'field__input gri-mots__saisie', id: 'gri-mots-saisie', rows: '4', maxlength: '4000', spellcheck: 'false',
+      'aria-describedby': 'gri-mots-aide gri-mots-compte', placeholder: 'tour de Pise, raclette, ma voisine…' });
+    const compte = el('p', { class: 'gri-mots__compte', id: 'gri-mots-compte', role: 'status' });
+    const envoyerMots = () => {
+      L.motsEnvoi = true;
+      L.motsEnvoye = saisie.value; // pour ne pas écraser ce que l'hôte tape pendant l'aller-retour
+      socket.emit('gri:words', { words: decouperMots(saisie.value) });
+    };
+    const enregistrer = el('button', { class: 'key key--secondaire key--compact', type: 'button', onclick: () => { if (estHote()) envoyerMots(); } }, 'Enregistrer les mots');
+    const seulement = el('input', { type: 'checkbox', class: 'gri-coche__case', onchange: () => {
+      if (estHote()) socket.emit('gri:options', { ...S.options, customOnly: seulement.checked });
+    } });
+    saisie.addEventListener('input', () => { L.motsModifies = true; majCompteMots(); });
+    const mots = el('div', { class: 'gri-mots' },
+      el('label', { class: 'gri-reglage__nom', for: 'gri-mots-saisie' }, 'Mots personnalisés'),
+      el('p', { class: 'gri-mots__aide', id: 'gri-mots-aide' }, "Un par ligne ou séparés par des virgules (100 au plus, 30 caractères chacun). Toi seul les vois : ils sortent pendant la partie."),
+      saisie,
+      el('div', { class: 'gri-mots__bas' }, compte, enregistrer),
+      el('label', { class: 'gri-coche' }, seulement, el('span', {}, 'Seulement mes mots')));
     const racine = el('section', { class: 'gri-salon' },
       el('h1', { class: 'gri-titre' }, 'Gribouille'),
       el('div', { class: 'gri-salon__code px' },
@@ -180,11 +218,22 @@
         el('p', { class: 'gri-lien' }, lien), copier),
       el('div', { class: 'gri-salon__corps' },
         el('div', { class: 'gri-panneau px' }, el('h2', { class: 'gri-h2' }, 'Les joueurs'), liste),
-        el('div', { class: 'gri-panneau px' }, el('h2', { class: 'gri-h2' }, 'La partie'), opts, lancer, aide)),
+        el('div', { class: 'gri-panneau px' }, el('h2', { class: 'gri-h2' }, 'La partie'), opts, mots, lancer, aide)),
       el('button', { class: 'key key--fantome key--compact', type: 'button', onclick: () => granRouter.navigate('/') }, 'Quitter la salle'));
-    L = { liste, opts, lancer, aide, vus: new Set(), racine };
+    L = { liste, opts, lancer, aide, vus: new Set(), racine, mots, saisie, compte, seulement, motsModifies: false, motsEnvoi: false, motsEnvoye: '', rejetes: 0 };
+    saisie.value = S.customWords.join('\n');
     afficher('lobby', racine);
     majSalon();
+  }
+
+  // Compteur sous la saisie : mots enregistrés, modifications en attente, mots refusés.
+  function majCompteMots() {
+    if (!L || !L.compte) return;
+    const n = S.customWords.length;
+    let txt = n ? `${n} mot${n > 1 ? 's' : ''} enregistré${n > 1 ? 's' : ''}.` : 'Aucun mot enregistré.';
+    if (L.rejetes) txt += ` ${L.rejetes} refusé${L.rejetes > 1 ? 's' : ''} (lettres, espaces, - et ' seulement, 30 caractères au plus).`;
+    if (L.motsModifies) txt += ' Modifications non enregistrées.';
+    L.compte.textContent = txt;
   }
 
   function stepper(label, valeur, unite, moins, plus, min, max) {
@@ -211,18 +260,30 @@
       L.vus.add(p.id);
       return li;
     }));
-    const envoyer = (r, t) => socket.emit('gri:options', { rounds: clamp(r, 1, 5), drawTime: clamp(t, 30, 120) });
+    const { difficulty, customOnly, customCount } = S.options;
+    const envoyer = (r, t, extra = {}) => socket.emit('gri:options', { ...S.options, rounds: clamp(r, 1, 5), drawTime: clamp(t, 30, 120), ...extra });
     if (hote) {
+      const niveaux = el('div', { class: 'gri-niveaux', role: 'group', 'aria-label': 'Difficulté des mots' },
+        DIFFICULTES.map(([id, nomNiveau]) => el('button', { class: 'gri-niveau', type: 'button', 'aria-pressed': String(difficulty === id),
+          onclick: () => { if (difficulty !== id) envoyer(rounds, drawTime, { difficulty: id }); } }, nomNiveau)));
       L.opts.replaceChildren(
         stepper('Manches', rounds, '', () => envoyer(rounds - 1, drawTime), () => envoyer(rounds + 1, drawTime), 1, 5),
-        stepper('Temps par dessin', drawTime, ' s', () => envoyer(rounds, drawTime - 10), () => envoyer(rounds, drawTime + 10), 30, 120));
+        stepper('Temps par dessin', drawTime, ' s', () => envoyer(rounds, drawTime - 10), () => envoyer(rounds, drawTime + 10), 30, 120),
+        el('div', { class: 'gri-reglage' }, el('span', { class: 'gri-reglage__nom' }, 'Difficulté'), niveaux));
     } else {
-      L.opts.replaceChildren(el('p', { class: 'gri-resume' }, `${rounds} manche${rounds > 1 ? 's' : ''}, ${drawTime} s par dessin.`));
+      const perso = customCount ? `, ${customCount} mot${customCount > 1 ? 's' : ''} perso${customOnly ? ' (seulement eux)' : ''}` : '';
+      L.opts.replaceChildren(el('p', { class: 'gri-resume' }, `${rounds} manche${rounds > 1 ? 's' : ''}, ${drawTime} s par dessin, mots ${NOMS_DIFFICULTE[difficulty]}${perso}.`));
     }
+    L.mots.hidden = !hote;
+    L.seulement.checked = customOnly;
+    majCompteMots();
     const connectes = S.players.filter((p) => p.connected).length;
+    const persoManquants = customOnly && customCount < 3;
     L.lancer.hidden = !hote;
-    L.lancer.disabled = connectes < 2;
-    L.aide.textContent = hote ? (connectes < 2 ? 'Il faut au moins 2 joueurs connectés.' : '') : "L'hôte lance la partie.";
+    L.lancer.disabled = connectes < 2 || persoManquants;
+    L.aide.textContent = hote
+      ? (connectes < 2 ? 'Il faut au moins 2 joueurs connectés.' : persoManquants ? 'Enregistre au moins 3 mots, ou décoche « Seulement mes mots ».' : '')
+      : "L'hôte lance la partie.";
   }
 
   /* ---------- Écran de jeu ---------- */
@@ -404,7 +465,8 @@
           S.picked = true;
           socket.emit('gri:choose', { index: i });
           majVoile();
-        } }, w));
+        } }, el('span', { class: 'gri-carte__mot' }, w),
+        S.choiceTags && connu(ETIQUETTES, S.choiceTags[i]) ? el('span', { class: `gri-carte__tag gri-carte__tag--${S.choiceTags[i]}` }, ETIQUETTES[S.choiceTags[i]]) : null));
         v.replaceChildren(el('div', { class: 'gri-voile__boite' }, el('h2', { class: 'gri-h2' }, S.picked ? 'Mot choisi.' : 'Choisis ton mot'), el('div', { class: 'gri-cartes' }, cartes)));
         if (!S.picked && cartes[0]) cartes[0].focus({ preventScroll: true });
       } else {
@@ -753,7 +815,9 @@
   function appliquerEtat(st, payload) {
     S.code = payload.code; S.you = payload.you; S.token = payload.token; S.hostId = payload.hostId; S.players = payload.players || [];
     S.phase = st.phase || 'lobby';
-    S.options = st.options || S.options;
+    S.options = lireOptions(st.options);
+    if (Array.isArray(st.customWords)) S.customWords = st.customWords.filter((w) => typeof w === 'string').slice(0, MAX_MOTS_PERSO);
+    S.choiceTags = Array.isArray(st.choiceTags) ? st.choiceTags.slice(0, 3).map(String) : null;
     S.round = st.round || 0; S.totalRounds = st.totalRounds || 0; S.scores = st.scores || {};
     S.drawerId = st.drawerId || ''; S.found = new Set(st.found || []); S.youFound = !!st.youFound;
     S.choices = Array.isArray(st.choices) ? st.choices.slice(0, 3).map(String) : null;
@@ -806,7 +870,21 @@
     },
     'gri:options'(p) {
       if (!S.joined || !p) return;
-      S.options = { rounds: p.rounds, drawTime: p.drawTime };
+      S.options = lireOptions(p);
+      majSalon();
+    },
+    // Liste des mots perso : reçue par l'hôte seul (après enregistrement, ou en devenant hôte).
+    'gri:words_saved'(p) {
+      if (!S.joined || !p || !Array.isArray(p.words)) return;
+      S.customWords = p.words.filter((w) => typeof w === 'string').slice(0, MAX_MOTS_PERSO);
+      if (L && L.saisie) {
+        const notreEnvoi = L.motsEnvoi;
+        // On ne remplace pas une saisie en cours, sauf si c'est la réponse à notre enregistrement et que rien n'a changé depuis.
+        if (!L.motsModifies || (notreEnvoi && L.saisie.value === L.motsEnvoye)) { L.saisie.value = S.customWords.join('\n'); L.motsModifies = false; }
+        L.rejetes = notreEnvoi && Number.isInteger(p.rejected) ? p.rejected : 0;
+        L.motsEnvoi = false;
+        if (notreEnvoi) granUI.toast(S.customWords.length ? 'Mots enregistrés.' : 'Liste de mots vidée.');
+      }
       majSalon();
     },
     'gri:choosing'(p) {
@@ -823,12 +901,13 @@
     'gri:choices'(p) {
       if (!S.joined || !p || !Array.isArray(p.words)) return;
       S.choices = p.words.slice(0, 3).map(String);
+      S.choiceTags = Array.isArray(p.tags) ? p.tags.slice(0, 3).map(String) : null;
       if (screen === 'game') majJeu();
     },
     'gri:turn_start'(p) {
       if (!S.joined || !p) return;
       S.phase = 'drawing'; S.drawerId = p.drawerId; S.mask = String(p.mask || '');
-      S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.choices = null; S.turnEnd = null; S.picked = false;
+      S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.choices = null; S.choiceTags = null; S.turnEnd = null; S.picked = false;
       S.potsUtilises = 0;
       outilsParDefaut();
       armer(p.durationMs);
@@ -876,7 +955,7 @@
       if (!S.joined || !p) return;
       S.phase = 'turn_end'; S.turnEnd = { word: p.word == null ? null : String(p.word), reason: p.reason, gained: p.gained || {} };
       if (p.scores) S.scores = p.scores;
-      S.deadline = 0; S.choices = null;
+      S.deadline = 0; S.choices = null; S.choiceTags = null;
       abortStroke(); stopTimer();
       if (screen === 'game') majJeu();
       Son.finTour();
@@ -891,6 +970,7 @@
     'gri:error'(p) {
       const code = p && p.code;
       const message = (p && p.message) || 'Une erreur est survenue.';
+      if (L) L.motsEnvoi = false; // un refus (limiteur, plus hôte) ne doit pas laisser l'envoi « en cours »
       if (code === 'resume_failed') {
         const etaitDedans = S.joined;
         resuming = false;
@@ -922,7 +1002,7 @@
   };
 
   function resetTour() {
-    S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.mask = ''; S.choices = null; S.turnEnd = null; S.picked = false;
+    S.segments = []; S.found = new Set(); S.youFound = false; S.word = ''; S.mask = ''; S.choices = null; S.choiceTags = null; S.turnEnd = null; S.picked = false;
     S.potsUtilises = 0;
     if (G) { G.prevMask = ''; G.shown = null; G.sauvegarde = null; }
   }
