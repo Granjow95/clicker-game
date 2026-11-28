@@ -17,7 +17,12 @@ test.before(async () => {
   io = new Server(server);
   game = createKaraoke(io, { record: (r) => recorded.push(r) }, {
     graceMs: 5000, ipLimiter: () => true, maxRoomsPerIp: 1000, leadMs: 100, endTailMs: 300, controlIntervalMs: 30,
-    searchVideos: async (q) => { queries.push(q); if (searchDelay) await wait(searchDelay); return ["aaaaaaaaaaa", "bad id", "bbbbbbbbbbb"]; },
+    searchVideos: async (q) => {
+      queries.push(q);
+      if (searchDelay) await wait(searchDelay);
+      if (q.includes("Saturee")) return null; // budget de recherche épuisé
+      return q.includes("Introuvable") ? [] : ["aaaaaaaaaaa", "bad id", "bbbbbbbbbbb"];
+    },
   });
   io.use((socket, next) => {
     if (socket.handshake.auth && typeof socket.handshake.auth.uid === "string") socket.data.userId = socket.handshake.auth.uid;
@@ -311,13 +316,51 @@ test("stop : retour au salon, horloge effacée", async () => {
   assert.equal(g.j.state.song.title, "T"); // la chanson reste choisie
 });
 
-test("select_song refusé pendant une chanson", async () => {
+test("changer de musique en pleine chanson : la nouvelle remplace l'ancienne, retour au salon", async () => {
+  const h = await create("h");
+  const g = await join(h.j.code, "g");
+  await selected(h, {}, [g.c]);
+  await started(h, [g.c]);
+  await wait(1100); // limiteur de sélection
+  const p = once(g.c, "kk:song_selected");
+  h.c.emit("kk:select_song", { song: { ...SONG, title: "Nouvelle" }, mode: "instrumental" });
+  const s = await p;
+  assert.equal(s.song.title, "Nouvelle");
+  assert.equal(s.mode, "instrumental");
+  const late = await join(h.j.code, "tard");
+  assert.equal(late.j.state.started, false);
+  assert.equal(late.j.state.clock, null);
+  assert.equal(late.j.state.song.title, "Nouvelle");
+  await started(h, [g.c]); // l'hôte relance la nouvelle chanson
+});
+
+test("recherche saturée ou sans musique en pleine chanson : refus, la chanson en cours continue", async () => {
   const h = await create("h");
   await selected(h);
   await started(h);
   await wait(1100);
-  h.c.emit("kk:select_song", { song: SONG });
-  assert.match((await once(h.c, "kk:error")).message, /Arrête/);
+  h.c.emit("kk:select_song", { song: { ...SONG, title: "Saturee" } });
+  assert.equal((await once(h.c, "kk:error")).code, "search_unavailable");
+  await wait(1100);
+  h.c.emit("kk:select_song", { song: { ...SONG, title: "Introuvable" } }); // mode complet, aucune vidéo
+  assert.equal((await once(h.c, "kk:error")).code, "no_audio");
+  const late = await join(h.j.code, "tard");
+  assert.equal(late.j.state.started, true);
+  assert.equal(late.j.state.song.title, "T");
+});
+
+test("instrumentale introuvable : refus, la chanson en cours continue", async () => {
+  const h = await create("h");
+  const g = await join(h.j.code, "g");
+  await selected(h, {}, [g.c]);
+  await started(h, [g.c]);
+  await wait(1100);
+  h.c.emit("kk:select_song", { song: { ...SONG, title: "Introuvable" }, mode: "instrumental" });
+  assert.equal((await once(h.c, "kk:error")).code, "no_instrumental");
+  const late = await join(h.j.code, "tard");
+  assert.equal(late.j.state.started, true);
+  assert.equal(late.j.state.song.title, "T");
+  assert.equal(g.c.count("kk:song_selected"), 1);
 });
 
 test("kk:time : accusé avec l'heure serveur, limité par socket", async () => {

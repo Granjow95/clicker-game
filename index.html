@@ -546,7 +546,7 @@
           <!-- Panneau hôte -->
           <div id="kk-host-panel" class="kar-hote">
             <p id="kk-selected-song-display" class="kar-chanson-choisie"></p>
-            <button type="button" class="key key--secondaire" onclick="karaokeGoSelectSong()">Choisir une musique</button>
+            <button type="button" id="kk-select-btn" class="key key--secondaire" onclick="karaokeGoSelectSong()">Choisir une musique</button>
             <button type="button" id="kk-start-btn" class="key key--principal" onclick="karaokeMultiStart()">Démarrer le karaoké</button>
           </div>
 
@@ -609,7 +609,8 @@
       </div>
 
       <!-- ====== KARAOKÉ : jeu ====== -->
-      <!-- #kk-yt-host est ajouté ici par karaoke.js (lecteur YouTube) : ne pas le déplacer. -->
+      <!-- #kk-yt-host (lecteur YouTube) est ajouté par karaoke.js à côté de #karaoke-game, pas dedans : la musique
+           continue quand l'hôte ouvre la sélection pendant une chanson (un parent en display:none couperait l'iframe). -->
       <div id="karaoke-game" class="scene" style="display:none">
         <div class="scene__rideau scene__rideau--g" aria-hidden="true"></div>
         <div class="scene__rideau scene__rideau--d" aria-hidden="true"></div>
@@ -624,6 +625,7 @@
           </button>
           <h1 id="kk-song-title-bar" class="scene__titre"></h1>
           <span id="kk-line-counter" class="scene__compteur"></span>
+          <button type="button" id="kk-change-btn" onclick="karaokeChangeSong()" class="key key--compact key--secondaire" hidden>Changer de musique</button>
         </header>
 
         <div class="kk-stage scene__paroles" aria-live="polite">

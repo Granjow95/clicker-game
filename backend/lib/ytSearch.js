@@ -55,8 +55,8 @@ async function fetchIds(q) {
 }
 
 // IDs des premières vidéos YouTube pour `query` (au plus `limit`). Cache mémoire et requêtes identiques partagées.
-// Ne lève jamais : liste vide en cas d'échec ou de budget épuisé (les échecs ne sont pas mis en cache).
-// `ip` : client à l'origine de la recherche (budget par IP).
+// Ne lève jamais : liste vide en cas d'échec (non mis en cache), null si le budget est épuisé (à distinguer :
+// « aucune vidéo » et « réessaie plus tard » n'appellent pas la même réponse). `ip` : client à l'origine (budget par IP).
 async function searchVideoIds(query, limit = 10, { ip } = {}) {
   const q = String(query || "").slice(0, 200).trim();
   if (!q) return [];
@@ -65,7 +65,7 @@ async function searchVideoIds(query, limit = 10, { ip } = {}) {
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.ids.slice(0, limit);
   let p = inFlight.get(key);
   if (!p) {
-    if (running >= MAX_CONCURRENT || (ip && !ipBudget(ip)) || !globalBudget("all")) return [];
+    if (running >= MAX_CONCURRENT || (ip && !ipBudget(ip)) || !globalBudget("all")) return null;
     running++;
     p = fetchIds(q)
       .then((ids) => {
@@ -107,6 +107,7 @@ function ytSearchHandler() {
     if (!q) return res.json({ videoIds: [], videoId: null });
 
     const ids = await searchVideoIds(q, 10, { ip: req.ip });
+    if (!ids) return res.status(429).json({ videoIds: [], videoId: null, error: "rate_limited" });
     return res.json({ videoIds: ids, videoId: ids[0] || null });
   };
 }

@@ -211,7 +211,6 @@ function createKaraoke(io, results = { record() {} }, opts = {}) {
       try {
         if (!allowSelect(room.code)) return fail(player, "rate_limited", "Trop de changements de chanson.");
         const st = getSt(room);
-        if (st.started) return fail(player, "invalid", "Arrête la chanson en cours avant d'en choisir une autre.");
         const mode = d.mode === undefined ? "full" : d.mode;
         if (!MODES.includes(mode)) return fail(player, "invalid", "Mode invalide.");
         const song = sanitizeSong(d.song);
@@ -222,12 +221,24 @@ function createKaraoke(io, results = { record() {} }, opts = {}) {
         const query = `${song.artist} ${song.title} ${mode === "instrumental" ? "instrumental" : "audio"}`;
         let ids = [];
         try { ids = await searchVideos(query, VIDEO_CANDIDATES, { ip: clientIp(socket) }); } catch { ids = []; }
-        // Pendant la recherche : salle fermée, hôte changé, chanson lancée ou sélection plus récente → on abandonne.
-        if (!alive(room) || st.selectSeq !== seq || st.started || room.hostPid !== player.pid) return;
+        // Pendant la recherche : salle fermée, hôte changé ou sélection plus récente → on abandonne.
+        if (!alive(room) || st.selectSeq !== seq || room.hostPid !== player.pid) return;
+        // Budget de recherche épuisé (null) : rien ne change, la chanson en cours continue.
+        if (ids === null) return fail(player, "search_unavailable", "La recherche de musique est saturée. Réessaie dans un instant.");
+        const videoIds = (Array.isArray(ids) ? ids : []).filter((v) => typeof v === "string" && VIDEO_ID.test(v)).slice(0, VIDEO_CANDIDATES);
+        // Instrumentale introuvable : refus (la chanson en cours, s'il y en a une, continue).
+        if (mode === "instrumental" && !videoIds.length) return fail(player, "no_instrumental", "Pas de version instrumentale trouvée pour cette chanson. Essaie la musique complète.");
+        // En pleine chanson, on ne remplace pas une chanson qui joue par une chanson sans musique.
+        if (st.started && !videoIds.length) return fail(player, "no_audio", "Pas de musique trouvée pour cette chanson. Choisis-en une autre.");
+        // Changement de musique en pleine chanson : on n'arrête l'ancienne qu'une fois la nouvelle prête.
+        if (st.started) {
+          st.started = false;
+          clearEnd(st);
+        }
         st.song = publicSong(song); // paroles brutes inutiles une fois les lignes extraites
         st.mode = mode;
         st.lines = lines;
-        st.videoIds = (Array.isArray(ids) ? ids : []).filter((v) => typeof v === "string" && VIDEO_ID.test(v)).slice(0, VIDEO_CANDIDATES);
+        st.videoIds = videoIds;
         st.endMs = Math.max((song.duration || 0) * 1000, lines[lines.length - 1].t + TAIL_MS);
         st.ended = false;
         st.clock = null;

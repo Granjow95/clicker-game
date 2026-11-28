@@ -30,7 +30,7 @@ test("searchVideoIds : réponse HTTP en erreur → liste vide, non mise en cache
 test("searchVideoIds : budget de 30 recherches par IP et par minute, le cache n'en consomme pas", async () => {
   calls = 0;
   for (let i = 0; i < 30; i++) assert.equal((await searchVideoIds("ip-a " + i, 5, { ip: "1.1.1.1" })).length, 2);
-  assert.deepEqual(await searchVideoIds("ip-a encore", 5, { ip: "1.1.1.1" }), []);
+  assert.equal(await searchVideoIds("ip-a encore", 5, { ip: "1.1.1.1" }), null); // budget épuisé
   assert.equal((await searchVideoIds("ip-a 3", 5, { ip: "1.1.1.1" })).length, 2); // en cache
   assert.equal((await searchVideoIds("ip-b 0", 5, { ip: "2.2.2.2" })).length, 2);
   assert.equal(calls, 31);
@@ -39,7 +39,7 @@ test("searchVideoIds : budget de 30 recherches par IP et par minute, le cache n'
 test("searchVideoIds : plafond global (60 / min, toutes IP confondues)", async () => {
   const avant = total;
   let ok = 0;
-  for (let i = 0; i < 40; i++) if ((await searchVideoIds("global " + i, 5, { ip: "3.3.3." + i })).length) ok++;
+  for (let i = 0; i < 40; i++) if ((await searchVideoIds("global " + i, 5, { ip: "3.3.3." + i })) !== null) ok++;
   assert.equal(ok, 60 - avant);
   assert.equal(total, 60);
 });

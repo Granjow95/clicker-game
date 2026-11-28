@@ -288,6 +288,8 @@ function kkRenderLobby() {
   if (hostPanel) hostPanel.style.display = kk.isHost ? 'flex' : 'none'; // masqué par défaut en CSS
   if (guestPanel) guestPanel.style.display = kk.isHost ? 'none' : 'block';
 
+  const selectBtn = document.getElementById('kk-select-btn');
+  if (selectBtn) selectBtn.textContent = song ? 'Changer de musique' : 'Choisir une musique';
   const hostDisp = document.getElementById('kk-selected-song-display');
   const startBtn = document.getElementById('kk-start-btn');
   const guestDisp = document.getElementById('kk-guest-song-display');
@@ -410,7 +412,69 @@ async function kkSearch(q) {
   await kkLoadWithLyrics(songs, gen);
 }
 
+// Variantes à écarter : elles n'ont en général ni instrumentale ni paroles calées sur la version d'origine.
+// « Remastered », « Radio Edit » et « feat. » restent : c'est la chanson d'origine.
+const KK_VARIANTE = /\b(live|en concert|remix|rmx|mix|acoustic|acoustique|unplugged|version|karaok[eé]|instrumental|instru|cover|reprise|sped ?up|slowed|nightcore|reverb|demo|démo|mashup|bootleg|extended|a ?cappella|acapella|8d|session|piano|orchestral|symphonic)\b/i;
+// … sauf ces mentions, qui désignent la version d'origine.
+const KK_ORIGINALE = /\b(?:taylor'?s|single|album|radio|original|explicit|clean|main|lp)\s+(?:version|mix|edit)\b|\boriginal\b/i;
+const kkSansAccents = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+// Parties secondaires d'un titre : entre () ou [], ou après « - » (un « Artiste - » en tête est d'abord retiré).
+function kkTitreDecoupe(title, artist) {
+  let t = String(title || '');
+  const a = String(artist || '').split(/\s*(?:,|&)\s*/)[0].trim();
+  if (a && kkSansAccents(t).startsWith(kkSansAccents(a))) {
+    const reste = t.slice(a.length).replace(/^\s*[-–—:]\s*/, '');
+    if (reste && reste !== t.slice(a.length)) t = reste;
+  }
+  const extras = [];
+  const base = t.replace(/[([][^)\]]*[)\]]/g, (m) => { extras.push(m.slice(1, -1)); return ' '; })
+    .replace(/\s[-–—]\s(.*)$/, (m, rest) => { extras.push(rest); return ' '; });
+  return { base, extras };
+}
+
+// Clé « même chanson » : artiste principal + titre sans parenthèses ni suffixe, sans accents ni ponctuation.
+function kkCleChanson(song) {
+  const artiste = kkSansAccents(String(song.artist || '').split(/\s*(?:,|&|\bfeat\.?|\bft\.?|\bx\b|\bet\b|\band\b)\s*/i)[0]);
+  let { base } = kkTitreDecoupe(song.title, song.artist);
+  base = kkSansAccents(base).replace(/\b(feat|ft)\.?\s.*$/, '');
+  const norm = (x) => x.replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  return `${norm(artiste)}|${norm(base)}`;
+}
+
+// Mentions sans intérêt dans un titre : « (Official Video) », « [Audio] », « (Lyrics) »…
+const KK_BRUIT = /[([]\s*(?:official|officiel(?:le)?|audio|video|vid[eé]o|clip|lyrics?|paroles|visuali[sz]er|hd|hq|4k)(?:\s+(?:music|musical|official|officiel(?:le)?|audio|video|vid[eé]o|clip|lyrics?|paroles|visuali[sz]er|hd|hq|4k))*\s*[)\]]/gi;
+
+// Titre propre pour la carte et pour la recherche YouTube du serveur : sans « Artiste - » en tête ni mentions inutiles.
+function kkTitrePropre(song) {
+  const artiste = String(song.artist || '').split(/\s*(?:,|&)\s*/)[0].trim();
+  let t = String(song.title || '').replace(KK_BRUIT, ' ').replace(/\s+/g, ' ').trim();
+  if (artiste && kkSansAccents(t).startsWith(kkSansAccents(artiste))) {
+    const reste = t.slice(artiste.length).replace(/^\s*[-–—:]\s*/, '');
+    if (reste && reste !== t.slice(artiste.length)) t = reste;
+  }
+  return t || String(song.title || '');
+}
+
+// Une seule carte par chanson, version d'origine seulement : on écarte les variantes (live, remix, instrumental…)
+// puis on garde la première entrée de chaque chanson (ordre de pertinence), de préférence avec paroles synchronisées.
+function kkDedupeSongs(songs) {
+  const parCle = new Map();
+  for (const brut of songs) {
+    const song = { ...brut, title: kkTitrePropre(brut) };
+    const { extras } = kkTitreDecoupe(song.title, song.artist);
+    if (extras.some((x) => { const n = kkSansAccents(x); return KK_VARIANTE.test(n) && !KK_ORIGINALE.test(n); })) continue;
+    if (KK_VARIANTE.test(kkSansAccents(song.artist)) && /karaok|instrumental/i.test(song.artist || '')) continue;
+    const cle = kkCleChanson(song);
+    const deja = parCle.get(cle);
+    if (!deja) parCle.set(cle, song);
+    else if (!deja._syncedLyrics && song._syncedLyrics) parCle.set(cle, song); // même place, meilleure version
+  }
+  return [...parCle.values()];
+}
+
 async function kkLoadWithLyrics(songs, gen) {
+  songs = kkDedupeSongs(songs);
   // En salle, la musique et les paroles sont calées sur les horaires LRC : les chansons sans horaires sont masquées.
   if (kk.mode === 'multi') songs = songs.filter(s => s._syncedLyrics);
   _kkSongs = [];
@@ -660,6 +724,8 @@ function kkApplyHostControls() {
   }
   const endActions = document.getElementById('kk-end-actions');
   if (endActions) endActions.style.display = isSoloOrHost ? '' : 'none'; // en salle, seul l'hôte relance ou change de chanson
+  const changeBtn = document.getElementById('kk-change-btn');
+  if (changeBtn) changeBtn.hidden = !isSoloOrHost; // changer de musique à tout moment (solo, ou hôte en salle)
   if (multi) {
     // Bouton central de l'hôte : pause / lecture de l'horloge partagée
     const playBtn = document.getElementById('kk-play-btn');
@@ -1014,13 +1080,14 @@ function kkLoadYTApi() {
 // Conteneur de la vidéo : en fond du jeu, non-interactif (pointer-events:none).
 // On recrée le div interne à chaque fois : YT.Player.destroy() supprime l'iframe.
 function kkEnsureYTHost() {
-  const game = document.getElementById('karaoke-game') || document.body;
+  const jeu = document.getElementById('karaoke-game');
+  const parent = (jeu && jeu.parentNode) || document.body; // à côté de la scène : reste affiché pendant la sélection
   let host = document.getElementById('kk-yt-host');
   if (!host) {
     host = document.createElement('div');
     host.id = 'kk-yt-host';
   }
-  if (host.parentNode !== game) game.appendChild(host);
+  if (host.parentNode !== parent) parent.appendChild(host);
   host.style.display = 'block';
   host.innerHTML = '<div id="kk-yt-player"></div>';
   return host;
@@ -1279,10 +1346,25 @@ window.karaokeExitGame = async function () {
   kkShow('karaoke-mode');
 };
 
-// Fin de chanson (hôte) : retour au salon pour tout le monde.
+// Changer de musique à tout moment (bouton de la scène ou de l'écran de fin).
+// En salle : l'hôte ouvre la sélection, la chanson continue chez tous ; le choix d'une nouvelle chanson
+// l'arrête et ramène tout le monde au salon. « Retour » revient à la scène.
 window.karaokeChangeSong = function () {
-  if (kk.mode === 'multi') { if (kk.isHost) socket.emit('kk:stop', {}); return; }
-  window.karaokeExitGame();
+  if (kk.mode === 'multi') {
+    if (!kk.isHost) return;
+    kk.fromSelect = 'karaoke-game';
+    kkShowSelect();
+    return;
+  }
+  clearTimeout(kk.autoTimer);
+  clearTimeout(kk.endTimer);
+  kk.autoPlay = false;
+  kkHideGap();
+  kkDestroyAudio();
+  const overlay = document.getElementById('kk-end-overlay');
+  if (overlay) overlay.style.display = 'none';
+  kk.fromSelect = 'karaoke-mode';
+  kkShowSelect();
 };
 
 /* ═══════════════════════════════════════════════════
@@ -1478,10 +1560,13 @@ function kkGapText(label, sec) {
 // Un pas de synchro : ligne affichée, indicateur (intro, pause, instrumental), recalage du lecteur.
 function kkRoomTick() {
   const r = kk.room;
-  if (!r || !r.clock || !kkDisplayed('karaoke-game')) return;
+  if (!r || !r.clock) return;
   const now = kkServerNow();
   const c = r.clock;
   const pos = kkClockPos(c, now);
+  // Le lecteur suit l'horloge même scène cachée (l'hôte choisit la chanson suivante) : départ, pause, fin.
+  kkRoomSyncPlayer(now, c, pos);
+  if (!kkDisplayed('karaoke-game')) return; // le reste ne touche que l'affichage
   const idx = kkLineAt(r.lines, pos);
   if (Math.max(0, idx) !== kk.currentLine) kkSetLine(Math.max(0, idx));
   else kkRenderLyricsButtons();
@@ -1498,7 +1583,6 @@ function kkRoomTick() {
     if (next && next.t - pos > 5000) kkGapText('Pause instrumentale…', (next.t - pos) / 1000);
     else kkHideGap();
   }
-  kkRoomSyncPlayer(now, c, pos);
 }
 
 // Boutons précédente / suivante en salle (l'intro se termine sans changer de ligne affichée).
@@ -1645,7 +1729,9 @@ const kkSurSocket = {
     if (kkDisplayed('kk-lobby') && kkDisplayed('karaoke-room')) kkRenderLobby();
     if (kkDisplayed('karaoke-game')) { kkUpdatePlayersBar(); kkApplyHostControls(); kkRenderLyrics(); }
     if (!kk.isHost && kk.picking) kkPickDone(); // le serveur abandonne la sélection d'un ancien hôte sans répondre
-    if (!kk.isHost && kkDisplayed('karaoke-select')) kkShowLobby(); // plus hôte : le choix de chanson ne nous revient plus
+    if (!kk.isHost && kkDisplayed('karaoke-select')) { // plus hôte : le choix de chanson ne nous revient plus
+      if (kk.started) kkShow('karaoke-game'); else kkShowLobby();
+    }
   },
   'kk:song_selected': (d) => {
     if (!kk.roomId || !d || !d.song) return;
